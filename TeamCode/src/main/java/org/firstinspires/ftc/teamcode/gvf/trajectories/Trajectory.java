@@ -73,6 +73,7 @@ public class Trajectory
         double closestDistance = Double.POSITIVE_INFINITY;
         double t = 0;
         int u = 0;
+        // FIXME: 9/9/2024 this will cause a problem when we change trajectories
         if (prevU == numberOfSegments && prevT == 1) //if we were following the last point in the curve no need to draw cpu power
         {
             t = prevT;
