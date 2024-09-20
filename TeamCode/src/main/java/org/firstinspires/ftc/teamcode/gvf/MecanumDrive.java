@@ -14,11 +14,11 @@ import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 public class MecanumDrive
 {
     public static boolean ENABLED = true;
-
 
     public enum RunMode
     {
@@ -46,8 +46,9 @@ public class MecanumDrive
     private final double velocityThreshold = 1;
 
     private TimedSupplier<Double> voltageSupplier;
+    public double FLPower, FRPower, BLPower, BRPower;
 
-    public MecanumDrive(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, RunMode runMode, TimedSupplier<Double> supplier)
+    /*  public MecanumDrive(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, RunMode runMode, TimedSupplier<Double> supplier)
     {
         this.FL = FL;
         this.FR = FR;
@@ -57,6 +58,16 @@ public class MecanumDrive
         this.runMode = runMode;
 
         this.voltageSupplier = supplier;
+    }*/
+    public MecanumDrive(GeneralHardware hardware, RunMode mode) // try to only use this
+    {
+        this.FL = hardware.mch0;
+        this.FR = hardware.mch1;
+        this.BL = hardware.mch2;
+        this.BR = hardware.mch3;
+        this.runMode = mode;
+        this.voltageSupplier = hardware.voltageSupplier;
+        localizer = hardware.localizer;
     }
 
 
@@ -67,7 +78,7 @@ public class MecanumDrive
             case PID:
                 // This is gonna be a standard pid, probably never will be used but so like maybe rename to position lock
                 // driveToPosition(0, 0, 0, null);
-                driveToPosition(targetPose.getX(), targetPose.getY(), targetPose.getHeading(), localizer.getPredictedPoseEstimate().toPose2d());
+                driveToPosition(targetPose.getX(), targetPose.getY(), targetPose.getHeading(), localizer.getPredictedPoseEstimate());
                 break;
             case P2P:
                 P2P();
@@ -89,14 +100,14 @@ public class MecanumDrive
         }
     }
 
-    private void driveToPosition(double targetX, double targetY, double targetHeading, Pose2d poseEstimate)
+    private void driveToPosition(double targetX, double targetY, double targetHeading, Pose poseEstimate)
     {
-        /*double robotX = poseEstimate.getX();
+        double robotX = poseEstimate.getX();
         double robotY = poseEstimate.getY();
         double robotTheta = poseEstimate.getHeading();
         double x = TRANSLATIONAL_PID.calculate(robotX, targetX);
         double y = -TRANSLATIONAL_PID.calculate(robotY, targetY);
-        double theta = -HEADING_PID.calculate(AngleWrap(targetHeading - robotTheta));
+        double theta = -HEADING_PID.calculate(normalizeRadians(targetHeading - robotTheta));
 
 
         double x_rotated = (x * Math.cos(robotTheta) - y * Math.sin(robotTheta));
@@ -111,7 +122,7 @@ public class MecanumDrive
         this.FL.setPower(FL);
         this.BL.setPower(BL);
         this.FR.setPower(FR);
-        this.BR.setPower(BR);*/
+        this.BR.setPower(BR);
     }
 
     private void P2P()
@@ -143,7 +154,6 @@ public class MecanumDrive
         powerVector = new Vector(powerVector.getX(), powerVector.getY() * lateralMultiplier, headingPower);
     }
 
-    public double FLPower, FRPower, BLPower, BRPower;
 
     private void updateMotors()
     {
@@ -170,18 +180,10 @@ public class MecanumDrive
 
         } else if (runMode == RunMode.GVF)
         {
-            // so this first part will just use the vector
-            double actualKs = ks * 14.0 / voltageSupplier.get();
-
-            FL.setPower((powerVector.getX() - powerVector.getY() - powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() - powerVector.getY() - powerVector.getZ()));
-            FR.setPower((powerVector.getX() + powerVector.getY() + powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() + powerVector.getY() + powerVector.getZ()));
-            BL.setPower((powerVector.getX() + powerVector.getY() - powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() + powerVector.getY() - powerVector.getZ()));
-            BR.setPower((powerVector.getX() - powerVector.getY() + powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() - powerVector.getY() + powerVector.getZ()));
-
-
-        } else if(runMode == RunMode.Vector)
+        }
+        else if(runMode == RunMode.Vector)
         {
-            double actualKs = ks * 14.0 / voltageSupplier.get();
+            double actualKs = ks * 12.0 / voltageSupplier.get();
 
             FL.setPower((powerVector.getX() - powerVector.getY() - powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() - powerVector.getY() - powerVector.getZ()));
             FR.setPower((powerVector.getX() + powerVector.getY() + powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() + powerVector.getY() + powerVector.getZ()));
@@ -198,7 +200,7 @@ public class MecanumDrive
         updateMotors();
     }
 
-    // TODO: this should absolutely be cached and not done like this
+
     public double getVoltage()
     {
         return voltageSupplier.get();

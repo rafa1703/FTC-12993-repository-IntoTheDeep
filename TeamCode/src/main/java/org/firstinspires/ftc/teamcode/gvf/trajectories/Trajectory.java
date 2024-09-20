@@ -73,7 +73,6 @@ public class Trajectory
         double closestDistance = Double.POSITIVE_INFINITY;
         double t = 0;
         int u = 0;
-        // FIXME: 9/9/2024 this will cause a problem when we change trajectories
         if (prevU == numberOfSegments && prevT == 1) //if we were following the last point in the curve no need to draw cpu power
         {
             t = prevT;
@@ -131,27 +130,29 @@ public class Trajectory
         double closestDistance = Double.POSITIVE_INFINITY;
         double t = 0;
         int u = 0;
-        for (TrajectorySegment segment : segments)
+        if (prevU == numberOfSegments && prevT == 1) //if we were following the last point in the curve no need to draw cpu power
         {
-            Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
-            if (distAndT.y <= closestDistance)
+            t = prevT;
+            u = prevU;
+        }
+        else
+        {
+            for (TrajectorySegment segment : segments)
             {
-                closestDistance = distAndT.y;
-                t = distAndT.x;
-                u = segments.indexOf(segment);
+                Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
+                if (distAndT.y <= closestDistance)
+                {
+                    closestDistance = distAndT.y;
+                    t = distAndT.x;
+                    u = segments.indexOf(segment);
+                }
             }
         }
-
         BezierCurve curve;
         boolean lastCurve = u == numberOfSegments;
-        /*if (u == segments.size())
-        {
-             curve = segments.get(segments.size() -1).returnCurve();
-        }
-        else*/
         curve = segments.get(u).returnCurve();
 
-        Vector powerVector = gvfLogic.calculate(curve, t, pose, lastCurve, segments.get(u).getMaxSpeed()); //TODO i can probably already pass the t value here
+        Vector powerVector = gvfLogic.calculate(curve, t, pose, lastCurve, segments.get(u).getMaxSpeed());
         // if we less then the threshold we can say we are finished
         if (segments.get(numberOfSegments).getEndPoint().subtract(pose.toPoint()).getMagnitude() < threshold)
         {
@@ -169,6 +170,9 @@ public class Trajectory
             }
         }
         usePID = gvfLogic.usePID() && lastCurve && finalPose != null;
+        prevU = u;
+        prevT = t;
+
         return powerVector;
     }
     public Vector getPowerVectorSplineHeading(Pose pose) // this should work lol, idk fucking know tho
@@ -180,28 +184,35 @@ public class Trajectory
         double closestDistance = Double.POSITIVE_INFINITY;
         double t = 0;
         int u = 0;
-        for (TrajectorySegment segment : segments)
+        if (prevU == numberOfSegments && prevT == 1) //if we were following the last point in the curve no need to draw cpu power
         {
-            Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
-            if (distAndT.y < closestDistance)
+            t = prevT;
+            u = prevU;
+        }
+        else
+        {
+            for (TrajectorySegment segment : segments)
             {
-                closestDistance = distAndT.y;
-                t = distAndT.x;
-                u = segments.indexOf(segment);
+                Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
+                if (distAndT.y < closestDistance)
+                {
+                    closestDistance = distAndT.y;
+                    t = distAndT.x;
+                    u = segments.indexOf(segment);
+                }
             }
         }
-
         BezierCurve curve = segments.get(u).returnCurve();
         boolean lastCurve = u == numberOfSegments;
 
 
         Vector powerVector = gvfLogic.calculate(curve, t, pose, lastCurve, segments.get(u).getMaxSpeed());
-        // we need to change the z component of the power vector, yes this being done here is dodgy as fuck but i don't care (it needs to be here because i want to interpolate using the u value of the trajectory
+        // we need to change the z component of the power vector, yes this being done here is dodgy as fuck but i don't care
+        // (it needs to be here because i want to interpolate using the u value of the trajectory and not the t value
         double finalHeading = finalPose.getHeading();
         double headingDiff = gvfLogic.headingInterpolation(pose.getHeading(), finalHeading, (u + t) / (numberOfSegments + 1)) - pose.getHeading(); // remove heading because we want the diff
         //headingDiff = normalizeRadians(headingDiff - pose.getHeading());
         powerVector = new Vector(powerVector.getX(), powerVector.getY(), headingDiff);
-
 
         // if we less then the threshold we can say we are finished
         if (segments.get(numberOfSegments).getEndPoint().subtract(pose.toPoint()).getMagnitude() < threshold)
@@ -221,7 +232,8 @@ public class Trajectory
             }
         }
         usePID = gvfLogic.usePID() && lastCurve && finalPose != null;
-
+        prevU = u;
+        prevT = t;
         return powerVector;
     }
     private ArrayList<Point> returnFullCurve()

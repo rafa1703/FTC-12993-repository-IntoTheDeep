@@ -37,9 +37,17 @@ public class Localizer
         localizer.setPoseEstimate(pose.toPose2d());
     }
 
+    public Localizer(GeneralHardware hardware, Pose startPose)
+    {
+        this.pose = startPose;
+        this.localizer = new TwoTrackingWheelLocalizer(hardware);
+        localizer.setPoseEstimate(pose.toPose2d());
+    }
     public Localizer(GeneralHardware hardware)
     {
-        // implement this
+        this.pose = new Pose();
+        this.localizer = new TwoTrackingWheelLocalizer(hardware);
+        localizer.setPoseEstimate(pose.toPose2d());
     }
     @Deprecated
     public Pose getPredictedPose()
@@ -72,7 +80,7 @@ public class Localizer
     private final LowPassFilter xVelocityFilter = new LowPassFilter(filterParameter, 0),
             yVelocityFilter = new LowPassFilter(filterParameter, 0);
 
-    public static double xDeceleration = 100, yDeceleration = 150;  //= 43, 73
+    public static double xDeceleration = 100, yDeceleration = 150;
 
     public Vector getVelocity(){
         return velocity;
@@ -81,14 +89,13 @@ public class Localizer
 
     public void update() {
         if(!ENABLED) return;
-
+        // Cyliis cooked hard on this so...
         localizer.update();
         Pose2d pose2d = localizer.getPoseEstimate();
         pose = new Pose(pose2d);
         velocity = new Vector(xVelocityFilter.getValue(localizer.getPoseVelocity().getX()), yVelocityFilter.getValue(localizer.getPoseVelocity().getY()));
         driveTrainVelocity = Vector.rotateBy(velocity, 0);
         Vector predictedGlideVector = new Vector(Math.signum(driveTrainVelocity.getX()) * Math.pow(driveTrainVelocity.getX(), 2) / (2.0 * xDeceleration),
-
                 Math.signum(driveTrainVelocity.getY()) * Math.pow(driveTrainVelocity.getY(), 2) / (2.0 * yDeceleration));
         glideDelta = predictedGlideVector.rotated(-pose.getHeading());
     }

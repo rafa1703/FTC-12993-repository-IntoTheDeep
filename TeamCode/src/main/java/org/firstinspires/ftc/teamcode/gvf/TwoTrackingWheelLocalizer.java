@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
 import org.firstinspires.ftc.teamcode.system.accessory.imu.ImuThread;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 import java.util.Arrays;
 import java.util.List;
@@ -54,6 +55,20 @@ public class TwoTrackingWheelLocalizer extends com.acmerobotics.roadrunner.local
         imuThread.startThread(opMode);
     }
 
+    public TwoTrackingWheelLocalizer(GeneralHardware hardware) {
+        super(Arrays.asList(
+                new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
+                new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
+        ));
+
+        this.imuThread = hardware.imu;
+        parallelEncoder = hardware.ech0;
+        perpendicularEncoder = hardware.ech3;
+
+        // reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+        parallelEncoder.setDirection(Encoder.Direction.REVERSE);
+    }
+
     public static double encoderTicksToInches(double ticks) {
         return WHEEL_RADIUS * 2 * Math.PI * GEAR_RATIO * ticks / TICKS_PER_REV;
     }
@@ -89,10 +104,5 @@ public class TwoTrackingWheelLocalizer extends com.acmerobotics.roadrunner.local
                 encoderTicksToInches(perpendicularEncoder.getRawVelocity()) * Y_MULTIPLIER
         );
     }
-    //this is just gonna use rr odo but with the thread imu
 
-    public void startImuThread(LinearOpMode opMode)
-    {
-        imuThread.startThread(opMode);
-    }
 }
