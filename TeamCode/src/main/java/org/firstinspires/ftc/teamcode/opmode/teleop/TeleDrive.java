@@ -1,8 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleClose;
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleFar;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
@@ -28,7 +32,9 @@ public class TeleDrive extends LinearOpMode
         IDLE
     }
     OuttakeState state = OuttakeState.READY;
+    ToggleUpOrDown intakeSlideBtn = new ToggleUpOrDown(1, 1, 0);
     double colorValue;
+    int intakeSlideTarget;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -58,7 +64,9 @@ public class TeleDrive extends LinearOpMode
                     }
                     else if (gamepad1.left_bumper)
                     {
-                        state =  OuttakeState.INTAKE_EXTENDO;
+                        state = OuttakeState.INTAKE_EXTENDO;
+                        intakeSlideTarget = slideTeleClose;
+                        intakeSlideBtn.upToggle(gamepad1.left_bumper);
                         resetTimer();
                     }
                 }
@@ -68,32 +76,81 @@ public class TeleDrive extends LinearOpMode
 
                 break;
             case INTAKE_EXTENDO:
+                intakeSlideBtn.upToggle(gamepad1.left_bumper);
+                intakeSlideBtn.downToggle(gamepad1.right_bumper, 1);
+                if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleClose;
+                if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
+                intakeArmHeight();
+                colorValue = intakeSubsystem.getColorValue();
+
+                if (delay(90))
+                {
+                    intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+
+                    if (delay(200))
+                    {
+                        if (colorValue > 1000)
+                        {
+                            if (!colorLogic(colorValue)) // if we picked the wrong color we initialize the drop sequence
+                            {
+                                state = OuttakeState.INTAKE_EXTENDO_DROP;
+                                resetTimer();
+                            } else
+                            {
+                                state = OuttakeState.INTAKE_TO_TRANSFER;
+                                gamepad1.rumbleBlips(2);
+                                resetTimer();
+                            }
+                        }
+                    }
+                }
+                break;
+            case INTAKE_EXTENDO_DROP:
+                colorValue = intakeSubsystem.getColorValue();
+                intakeArmHeight();
+                if (colorValue < 1000 && delay(200))
+                {
+                    state = OuttakeState.INTAKE_EXTENDO;
+                    resetTimer();
+                }
+                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.DROP); // this stop the motor until it drops
+                if (delay(50))
+                {
+                    intakeSubsystem.intakeChuteState(IntakeSubsystem.IntakeChuteServoState.DROP);
+                    if (delay(400)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    // this assumes that the sample is stuck in the chute so we spin the intake
+                }
                 break;
             case INTAKE:
                 if (gamepad1.left_bumper)
                 {
                     state = OuttakeState.INTAKE_EXTENDO;
+                    intakeSlideTarget = slideTeleClose;
+                    intakeSlideBtn.upToggle(gamepad1.left_bumper);
+                    resetTimer();
                 }
                 intakeSubsystem.intakeChuteState(IntakeSubsystem.IntakeChuteServoState.UP);
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                 intakeSubsystem.intakeFlapState(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
                 // whenever we want to intake the intake goes down but with this the driver can hold the button to control it
                 intakeArmHeight();
                 colorValue = intakeSubsystem.getColorValue();
-                if (colorValue > 1000)
+                if (delay(200))
                 {
-                   if (!colorLogic(colorValue)) // if we picked the wrong color we initialize the drop sequence
-                   {
-                       state = OuttakeState.INTAKE_DROP;
-                       resetTimer();
-                   }
-                   else
-                   {
-                       state = OuttakeState.INTAKE_TO_TRANSFER;
-                       gamepad1.rumbleBlips(2);
-                       resetTimer();
-                   }
+                    if (colorValue > 1000)
+                    {
+                        if (!colorLogic(colorValue)) // if we picked the wrong color we initialize the drop sequence
+                        {
+                            state = OuttakeState.INTAKE_DROP;
+                            resetTimer();
+                        } else
+                        {
+                            state = OuttakeState.INTAKE_TO_TRANSFER;
+                            gamepad1.rumbleBlips(2);
+                            resetTimer();
+                        }
+                    }
                 }
                 break;
             case INTAKE_DROP:

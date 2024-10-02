@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
@@ -17,6 +18,7 @@ public class IntakeSubsystem
     DcMotorEx intakeMotor, intakeSlideMotor;
     ColorSensor colorSensor;
     PID intakeSlidesPID = new PID(0.04, 0, 0.003, 0, 0);
+
     int slideTarget, slidePosition;
     double colorValue;
     double intakeSpeed = 1;
@@ -36,7 +38,7 @@ public class IntakeSubsystem
             flapTransferPos = 1,
             flapDownPos = 0;
 
-    public static final double
+    public static final int
         slideTeleClose = 200,
         slideTeleFar = 400;
     public enum IntakeSpinState
@@ -105,7 +107,7 @@ public class IntakeSubsystem
                 intakeMotor.setPower(0);
                 break;
             case REVERSE:
-                intakeMotor.setPower(-intakeSpeed);
+                intakeMotor.setPower(-0.6);
                 break;
         }
     }
