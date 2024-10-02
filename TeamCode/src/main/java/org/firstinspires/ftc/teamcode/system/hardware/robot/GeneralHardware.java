@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot;
 
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -13,6 +14,7 @@ import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 
 
 import org.firstinspires.ftc.teamcode.gvf.Localizer;
+import org.firstinspires.ftc.teamcode.gvf.LocalizerOTOS;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
 import org.firstinspires.ftc.teamcode.system.accessory.imu.ImuThread;
@@ -33,9 +35,11 @@ public class GeneralHardware
     public ServoImplEx sch0, sch1, sch2, sch3, sch4, sch5;
     public ServoImplEx seh0, seh1, seh2, seh3, seh4, seh5;
 
+    public ColorSensor cs0;
     public ImuThread imu;
 
     public Localizer localizer;
+    public LocalizerOTOS otosLocalizer;
     public MecanumDrive drive;
 
     public VoltageSensor voltageSensor;
@@ -51,7 +55,7 @@ public class GeneralHardware
     public double S, A; // s is the side multiplier and a is the angle multiplier
 
     LynxModule chub, ehub;
-    private final Side side;
+    public final Side side;
 
     public GeneralHardware(HardwareMap hm, Side side)
     {
@@ -130,9 +134,12 @@ public class GeneralHardware
         dc0 = hm.get(DigitalChannel.class, "dc0");
         dc1 = hm.get(DigitalChannel.class, "dc1");
 
+
+        // TODO: change here depending on odometry type
         imu = new ImuThread(hm);
         imu.initImuThread();
         localizer = new Localizer(this);
+        //otosLocalizer = new LocalizerOTOS(this);
 
         MecanumDrive.headingMultiplier = 1;
         drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);

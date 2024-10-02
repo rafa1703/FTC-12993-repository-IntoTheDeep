@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.gvf.utils;
 import androidx.annotation.NonNull;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
 import org.opencv.core.Point;
 
@@ -38,6 +39,11 @@ public class Pose
     public Pose(Pose2d pose2d)
     {
         this(pose2d.getX(), pose2d.getY(), pose2d.getHeading());
+    }
+
+    public Pose(SparkFunOTOS.Pose2D pose2D)
+    {
+        this(pose2D.x, pose2D.y, pose2D.h);
     }
 
     public double getX(){
