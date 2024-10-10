@@ -13,13 +13,13 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 public class IntakeSubsystem
 {
-    ServoImplEx chuteS, flapS, leftArmS, rightArmS;
+    ServoImplEx chuteS, flapS, leftArmS, rightArmS, clipS;
 
     DcMotorEx intakeMotor, intakeSlideMotor;
     ColorSensor colorSensor;
     PID intakeSlidesPID = new PID(0.04, 0, 0.003, 0, 0);
 
-    int slideTarget, slidePosition;
+    public int slideTarget, slidePosition;
     double colorValue;
     double intakeSpeed = 1;
     GeneralHardware.Side side;
@@ -35,12 +35,19 @@ public class IntakeSubsystem
         chuteUpPos = 1,
         chuteDropPos = 0;
     public static final double
-            flapTransferPos = 1,
-            flapDownPos = 0;
+        flapTransferPos = 1,
+        flapDownPos = 0.5,
+        flapReadyPos = 0;
 
     public static final int
         slideTeleClose = 200,
-        slideTeleFar = 400;
+        slideTeleFar = 400,
+        slideTeleBase = 0,
+        slideTeleTransfer = -200;
+    public final double
+        clipHoldPos = 1,
+        clipOpenPos = 0;
+    private final double slideThreshold = 8;
     public enum IntakeSpinState
     {
         INTAKE,
@@ -60,10 +67,15 @@ public class IntakeSubsystem
     }
     public enum IntakeFlapServoState
     {
+        READY,
         TRANSFER,
         DOWN
     }
-    public IntakeSpinState intakeSpinState;
+    public enum IntakeClipServoState
+    {
+        HOLD,
+        OPEN
+    }
 
     public IntakeSubsystem(GeneralHardware hardware)
     {
@@ -73,6 +85,7 @@ public class IntakeSubsystem
         flapS = hardware.sch1;
         leftArmS = hardware.sch2;
         rightArmS = hardware.sch3;
+        clipS = hardware.sch4;
         colorSensor = hardware.cs0; // no supplier as i want this to pool immediately and synchronous
 
         intakeMotor = hardware.mch0;
@@ -116,7 +129,6 @@ public class IntakeSubsystem
     {
         switch (state)
         {
-
             case HIGH:
                 leftArmS.setPosition(leftArmHighPos);
                 rightArmS.setPosition(rightArmHighPos);
@@ -144,11 +156,26 @@ public class IntakeSubsystem
     {
         switch (state)
         {
+            case READY:
+                flapS.setPosition(flapReadyPos);
+                break;
             case TRANSFER:
                 flapS.setPosition(flapTransferPos);
                 break;
             case DOWN:
                 flapS.setPosition(flapDownPos);
+                break;
+        }
+    }
+    public void intakeClipState(IntakeClipServoState state)
+    {
+        switch (state)
+        {
+            case HOLD:
+                clipS.setPosition(clipHoldPos);
+                break;
+            case OPEN:
+                clipS.setPosition(clipOpenPos);
                 break;
         }
     }
@@ -164,13 +191,21 @@ public class IntakeSubsystem
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
-    public void intakeSlideMotorEncodersReset(){
+    public void intakeSlideInternalPID(int rotations, double maxPower)
+    {
+        slideTarget = rotations;
+        intakeSlideMotor.setTargetPosition(slideTarget);
+        intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeSlideMotor.setPower(maxPower);
+    }
+    public void intakeSlideMotorEncoderReset()
+    {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
     }
-    public void intakeSlideMotorRawControl(double manualcontrolintakeslide)
+    public void intakeSlideMotorRawControl(double manualControlIntakeSlide)
     {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        intakeSlideMotor.setPower(manualcontrolintakeslide * 0.75);
+        intakeSlideMotor.setPower(manualControlIntakeSlide * 0.75);
     }
     public double getColorValue()
     {
@@ -179,6 +214,10 @@ public class IntakeSubsystem
     public GeneralHardware.Side getSide()
     {
         return side;
+    }
+    public boolean slideReached(int slideTarget)
+    {
+        return Math.abs(slideTarget - slidePosition) > slideThreshold;
     }
 
 
