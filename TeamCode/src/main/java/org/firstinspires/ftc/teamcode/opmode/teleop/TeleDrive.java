@@ -1,11 +1,11 @@
 package org.firstinspires.ftc.teamcode.opmode.teleop;
 
+
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleClose;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleFar;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
@@ -20,6 +20,9 @@ public class TeleDrive extends LinearOpMode
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     GeneralHardware hardware;
+    GeneralHardware.Side side = GeneralHardware.Side.Red;
+    // this matches the initial value in the intakeSubsystem
+    IntakeSubsystem.IntakeFilter prevIntakeFilterState = IntakeSubsystem.IntakeFilter.NEUTRAL;
     enum OuttakeState {
         READY,
         INTAKE_EXTENDO,
@@ -28,6 +31,7 @@ public class TeleDrive extends LinearOpMode
         INTAKE_DROP,
         TRANSFER_START,
         TRANSFER_END,
+        SPECIMEN_INTAKE,
         OUTTAKE_ADJUST,
         DEPOSIT,
         SAMPLE_DEPOSIT,
@@ -42,15 +46,22 @@ public class TeleDrive extends LinearOpMode
     int intakeSlideTarget;
     int liftTarget;
     boolean isLow = false, isBucket = false; // lol this is gonna work this way and i hate it
+
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, false);
+        while (!isStarted()) { // initialization loop
+            if (gamepad2.dpad_up) side = GeneralHardware.Side.Red;
+            else if (gamepad2.dpad_down) side = GeneralHardware.Side.Blue;
+            telemetry.addData("Side", side);
+            telemetry.update();
+        } // idk if initializing it here will work
+        hardware = new GeneralHardware(hardwareMap, side, false);
         GlobalTimer = new ElapsedTime(System.currentTimeMillis());
         sequenceTimer = globalTimer;
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
-        //telemetry.setMsTransmissionInterval(11);
+
         waitForStart();
         while (opModeIsActive() && !isStopRequested())
         {
@@ -68,24 +79,27 @@ public class TeleDrive extends LinearOpMode
             case READY:
                 if (delay(100))
                 {
-                    if (gamepad1.right_bumper)
+                    if (gamepad1.right_bumper || gamepad2.right_bumper)
                     {
                         state = OuttakeState.INTAKE;
                         resetTimer();
                     } else if (gamepad1.left_bumper)
                     {
                         state = OuttakeState.INTAKE_EXTENDO;
-                        intakeSubsystem.intakeClipState(IntakeSubsystem.IntakeClipServoState.OPEN);
+                        intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                         intakeSlideTarget = slideTeleClose;
                         intakeSlideBtn.upToggle(gamepad1.left_bumper);
+                        resetTimer();
+                    }
+                    if (gamepad2.left_trigger > 0.2)
+                    {
+                        state = OuttakeState.SPECIMEN_INTAKE;
                         resetTimer();
                     }
                 }
                 readyOuttake();
                 intakeArmHeight();
-                if (gamepad1.b || gamepad2.b)
-                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-
+                if (gamepad1.b || gamepad2.b) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 break;
             case INTAKE_EXTENDO:
                 intakeSlideBtn.upToggle(gamepad1.left_bumper);
@@ -100,16 +114,17 @@ public class TeleDrive extends LinearOpMode
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
-                    if (delay(200) && colorValue > 1000)
+                    if (delay(200) && colorValue > 1000||
+                            (intakeSubsystem.intakeFilter == IntakeSubsystem.IntakeFilter.OFF && (gamepad2.right_bumper || gamepad1.right_bumper)))
                     {
-                        if (!colorLogic(colorValue)) // if we picked the wrong color we initialize the drop sequence
-                        {
-                            state = OuttakeState.INTAKE_DROP;
-                            resetTimer();
-                        } else
+                        if (intakeSubsystem.colorLogic()) // if we picked the wrong color we initialize the drop sequence
                         {
                             state = OuttakeState.TRANSFER_START;
                             gamepad1.rumbleBlips(2);
+                            resetTimer();
+                        } else
+                        {
+                            state = OuttakeState.INTAKE_DROP;
                             resetTimer();
                         }
                     }
@@ -126,7 +141,7 @@ public class TeleDrive extends LinearOpMode
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.DROP); // this stop the motor until it drops
                 if (delay(50))
                 {
-                    intakeSubsystem.intakeChuteState(IntakeSubsystem.IntakeChuteServoState.DROP);
+                    intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
                     if (delay(400))
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                     // this assumes that the sample is stuck in the chute so we spin the intake
@@ -140,22 +155,23 @@ public class TeleDrive extends LinearOpMode
                     intakeSlideBtn.upToggle(gamepad1.left_bumper);
                     resetTimer();
                 }
-                intakeSubsystem.intakeChuteState(IntakeSubsystem.IntakeChuteServoState.UP);
+                intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                intakeSubsystem.intakeFlapState(IntakeSubsystem.IntakeFlapServoState.DOWN);
+                intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
                 // whenever we want to intake the intake goes down but with this the driver can hold the button to control it
                 intakeArmHeight();
                 colorValue = intakeSubsystem.getColorValue();
-                if (delay(200) && colorValue > 1000)
+                if (delay(200) && colorValue > 1000 ||
+                        (intakeSubsystem.intakeFilter == IntakeSubsystem.IntakeFilter.OFF && (gamepad2.right_bumper || gamepad1.right_bumper)))
                 {
-                    if (!colorLogic(colorValue)) // if we picked the wrong color we initialize the drop sequence
-                    {
-                        state = OuttakeState.INTAKE_DROP;
-                        resetTimer();
-                    } else
+                    if (intakeSubsystem.colorLogic()) // if we picked the wrong color we initialize the drop sequence
                     {
                         state = OuttakeState.TRANSFER_START;
                         gamepad1.rumbleBlips(2);
+                        resetTimer();
+                    } else
+                    {
+                        state = OuttakeState.INTAKE_DROP;
                         resetTimer();
                     }
                 }
@@ -171,9 +187,8 @@ public class TeleDrive extends LinearOpMode
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.DROP); // this stop the motor until it drops
                 if (delay(50))
                 {
-                    intakeSubsystem.intakeChuteState(IntakeSubsystem.IntakeChuteServoState.DROP);
-                    if (delay(400))
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
+                    if (delay(400)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                     // this assumes that the sample is stuck in the chute so we spin the intake
                 }
                 break;
@@ -186,26 +201,47 @@ public class TeleDrive extends LinearOpMode
                 if (delay(40))
                 {
                     // this will hardstop the flap in the sample so the extendo can go back
-                    intakeSubsystem.intakeFlapState(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
                     intakeClipHoldLogic(slideTeleBase, 8); // this controls the intake slides and the clip
                 }
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
-                if (delay(250))
+                if (delay(250) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
                 {
                     state = OuttakeState.OUTTAKE_ADJUST;
                     resetTimer();
                 }
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
-                if (delay(40))
+                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
+                if (delay(40) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 }
                 if (delay(120))
                 {
-                    intakeSubsystem.intakeFlapState(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                }
+                break;
+            case SPECIMEN_INTAKE:
+                if (gamepad1.right_bumper || gamepad2.right_bumper)
+                {
+                    state = OuttakeState.DEPOSIT;
+                    resetTimer();
+                }
+                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntake);
+                if (delay(40))
+                {
+                    outtakeSubsystem.ArmState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                    outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.INTAKE);
+                }
+                if (delay(50) && (gamepad2.left_bumper || gamepad1.left_bumper))
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                }
+                if (gamepad2.left_trigger > 0.4 && gamepad1.left_trigger > 0.85) // idk if d1 should have this tbh
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 }
                 break;
             case OUTTAKE_ADJUST: // this allows for the drivers to pre adjust heights
@@ -238,27 +274,37 @@ public class TeleDrive extends LinearOpMode
                 }
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 break;
-            case SPECIMEN_DEPOSIT:
+            case SPECIMEN_DEPOSIT: // this state is the automated sample deposit, no driver controls here
                 if (delay(300))
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
                 }
+                // this sequence should bump down the specimen
                 outtakeSubsystem.ArmState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_SCORE);
-                if (delay(40))
-                {
-                    outtakeLiftPresets(false, isLow, -40); // this actually runs the lift
-                }
+                if (delay(40)) outtakeLiftPresets(false, isLow, -40); // this actually runs the lift
+                if (delay( 200)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 break;
             case RETURN:
                 if (outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
                 {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    intakeSlideBtn.OffsetTargetPosition = 0;
                     state = OuttakeState.READY;
                     resetTimer();
                 }
-                // couple things here to be done, fluctuate the intake
+                intakeSubsystem.intakeSpin(-0.3);
+                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
+                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                if (delay(100))
+                {
+                    outtakeSubsystem.ArmState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
+                }
+                intakeClipHoldLogic(slideTeleBase, 10);
                 break;
             case MANUAL_ENCODER_RESET:
+
                 break;
             case IDLE:
                 break;
@@ -269,51 +315,42 @@ public class TeleDrive extends LinearOpMode
             // can't reset if in manual reset lmao
             state = OuttakeState.RETURN; // if b is pressed at any state then return to ready
         }
+        if (gamepad2.dpad_up)
+        {
+            intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // toggles it off
+        }
+        if (gamepad2.dpad_right)
+        {
+            intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.NEUTRAL; // both neutral and alliance
+        }
+        if (gamepad2.dpad_down)
+        {
+            intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.SIDE_SPECIFIC; // only alliance
+        }
+        updateGamepadLED(intakeSubsystem.intakeFilter); // this just make sure we are not queuing up infinite LED calls
     }
-    public boolean delay(double delayTime)
-    {
-        return (globalTimer - sequenceTimer) > delayTime;
-    }
-
-    public void resetTimer()
-    {
-        sequenceTimer = globalTimer;
-    }
-
     public void intakeArmHeight()
     {
         if (gamepad1.x || gamepad2.x) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
         else if (gamepad1.a || gamepad2.a) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
     }
 
-    public boolean colorLogic(double colorValue)
-    {
-        if (colorValue > 5000) // assuming 5000 is red threshold
-        {
-            return (intakeSubsystem.getSide() == GeneralHardware.Side.Red);
-        }
-        if (colorValue < 3000) // assuming 3000 is yellow threshold
-        {
-            return (intakeSubsystem.getSide() == GeneralHardware.Side.Blue);
-        }
-        else return true; // this means is a yellow (3000-5000)
-    }
     public void intakeClipHoldLogic(int slideToPosition, int closeThreshold)
     {
         if (intakeSubsystem.slidePosition < closeThreshold)
         {
             if (globalTimer - intakeClipTimer > 90)
             {
-                intakeSubsystem.intakeClipState(IntakeSubsystem.IntakeClipServoState.HOLD);
+                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
                 intakeSubsystem.intakeSlideMotorRawControl(0);
             } else
             {
-                intakeSubsystem.intakeClipState(IntakeSubsystem.IntakeClipServoState.HOLD);
+                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
                 intakeSubsystem.intakeSlideInternalPID(slideToPosition);
             }
         } else
         {
-            intakeSubsystem.intakeClipState(IntakeSubsystem.IntakeClipServoState.OPEN);
+            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
             intakeSubsystem.intakeSlideInternalPID(slideToPosition);
             intakeClipTimer = globalTimer;
         }
@@ -338,7 +375,6 @@ public class TeleDrive extends LinearOpMode
         {
             if (isLow) outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBucketPos + offSet);
             else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos + offSet);
-
         }
         else
         {
@@ -364,7 +400,37 @@ public class TeleDrive extends LinearOpMode
 
     public void readyOuttake()
     {
-        intakeSubsystem.intakeFlapState(IntakeSubsystem.IntakeFlapServoState.DOWN);
+        intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
     }
+    public void updateGamepadLED(IntakeSubsystem.IntakeFilter newState)
+    {
+        if (newState != prevIntakeFilterState)
+        {
+            switch (newState)
+            {
+                case SIDE_SPECIFIC: // just trying to give the drivers some feedback on the filter state
+                    if(side == GeneralHardware.Side.Red) gamepad2.setLedColor(255, 0, 0, 180000);
+                    else gamepad2.setLedColor(0, 0, 255, 180000);
+                    break;
+                case NEUTRAL:
+                    gamepad2.setLedColor(255, 255, 0, 180000);
+                    break;
+                case OFF:
+                    gamepad2.setLedColor(0, 0, 0, 180000);
+                    break;
+            }
+            prevIntakeFilterState = newState;
+        }
+    }
+    public boolean delay(double delayTime)
+    {
+        return (globalTimer - sequenceTimer) > delayTime;
+    }
+
+    public void resetTimer()
+    {
+        sequenceTimer = globalTimer;
+    }
+
 }

@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -23,26 +22,30 @@ public class OuttakeSubsystem
         leftArmTransferPos = 0,
         leftArmSamplePos = 1,
         leftArmSpecimenPos = 1,
-        leftArmSpecimenScorePos = 1;
+        leftArmSpecimenScorePos = 1,
+        leftArmIntakePos = 1;
 
     public static final double
         rightArmTransferPos = 0,
         rightArmSamplePos = 1,
         rightArmSpecimenPos = 1,
-        rightArmSpecimenScorePos = 1;
+        rightArmSpecimenScorePos = 1,
+        rightArmIntakePos = 1;
     public static final double
         clawOpenPos = 1,
         clawClosePos = 0;
     public static final double
         pivotTransferPos = 1,
-        pivotSample = 0.5,
-        pivotSpecimen = 0;
+        pivotSamplePos = 0.5,
+        pivotSpecimenPos = 0,
+        pivotIntakePos = 0;
 
     public static final int
         liftHighBucketPos= 400,
         liftLowBucketPos = 300,
         liftHighBarPos = 200,
         liftLowBarPos = 100,
+        liftSpecimenIntake = 150,
         liftBasePos = 0;
     private final double liftThreshold = 8;
     public enum OuttakeClawServoState
@@ -55,13 +58,15 @@ public class OuttakeSubsystem
         TRANSFER,
         SAMPLE,
         SPECIMEN,
-        SPECIMEN_SCORE
+        SPECIMEN_SCORE,
+        INTAKE
     }
     public enum OuttakePivotServoState
     {
         TRANSFER,
         SAMPLE,
-        SPECIMEN
+        SPECIMEN,
+        INTAKE
     }
 
     public OuttakeSubsystem(GeneralHardware hardware)
@@ -124,6 +129,10 @@ public class OuttakeSubsystem
                 leftArmS.setPosition(leftArmSpecimenScorePos);
                 rightArmS.setPosition(rightArmSpecimenScorePos);
                 break;
+            case INTAKE:
+                leftArmS.setPosition(leftArmIntakePos);
+                rightArmS.setPosition(rightArmIntakePos);
+                break;
         }
     }
 
@@ -135,10 +144,13 @@ public class OuttakeSubsystem
                 pivotS.setPosition(pivotTransferPos);
                 break;
             case SAMPLE:
-                pivotS.setPosition(pivotSample);
+                pivotS.setPosition(pivotSamplePos);
                 break;
             case SPECIMEN:
-                pivotS.setPosition(pivotSpecimen);
+                pivotS.setPosition(pivotSpecimenPos);
+                break;
+            case INTAKE:
+                pivotS.setPosition(pivotIntakePos);
                 break;
         }
     }

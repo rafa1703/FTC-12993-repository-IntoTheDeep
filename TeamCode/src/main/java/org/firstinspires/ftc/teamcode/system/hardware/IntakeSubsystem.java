@@ -1,13 +1,10 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
-import static org.firstinspires.ftc.teamcode.system.hardware.Globals.motorCaching;
-
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
-import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
@@ -76,6 +73,13 @@ public class IntakeSubsystem
         HOLD,
         OPEN
     }
+    public enum IntakeFilter
+    {
+        SIDE_SPECIFIC, // Only alliance samples
+        NEUTRAL, // both alliance and neutral samples
+        OFF // intakes everything
+    }
+    public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
     public IntakeSubsystem(GeneralHardware hardware)
     {
@@ -86,7 +90,7 @@ public class IntakeSubsystem
         leftArmS = hardware.sch2;
         rightArmS = hardware.sch3;
         clipS = hardware.sch4;
-        colorSensor = hardware.cs0; // no supplier as i want this to pool immediately and synchronous
+        colorSensor = hardware.cs0; // no supplier as i want this to pool immediately and synchronously
 
         intakeMotor = hardware.mch0;
         intakeSlideMotor = hardware.mch1;
@@ -124,6 +128,10 @@ public class IntakeSubsystem
                 break;
         }
     }
+    public void intakeSpin(double spinDirection)
+    {
+        intakeMotor.setPower(spinDirection);
+    }
 
     public void intakeArm(IntakeArmServoState state)
     {
@@ -140,7 +148,7 @@ public class IntakeSubsystem
         }
     }
 
-    public void intakeChuteState(IntakeChuteServoState state)
+    public void intakeChute(IntakeChuteServoState state)
     {
         switch (state)
         {
@@ -152,7 +160,7 @@ public class IntakeSubsystem
                 break;
         }
     }
-    public void intakeFlapState(IntakeFlapServoState state)
+    public void intakeFlap(IntakeFlapServoState state)
     {
         switch (state)
         {
@@ -167,7 +175,7 @@ public class IntakeSubsystem
                 break;
         }
     }
-    public void intakeClipState(IntakeClipServoState state)
+    public void intakeClip(IntakeClipServoState state)
     {
         switch (state)
         {
@@ -206,6 +214,13 @@ public class IntakeSubsystem
     {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         intakeSlideMotor.setPower(manualControlIntakeSlide * 0.75);
+    }
+    public boolean colorLogic()
+    {
+        if (intakeFilter == IntakeFilter.OFF) return true;
+        if (colorValue > 5000) return (side == GeneralHardware.Side.Red); // assuming 5000 is red lower threshold
+        else if (colorValue < 3000) return (side == GeneralHardware.Side.Blue);  // assuming 3000 is yellow lower threshold
+        else return intakeFilter != IntakeFilter.SIDE_SPECIFIC;
     }
     public double getColorValue()
     {
