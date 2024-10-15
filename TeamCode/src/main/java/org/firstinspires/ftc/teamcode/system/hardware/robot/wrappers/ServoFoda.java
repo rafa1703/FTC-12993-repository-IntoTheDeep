@@ -27,8 +27,8 @@ public class ServoFoda implements IHardware
         if (
                 (Math.abs(pos - prevPos) > EPSILON_DELTA) ||
                         (pos == 0.0 && prevPos != 0.0) ||
-                        (pos >= 255.0 && !(prevPos >= 255.0)) ||
-                        (pos <= -255.0 && !(prevPos <= -255.0))
+                        (pos >= 1.0 && !(prevPos >= 1.0)) ||
+                        (pos <= -1.0 && !(prevPos <= -1.0))
         )
         {
             prevPos = pos;

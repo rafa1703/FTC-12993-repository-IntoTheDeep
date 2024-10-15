@@ -20,11 +20,11 @@ public class TrajectoryBuilder
         this.startPose = new Pose(); // we are not using the start pose for anything rn so i will make this constructor
     }
 
-    protected TrajectoryBuilder addSegment(TrajectorySegment segment){
+    public TrajectoryBuilder addSegment(TrajectorySegment segment){
         segments.add(segment);
         return this;
     }
-    protected TrajectoryBuilder addFinalPose(Pose pose)
+    public TrajectoryBuilder addFinalPose(Pose pose)
     {
         finalPose = pose;
         return this;

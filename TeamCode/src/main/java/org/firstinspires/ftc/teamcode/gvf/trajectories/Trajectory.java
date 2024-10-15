@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.gvf.trajectories;
 
 import androidx.annotation.NonNull;
 
+import com.qualcomm.robotcore.util.ElapsedTime;
+
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.opencv.core.Point;
@@ -22,6 +24,8 @@ public class Trajectory
     private ArrayList<SpatialMarker> spatialMarkers;
     private int prevU;
     private double prevT;
+    private double timer = 0;
+    private double HIGHER_DIMENSION_THRESHOLD;
 
     public Trajectory(TrajectorySegment segment)
     {
@@ -36,10 +40,15 @@ public class Trajectory
 
     public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers)
     {
+        this(segments, startPose, finalPose, spatialMarkers, 500.0); // 500ms is the default
+    }
+    public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers, double timerThreshold)
+    {
         this.segments = segments;
         this.startPose = startPose;
         this.finalPose = finalPose;
         this.spatialMarkers = spatialMarkers;
+        this.HIGHER_DIMENSION_THRESHOLD = timerThreshold;
         init();
     }
 
@@ -77,6 +86,14 @@ public class Trajectory
         {
             t = prevT;
             u = prevU;
+            if (timer == 0)
+            {
+                timer = System.currentTimeMillis();
+            }
+            if (Math.abs(System.currentTimeMillis() - timer) > HIGHER_DIMENSION_THRESHOLD)
+            {
+                isFinished = true;
+            }
         }
         else
         {
@@ -91,6 +108,7 @@ public class Trajectory
                 }
             }
         }
+        //TODO: add an exit condition so we dont calculate if we finished
         BezierCurve curve = segments.get(u).returnCurve();
         boolean lastCurve = u == numberOfSegments;
 
@@ -134,6 +152,14 @@ public class Trajectory
         {
             t = prevT;
             u = prevU;
+            if (timer == 0)
+            {
+                timer = System.currentTimeMillis();
+            }
+            if (Math.abs(System.currentTimeMillis() - timer) > HIGHER_DIMENSION_THRESHOLD)
+            {
+                isFinished = true;
+            }
         }
         else
         {
@@ -188,6 +214,14 @@ public class Trajectory
         {
             t = prevT;
             u = prevU;
+            if (timer == 0)
+            {
+                timer = System.currentTimeMillis();
+            }
+            if (Math.abs(System.currentTimeMillis() - timer) > HIGHER_DIMENSION_THRESHOLD)
+            {
+                isFinished = true;
+            }
         }
         else
         {

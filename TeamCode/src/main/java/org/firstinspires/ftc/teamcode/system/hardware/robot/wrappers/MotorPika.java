@@ -45,7 +45,6 @@ public class MotorPika
     public void resetEncoder()
     {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     // i don't see much use for the internal pid rn so i won't implement it
 }

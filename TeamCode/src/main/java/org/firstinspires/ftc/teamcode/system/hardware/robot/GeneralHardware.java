@@ -3,11 +3,9 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
@@ -19,7 +17,6 @@ import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
 import org.firstinspires.ftc.teamcode.system.accessory.imu.ImuThread;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
-
 
 
 public class GeneralHardware
@@ -34,7 +31,6 @@ public class GeneralHardware
 
     public ServoImplEx sch0, sch1, sch2, sch3, sch4, sch5;
     public ServoImplEx seh0, seh1, seh2, seh3, seh4, seh5;
-
     public ColorSensor cs0;
     public ImuThread imu;
 
@@ -47,22 +43,22 @@ public class GeneralHardware
     public static double voltage;
 
     public DigitalChannel dc0, dc1;
+    public ColorSensor csO;
 
     public enum Side
     {
         Red, Blue
     }
-    public double S, A; // s is the side multiplier and a is the angle multiplier
+    public final Side side;
+    public static double S, A; // s is the side multiplier and a is the angle multiplier
 
     LynxModule chub, ehub;
-    public final Side side;
 
     public GeneralHardware(HardwareMap hm, Side side)
     {
         this(hm, side, false);
     }
-
-    public GeneralHardware(HardwareMap hm, Side side, boolean reset)
+    public GeneralHardware(HardwareMap hm, Side side, boolean auto)
     {
         this.hardwareMap = hm;
         this.side = side;
@@ -70,14 +66,14 @@ public class GeneralHardware
         {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
             if (hub.isParent() &&
-                    LynxConstants.isEmbeddedSerialNumber(hub.getSerialNumber()))chub = hub;
+                    LynxConstants.isEmbeddedSerialNumber(hub.getSerialNumber())) chub = hub;
             else ehub = hub;
         }
 
-        mch0 = hm.get(DcMotorEx.class, "ch0");
+        mch0 = hm.get(DcMotorEx.class, "FR");
         mch1 = hm.get(DcMotorEx.class, "ch1");
         mch2 = hm.get(DcMotorEx.class, "ch2");
-        mch3 = hm.get(DcMotorEx.class, "ch3");
+        mch3 = hm.get(DcMotorEx.class, "BR");
 
         meh0 = hm.get(DcMotorEx.class, "eh0");
         meh1 = hm.get(DcMotorEx.class, "eh1");
@@ -94,26 +90,6 @@ public class GeneralHardware
         eeh2 = new Encoder(meh2);
         eeh3 = new Encoder(meh3);
 
-        if(reset)
-        {
-            mch0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            mch1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            mch2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            mch3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            meh0.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            meh1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            meh2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-            meh3.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
-            mch0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            mch1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            mch2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            mch3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            meh0.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            meh1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            meh2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-            meh3.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        }
 
         sch0 = hm.get(ServoImplEx.class, "sch0");
         sch1 = hm.get(ServoImplEx.class, "sch1");
@@ -134,35 +110,43 @@ public class GeneralHardware
         dc0 = hm.get(DigitalChannel.class, "dc0");
         dc1 = hm.get(DigitalChannel.class, "dc1");
 
+        if (auto)
+        {
+            // TODO: change here depending on odometry type
+            imu = new ImuThread(hm);
+            imu.initImuThread();
+            localizer = new Localizer(this);
+            //otosLocalizer = new LocalizerOTOS(this);
 
-        // TODO: change here depending on odometry type
-        imu = new ImuThread(hm);
-        imu.initImuThread();
-        localizer = new Localizer(this);
-        //otosLocalizer = new LocalizerOTOS(this);
+            MecanumDrive.headingMultiplier = 1;
+            drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);
 
-        MecanumDrive.headingMultiplier = 1;
-        drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);
-
-        S = side == Side.Red ? 1 : -1;
-        A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);
+            S = side == Side.Red ? 1 : -1;
+            A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);
+        }
     }
-
+    /** This has to be called when the opMode initializes, only auto **/
     public void startThreads(LinearOpMode opMode)
     {
         imu.startThread(opMode);
     }
-
+    // this is only for auto, i want to only have to call a single update method inside the opMode
     public void update()
     {
-        for (LynxModule hub : hardwareMap.getAll(LynxModule.class))
-        {
-            hub.clearBulkCache();
-        }
+        resetCacheHubs();
         voltage = voltageSupplier.get();
         //localizer.update();
         drive.update();
     }
+    public void resetCacheHubs()
+    {
+        chub.clearBulkCache();
+        ehub.clearBulkCache();
+    }
 
-
+    public double getVoltage()
+    {
+        voltage = voltageSupplier.get();
+        return voltage;
+    }
 }

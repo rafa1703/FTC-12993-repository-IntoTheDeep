@@ -19,6 +19,7 @@ public class OuttakeSubsystem
     GeneralHardware.Side side;
 
     public static final double
+        leftArmReadyPos = 0,
         leftArmTransferPos = 0,
         leftArmSamplePos = 1,
         leftArmSpecimenPos = 1,
@@ -26,6 +27,7 @@ public class OuttakeSubsystem
         leftArmIntakePos = 1;
 
     public static final double
+        rightArmReadyPos = 0,
         rightArmTransferPos = 0,
         rightArmSamplePos = 1,
         rightArmSpecimenPos = 1,
@@ -35,6 +37,7 @@ public class OuttakeSubsystem
         clawOpenPos = 1,
         clawClosePos = 0;
     public static final double
+        pivotReadyPos = 0,
         pivotTransferPos = 1,
         pivotSamplePos = 0.5,
         pivotSpecimenPos = 0,
@@ -55,6 +58,7 @@ public class OuttakeSubsystem
     }
     public enum OuttakeArmServoState
     {
+        READY,
         TRANSFER,
         SAMPLE,
         SPECIMEN,
@@ -63,6 +67,7 @@ public class OuttakeSubsystem
     }
     public enum OuttakePivotServoState
     {
+        READY,
         TRANSFER,
         SAMPLE,
         SPECIMEN,
@@ -98,7 +103,6 @@ public class OuttakeSubsystem
     {
         switch (state)
         {
-
             case OPEN:
                 clawS.setPosition(clawOpenPos);
                 break;
@@ -108,11 +112,14 @@ public class OuttakeSubsystem
         }
     }
 
-    public void ArmState(OuttakeArmServoState state)
+    public void armState(OuttakeArmServoState state)
     {
         switch (state)
         {
-
+            case READY:
+                leftArmS.setPosition(leftArmReadyPos);
+                rightArmS.setPosition(rightArmReadyPos);
+                break;
             case TRANSFER:
                 leftArmS.setPosition(leftArmTransferPos);
                 rightArmS.setPosition(rightArmTransferPos);
@@ -140,6 +147,9 @@ public class OuttakeSubsystem
     {
         switch (state)
         {
+            case READY:
+                pivotS.setPosition(pivotReadyPos);
+                break;
             case TRANSFER:
                 pivotS.setPosition(pivotTransferPos);
                 break;
@@ -177,7 +187,7 @@ public class OuttakeSubsystem
     }
     public boolean liftReached(int slideTarget)
     {
-        return Math.abs(slideTarget - liftTarget) > liftThreshold;
+        return Math.abs(slideTarget - liftTarget) < liftThreshold;
     }
 
 

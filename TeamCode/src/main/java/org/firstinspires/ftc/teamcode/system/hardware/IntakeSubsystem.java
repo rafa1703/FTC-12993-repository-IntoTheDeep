@@ -232,7 +232,7 @@ public class IntakeSubsystem
     }
     public boolean slideReached(int slideTarget)
     {
-        return Math.abs(slideTarget - slidePosition) > slideThreshold;
+        return Math.abs(slideTarget - slidePosition) < slideThreshold;
     }
 
 
