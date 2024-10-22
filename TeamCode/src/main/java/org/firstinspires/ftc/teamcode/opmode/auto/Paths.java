@@ -11,7 +11,7 @@ import org.opencv.core.Point;
 public class Paths
 {
     public Trajectory depositFarTrajectory, depositToSamplesFarTrajectory, samplesToHPFarTrajectory, hpToParkFarTrajectory;
-    public Trajectory depositCloseTrajectory, depositToSamplesCloseTrajectory, samplesToBucketTrajectory, bucketToParkFarTrajectory;
+    public Trajectory depositCloseTrajectory, depositToSamplesCloseTrajectory, samplesToBucketTrajectory, bucketToParkTrajectory;
     public Paths()
     {
         depositFarTrajectory = new TrajectoryBuilder(new Pose(9.5, -62.3 * S, Math.toRadians(90)))
@@ -84,7 +84,7 @@ public class Paths
                 ))
                 .addFinalPose(new Pose(54, -54 * S, Math.toRadians(180)))
                 .build();
-        bucketToParkFarTrajectory = new TrajectoryBuilder(samplesToHPFarTrajectory.getFinalPose())
+        bucketToParkTrajectory = new TrajectoryBuilder(samplesToHPFarTrajectory.getFinalPose())
                 .addSegment(new BezierCurveTrajectorySegment(
                         new Point[]{
                                 samplesToHPFarTrajectory.getFinalPose().toPoint(),

@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
@@ -14,17 +15,18 @@ public class OuttakeSubsystem
     DcMotorEx liftMotor;
     PID intakeSlidesPID = new PID(0.04, 0, 0.003, 0, 0);
 
-    int liftTarget, liftPosition;
+    public int liftTarget, liftPosition;
     double intakeSpeed = 1;
     GeneralHardware.Side side;
+    private final double TICKS_PER_BAREMOTOR = 28;
 
     public static final double
-        leftArmReadyPos = 0,
-        leftArmTransferPos = 0,
-        leftArmSamplePos = 1,
-        leftArmSpecimenPos = 1,
-        leftArmSpecimenScorePos = 1,
-        leftArmIntakePos = 1;
+        leftArmReadyPos = 1,
+        leftArmTransferPos = 1,
+        leftArmSamplePos = 0.5,
+        leftArmSpecimenPos = 0.7,
+        leftArmSpecimenScorePos = 0.65,
+        leftArmIntakePos = 0.7;
 
     public static final double
         rightArmReadyPos = 0,
@@ -34,14 +36,14 @@ public class OuttakeSubsystem
         rightArmSpecimenScorePos = 1,
         rightArmIntakePos = 1;
     public static final double
-        clawOpenPos = 1,
-        clawClosePos = 0;
+        clawOpenPos = 0,
+        clawClosePos = 0.1;
     public static final double
         pivotReadyPos = 0,
-        pivotTransferPos = 1,
-        pivotSamplePos = 0.5,
-        pivotSpecimenPos = 0,
-        pivotIntakePos = 0;
+        pivotTransferPos = 0.15,
+        pivotSamplePos = 0.3,
+        pivotSpecimenPos = 0.2,
+        pivotIntakePos = 0.28;
 
     public static final int
         liftHighBucketPos= 400,
@@ -50,7 +52,7 @@ public class OuttakeSubsystem
         liftLowBarPos = 100,
         liftSpecimenIntake = 150,
         liftBasePos = 0;
-    private final double liftThreshold = 8;
+    private final double liftThreshold = 10;
     public enum OuttakeClawServoState
     {
         OPEN,
@@ -78,18 +80,31 @@ public class OuttakeSubsystem
     {
         side = hardware.side;
 
-        pivotS = hardware.sch0;
-        clawS = hardware.sch1;
-        leftArmS = hardware.sch2;
-        rightArmS = hardware.sch3;
+        pivotS = hardware.pivotS;
+        clawS = hardware.clawS;
+        leftArmS = hardware.outtakeLeftArmS;
+        rightArmS = hardware.outtakeRightArmS;
 
-        liftMotor = hardware.mch0;
+        liftMotor = hardware.outtakeLiftM;
+        outtakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
+    }
+    public OuttakeSubsystem(HardwareMap hardware, GeneralHardware.Side side)
+    {
+        this.side = side;
+
+        pivotS = hardware.get(ServoImplEx.class, "pivotS");
+        clawS = hardware.get(ServoImplEx.class, "clawS");
+        leftArmS = hardware.get(ServoImplEx.class, "outtakeLeftArmS");
+        rightArmS = hardware.get(ServoImplEx.class, "outtakeRightArmS");
+
+        liftMotor = hardware.get(DcMotorEx.class, "OuttakeSlides");
         outtakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
 
     public void outtakeHardwareSetUp()
     {
         // if we need to reverse anything
+        liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
@@ -111,6 +126,10 @@ public class OuttakeSubsystem
                 break;
         }
     }
+    public void clawSetPos(double pos)
+    {
+        clawS.setPosition(pos);
+    }
 
     public void armState(OuttakeArmServoState state)
     {
@@ -118,29 +137,34 @@ public class OuttakeSubsystem
         {
             case READY:
                 leftArmS.setPosition(leftArmReadyPos);
-                rightArmS.setPosition(rightArmReadyPos);
+                //rightArmS.setPosition(rightArmReadyPos);
                 break;
             case TRANSFER:
                 leftArmS.setPosition(leftArmTransferPos);
-                rightArmS.setPosition(rightArmTransferPos);
+                //rightArmS.setPosition(rightArmTransferPos);
                 break;
             case SAMPLE:
                 leftArmS.setPosition(leftArmSamplePos);
-                rightArmS.setPosition(rightArmSamplePos);
+                //rightArmS.setPosition(rightArmSamplePos);
                 break;
             case SPECIMEN:
                 leftArmS.setPosition(leftArmSpecimenPos);
-                rightArmS.setPosition(rightArmSpecimenPos);
+                //rightArmS.setPosition(rightArmSpecimenPos);
                 break;
             case SPECIMEN_SCORE:
                 leftArmS.setPosition(leftArmSpecimenScorePos);
-                rightArmS.setPosition(rightArmSpecimenScorePos);
+                //rightArmS.setPosition(rightArmSpecimenScorePos);
                 break;
             case INTAKE:
                 leftArmS.setPosition(leftArmIntakePos);
-                rightArmS.setPosition(rightArmIntakePos);
+                //rightArmS.setPosition(rightArmIntakePos);
                 break;
         }
+    }
+    public void armSetPos(double leftArm, double rightArm)
+    {
+        leftArmS.setPosition(leftArm);
+       // rightArmS.setPosition(rightArm);
     }
 
     public void pivotState(OuttakePivotServoState state)
@@ -164,13 +188,23 @@ public class OuttakeSubsystem
                 break;
         }
     }
+    public void pivotSetPos(double pos)
+    {
+        pivotS.setPosition(pos);
+    }
 
     public void liftTo(int rotations)
     {
         liftTarget = rotations;
         liftMotor.setPower(intakeSlidesPID.update(rotations, liftPosition, 1));
     }
-    public void liftToInternalPID(int rotations)
+    public void liftToInternalPID(double inches)
+    {
+        liftTarget = (int) inchesToTicksSlidesMotor(inches);
+        liftMotor.setTargetPosition(liftTarget);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    public void liftToInternalPIDTicks(int rotations)
     {
         liftTarget = rotations;
         liftMotor.setTargetPosition(liftTarget);
@@ -188,6 +222,15 @@ public class OuttakeSubsystem
     public boolean liftReached(int slideTarget)
     {
         return Math.abs(slideTarget - liftTarget) < liftThreshold;
+    }
+
+    public double ticksToInchesSlidesMotor(double ticks){
+        return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
+    }
+
+    public double inchesToTicksSlidesMotor (double inches){
+        return ((TICKS_PER_BAREMOTOR * 5) / (0.89221 * 2 * Math.PI)) * inches; //ticks per inches
+        // ratio is 70/14 = 5
     }
 
 

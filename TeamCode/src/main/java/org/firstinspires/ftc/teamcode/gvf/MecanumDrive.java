@@ -31,7 +31,7 @@ public class MecanumDrive
 
     public static PIDController TRANSLATIONAL_PID = new PIDController(0.27, 0.00000, 0.00034);
     public static PIDController HEADING_PID = new PIDController(0.55, 0, 0.00034);
-    private DcMotor FL, FR, BL, BR; // TODO: hardware class > then this
+    private DcMotor FL, FR, BL, BR;
     private RunMode runMode;
     private Localizer localizer;
     public Vector powerVector = new Vector();
@@ -39,7 +39,7 @@ public class MecanumDrive
     public Vector targetVector = new Vector();
 
     private static double ks = 0.03;
-    public double lateralMultiplier = 1.08; //= 1.1194029851;
+    public double lateralMultiplier = 1.0;
     public static double headingMultiplier = 1;
     private double overallMultiplier = 1;
 
@@ -61,10 +61,10 @@ public class MecanumDrive
     }*/
     public MecanumDrive(GeneralHardware hardware, RunMode mode) // try to only use this
     {
-        this.FL = hardware.mch0;
-        this.FR = hardware.mch1;
-        this.BL = hardware.mch2;
-        this.BR = hardware.mch3;
+        this.FL = hardware.intakeM;
+        this.FR = hardware.FR;
+        this.BL = hardware.intakeSlidesM;
+        this.BR = hardware.BR;
         this.runMode = mode;
         this.voltageSupplier = hardware.voltageSupplier;
         localizer = hardware.localizer;
@@ -180,6 +180,7 @@ public class MecanumDrive
 
         } else if (runMode == RunMode.GVF)
         {
+            // kinda too lazy to implement this
         }
         else if(runMode == RunMode.Vector)
         {
@@ -229,16 +230,6 @@ public class MecanumDrive
     public RunMode getRunMode()
     {
         return runMode;
-    }
-
-    public Localizer getLocalizer()
-    {
-        return localizer;
-    }
-
-    public void setLocalizer(Localizer localizer)
-    {
-        this.localizer = localizer;
     }
 
     public Pose getTargetPose()

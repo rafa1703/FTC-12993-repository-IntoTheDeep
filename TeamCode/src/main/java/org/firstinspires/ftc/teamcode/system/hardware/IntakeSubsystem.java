@@ -3,6 +3,8 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
@@ -22,28 +24,28 @@ public class IntakeSubsystem
     GeneralHardware.Side side;
 
     public static final double
-        leftArmHighPos = 0,
-        leftArmLowPos = 1;
+        leftArmHighPos = 0.1,
+        leftArmLowPos = 0.175;
     public static final double
-        rightArmHighPos = 1,
-        rightArmLowPos = 0;
+        rightArmHighPos = 0.1,
+        rightArmLowPos = 0.175;
 
     public static final double
-        chuteUpPos = 1,
-        chuteDropPos = 0;
+        chuteUpPos = 0,
+        chuteDropPos = 0.5;
     public static final double
-        flapTransferPos = 1,
-        flapDownPos = 0.5,
-        flapReadyPos = 0;
+        flapTransferPos = 0.1,
+        flapDownPos = 1,
+        flapReadyPos = 1;
 
-    public static final int
-        slideTeleClose = 200,
-        slideTeleFar = 400,
+    public static final int // in inches
+        slideTeleClose = 19,
+        slideTeleFar = 27,
         slideTeleBase = 0,
-        slideTeleTransfer = -200;
+        slideTeleTransfer = -10;
     public final double
-        clipHoldPos = 1,
-        clipOpenPos = 0;
+        clipHoldPos = 0.7,
+        clipOpenPos = 1;
     private final double slideThreshold = 8;
     public enum IntakeSpinState
     {
@@ -81,19 +83,37 @@ public class IntakeSubsystem
     }
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
+    private final double TICKS_PER_BAREMOTOR = 28;
+
     public IntakeSubsystem(GeneralHardware hardware)
     {
         side = hardware.side;
 
-        chuteS = hardware.sch0;
-        flapS = hardware.sch1;
-        leftArmS = hardware.sch2;
-        rightArmS = hardware.sch3;
-        clipS = hardware.sch4;
+        chuteS = hardware.chuteS;
+        flapS = hardware.flapS;
+        leftArmS = hardware.intakeLeftArmS;
+        rightArmS = hardware.intakeRightArmS;
+        clipS = hardware.clipS;
         colorSensor = hardware.cs0; // no supplier as i want this to pool immediately and synchronously
 
-        intakeMotor = hardware.mch0;
-        intakeSlideMotor = hardware.mch1;
+        intakeMotor = hardware.intakeM;
+        intakeSlideMotor = hardware.intakeSlidesM;
+
+        intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
+    }
+    public IntakeSubsystem(HardwareMap hardware, GeneralHardware.Side side)
+    {
+        this.side = side;
+
+        chuteS = hardware.get(ServoImplEx.class, "chuteS");;
+        flapS = hardware.get(ServoImplEx.class, "flapS");;
+        leftArmS = hardware.get(ServoImplEx.class, "intakeLeftArmS");;
+        rightArmS = hardware.get(ServoImplEx.class, "intakeRightArmS");;
+        clipS = hardware.get(ServoImplEx.class, "clipS");;
+        colorSensor = hardware.get(ColorSensor.class, "colorSensor");; // no supplier as i want this to pool immediately and synchronously
+
+        intakeMotor = hardware.get(DcMotorEx.class, "Intake");
+        intakeSlideMotor = hardware.get(DcMotorEx.class, "IntakeSlides");
 
         intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
@@ -101,7 +121,10 @@ public class IntakeSubsystem
     public void intakeHardwareSetUp()
     {
         // if we need to reverse anything
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        intakeSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakeSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
@@ -147,7 +170,11 @@ public class IntakeSubsystem
                 break;
         }
     }
-
+    public void armSetPos(double rPos, double lPos)
+    {
+        rightArmS.setPosition(rPos);
+        leftArmS.setPosition(lPos);
+    }
     public void intakeChute(IntakeChuteServoState state)
     {
         switch (state)
@@ -159,6 +186,10 @@ public class IntakeSubsystem
                 chuteS.setPosition(chuteDropPos);
                 break;
         }
+    }
+    public void chuteSetPos(double pos)
+    {
+        chuteS.setPosition(pos);
     }
     public void intakeFlap(IntakeFlapServoState state)
     {
@@ -175,6 +206,10 @@ public class IntakeSubsystem
                 break;
         }
     }
+    public void flapSetPos(double pos)
+    {
+        flapS.setPosition(pos);
+    }
     public void intakeClip(IntakeClipServoState state)
     {
         switch (state)
@@ -187,17 +222,29 @@ public class IntakeSubsystem
                 break;
         }
     }
+    public void clipSetPos(double pos)
+    {
+        clipS.setPosition(pos);
+    }
 
     public void intakeSlideTo(int rotations)
     {
         slideTarget = rotations;
         intakeSlideMotor.setPower(intakeSlidesPID.update(rotations, slidePosition, 1));
     }
-    public void intakeSlideInternalPID(int rotations)
+    public void intakeSlideInternalPID(double inches)
     {
-        slideTarget = rotations;
+        slideTarget = (int) inchesToTicksSlidesMotor(inches);
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeSlideMotor.setPower(1);
+    }
+    public void intakeSlideInternalPIDTicks(int ticks)
+    {
+        slideTarget = ticks;
+        intakeSlideMotor.setTargetPosition(slideTarget);
+        intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeSlideMotor.setPower(1);
     }
     public void intakeSlideInternalPID(int rotations, double maxPower)
     {
@@ -235,5 +282,13 @@ public class IntakeSubsystem
         return Math.abs(slideTarget - slidePosition) < slideThreshold;
     }
 
+    public double ticksToInchesSlidesMotor(double ticks){
+        return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
+    }
+
+    public double inchesToTicksSlidesMotor (double inches){
+        return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
+        // ratio is 70/12 = 5
+    }
 
 }

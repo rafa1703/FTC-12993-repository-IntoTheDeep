@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
@@ -58,10 +59,18 @@ public class DriveBaseSubsystem
     Telemetry telemetry;
     public DriveBaseSubsystem(GeneralHardware hardware)
     {
-        FL = hardware.mch0;
-        FR = hardware.mch1;
-        BL = hardware.mch0;
-        BR = hardware.mch1;
+        FL = hardware.FL;
+        FR = hardware.FR;
+        BL = hardware.BL;
+        BR = hardware.BR;
+        drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
+    }
+    public DriveBaseSubsystem(HardwareMap hardware)
+    {
+        FL = hardware.get(DcMotorEx.class, "FL");
+        FR = hardware.get(DcMotorEx.class, "FR");
+        BL = hardware.get(DcMotorEx.class, "BL");
+        BR = hardware.get(DcMotorEx.class, "BR");
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
 
@@ -85,9 +94,9 @@ public class DriveBaseSubsystem
 
         //reverse correct motors
         //FR.setDirection(DcMotorSimple.Direction.REVERSE);
-        //FL.setDirection(DcMotorSimple.Direction.REVERSE);
-        BL.setDirection(DcMotorSimple.Direction.REVERSE);
-        //BR.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
+        //BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        BR.setDirection(DcMotorSimple.Direction.REVERSE);
     }
     public void setUpFloat()
     {

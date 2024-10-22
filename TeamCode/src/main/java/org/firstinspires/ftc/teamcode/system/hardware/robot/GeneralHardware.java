@@ -23,14 +23,14 @@ public class GeneralHardware
 {
     public HardwareMap hardwareMap;
 
-    public DcMotorEx mch0, mch1, mch2, mch3;
-    public DcMotorEx meh0, meh1, meh2, meh3;
+    public DcMotorEx intakeM, FR, intakeSlidesM, BR;
+    public DcMotorEx FL, BL, outtakeLiftM, meh3;
 
     public Encoder ech0, ech1, ech2, ech3;
     public Encoder eeh0, eeh1, eeh2, eeh3;
 
-    public ServoImplEx sch0, sch1, sch2, sch3, sch4, sch5;
-    public ServoImplEx seh0, seh1, seh2, seh3, seh4, seh5;
+    public ServoImplEx chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
+    public ServoImplEx clawS, pivotS, flapS, seh3, seh4, seh5;
     public ColorSensor cs0;
     public ImuThread imu;
 
@@ -70,45 +70,47 @@ public class GeneralHardware
             else ehub = hub;
         }
 
-        mch0 = hm.get(DcMotorEx.class, "FR");
-        mch1 = hm.get(DcMotorEx.class, "ch1");
-        mch2 = hm.get(DcMotorEx.class, "ch2");
-        mch3 = hm.get(DcMotorEx.class, "BR");
+        intakeM = hm.get(DcMotorEx.class, "Intake");
+        FR = hm.get(DcMotorEx.class, "FR");
+        intakeSlidesM = hm.get(DcMotorEx.class, "IntakeSlides");
+        BR = hm.get(DcMotorEx.class, "BR");
 
-        meh0 = hm.get(DcMotorEx.class, "eh0");
-        meh1 = hm.get(DcMotorEx.class, "eh1");
-        meh2 = hm.get(DcMotorEx.class, "eh2");
-        meh3 = hm.get(DcMotorEx.class, "eh3");
+        FL = hm.get(DcMotorEx.class, "FL");
+        BL = hm.get(DcMotorEx.class, "BL");
+        outtakeLiftM = hm.get(DcMotorEx.class, "OuttakeSlides");
+        //meh3 = hm.get(DcMotorEx.class, "eh3");
 
-        ech0 = new Encoder(mch0);
-        ech1 = new Encoder(mch1);
-        ech2 = new Encoder(mch2);
-        ech3 = new Encoder(mch3);
+        ech0 = new Encoder(intakeM);
+        ech1 = new Encoder(FR);
+        ech2 = new Encoder(intakeSlidesM);
+        ech3 = new Encoder(BR);
 
-        eeh0 = new Encoder(meh0);
-        eeh1 = new Encoder(meh1);
-        eeh2 = new Encoder(meh2);
-        eeh3 = new Encoder(meh3);
+        eeh0 = new Encoder(FL);
+        eeh1 = new Encoder(BL);
+        eeh2 = new Encoder(outtakeLiftM);
+        //eeh3 = new Encoder(meh3);
 
 
-        sch0 = hm.get(ServoImplEx.class, "sch0");
-        sch1 = hm.get(ServoImplEx.class, "sch1");
-        sch2 = hm.get(ServoImplEx.class, "sch2");
-        sch3 = hm.get(ServoImplEx.class, "sch3");
-        sch4 = hm.get(ServoImplEx.class, "sch4");
-        sch5 = hm.get(ServoImplEx.class, "sch5");
+        chuteS = hm.get(ServoImplEx.class, "chuteS");
+        clipS = hm.get(ServoImplEx.class, "clipS");
+        intakeLeftArmS = hm.get(ServoImplEx.class, "intakeLeftArmS");
+        intakeRightArmS = hm.get(ServoImplEx.class, "intakeRightArmS");
+        outtakeLeftArmS = hm.get(ServoImplEx.class, "outtakeLeftArmS");
+        outtakeRightArmS = hm.get(ServoImplEx.class, "outtakeRightArmS");
 
-        seh0 = hm.get(ServoImplEx.class, "seh0");
-        seh1 = hm.get(ServoImplEx.class, "seh1");
-        seh2 = hm.get(ServoImplEx.class, "seh2");
-        seh3 = hm.get(ServoImplEx.class, "seh3");
-        seh4 = hm.get(ServoImplEx.class, "seh4");
-        seh5 = hm.get(ServoImplEx.class, "seh5");
+        clawS = hm.get(ServoImplEx.class, "clawS");
+        pivotS = hm.get(ServoImplEx.class, "pivotS");
+        flapS = hm.get(ServoImplEx.class, "flapS");
+        //seh3 = hm.get(ServoImplEx.class, "seh3");
+        //seh4 = hm.get(ServoImplEx.class, "seh4");
+        //seh5 = hm.get(ServoImplEx.class, "seh5");
+
+        cs0 = hm.get(ColorSensor.class, "colorSensor");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltageSupplier = new TimedSupplier<>(voltageSensor::getVoltage, 40);
-        dc0 = hm.get(DigitalChannel.class, "dc0");
-        dc1 = hm.get(DigitalChannel.class, "dc1");
+        //dc0 = hm.get(DigitalChannel.class, "dc0");
+        //dc1 = hm.get(DigitalChannel.class, "dc1");
 
         if (auto)
         {
