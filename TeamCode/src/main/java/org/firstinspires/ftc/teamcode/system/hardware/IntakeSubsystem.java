@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -9,30 +10,32 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
-
+@Config
 public class IntakeSubsystem
 {
     ServoImplEx chuteS, flapS, leftArmS, rightArmS, clipS;
 
     DcMotorEx intakeMotor, intakeSlideMotor;
     ColorSensor colorSensor;
-    PID intakeSlidesPID = new PID(0.04, 0, 0.003, 0, 0);
-
+    public static double kP = 0.04, kI = 0, kD = 0;
+    PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
-    double colorValue;
+    long colorValue;
     double intakeSpeed = 1;
     GeneralHardware.Side side;
 
     public static final double
-        leftArmHighPos = 0.1,
-        leftArmLowPos = 0.175;
+        leftArmHighPos = 0.05,
+        leftArmDropHighPos = 0,
+        leftArmLowPos = 0.23;
     public static final double
         rightArmHighPos = 0.1,
-        rightArmLowPos = 0.175;
+        rightArmDropHighPos = 0,
+        rightArmLowPos = 0.2;
 
     public static final double
-        chuteUpPos = 0,
-        chuteDropPos = 0.5;
+        chuteUpPos = 0.05,
+        chuteDropPos = 0.6;
     public static final double
         flapTransferPos = 0.1,
         flapDownPos = 1,
@@ -57,6 +60,7 @@ public class IntakeSubsystem
     public enum IntakeArmServoState
     {
         HIGH,
+        DROP_HIGH,
         LOW
     }
     public enum IntakeChuteServoState
@@ -164,6 +168,10 @@ public class IntakeSubsystem
                 leftArmS.setPosition(leftArmHighPos);
                 rightArmS.setPosition(rightArmHighPos);
                 break;
+            case DROP_HIGH:
+                leftArmS.setPosition(leftArmDropHighPos);
+                rightArmS.setPosition(rightArmDropHighPos);
+                break;
             case LOW:
                 leftArmS.setPosition(leftArmLowPos);
                 rightArmS.setPosition(rightArmLowPos);
@@ -265,8 +273,8 @@ public class IntakeSubsystem
     public boolean colorLogic()
     {
         if (intakeFilter == IntakeFilter.OFF) return true;
-        if (colorValue > 5000) return (side == GeneralHardware.Side.Red); // assuming 5000 is red lower threshold
-        else if (colorValue < 3000) return (side == GeneralHardware.Side.Blue);  // assuming 3000 is yellow lower threshold
+        if (colorValue > 2000) return (side == GeneralHardware.Side.Red); //
+        else if (colorValue < 1000) return (side == GeneralHardware.Side.Blue);
         else return intakeFilter != IntakeFilter.SIDE_SPECIFIC;
     }
     public double getColorValue()

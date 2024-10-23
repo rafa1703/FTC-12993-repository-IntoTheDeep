@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.ServoImplEx;
 public class ArmServoTest extends LinearOpMode
 {
     ServoImplEx clawS, pivotS, leftArmS, rightArmS;
-    public static double clawPos = 0, pivotPos = 0.27, leftArmPos = 0, rightArmPos = 0;
+    public static double clawPos = 0, pivotPos = 0.55, leftArmPos = 0.9, rightArmPos = 0;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -26,7 +26,7 @@ public class ArmServoTest extends LinearOpMode
         {
             clawS.setPosition(clawPos);
             pivotS.setPosition(pivotPos);
-            //leftArmS.setPosition(leftArmPos);
+            leftArmS.setPosition(leftArmPos);
             //rightArmS.setPosition(rightArmPos);
         }
     }

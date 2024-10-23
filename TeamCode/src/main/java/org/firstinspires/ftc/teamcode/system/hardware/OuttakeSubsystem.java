@@ -21,12 +21,15 @@ public class OuttakeSubsystem
     private final double TICKS_PER_BAREMOTOR = 28;
 
     public static final double
-        leftArmReadyPos = 1,
-        leftArmTransferPos = 1,
-        leftArmSamplePos = 0.5,
+        leftArmSlidesOutPos = 0.9,
+        leftArmReadyPos = 0.9,
+        leftArmTransferPos = 0.95,
+        leftArmTransferFinishPos = 0.8,
+        leftArmSamplePos = 0.45,
         leftArmSpecimenPos = 0.7,
         leftArmSpecimenScorePos = 0.65,
         leftArmIntakePos = 0.7;
+
 
     public static final double
         rightArmReadyPos = 0,
@@ -36,22 +39,24 @@ public class OuttakeSubsystem
         rightArmSpecimenScorePos = 1,
         rightArmIntakePos = 1;
     public static final double
-        clawOpenPos = 0,
-        clawClosePos = 0.1;
+        clawOpenPos = 0.57,
+        clawClosePos = 0.15;
     public static final double
-        pivotReadyPos = 0,
-        pivotTransferPos = 0.15,
-        pivotSamplePos = 0.3,
+        pivotReadyPos = 0.5, // makes this smaller
+        pivotTransferPos = 0.345,
+        pivotTransferFinishPos = 0.4,
+        pivotSamplePos = 0.5,
         pivotSpecimenPos = 0.2,
         pivotIntakePos = 0.28;
 
     public static final int
-        liftHighBucketPos= 400,
-        liftLowBucketPos = 300,
-        liftHighBarPos = 200,
-        liftLowBarPos = 100,
-        liftSpecimenIntake = 150,
-        liftBasePos = 0;
+        liftMaxExtension = 27, // 680 ticks
+        liftHighBucketPos= 20,
+        liftLowBucketPos = 10,
+        liftHighBarPos = 7,
+        liftLowBarPos = 4,
+        liftSpecimenIntake = 0,
+        liftBasePos = 0; // maybe make this -5 because of shit intake clip
     private final double liftThreshold = 10;
     public enum OuttakeClawServoState
     {
@@ -62,6 +67,7 @@ public class OuttakeSubsystem
     {
         READY,
         TRANSFER,
+        TRANSFER_FINISH,
         SAMPLE,
         SPECIMEN,
         SPECIMEN_SCORE,
@@ -71,6 +77,7 @@ public class OuttakeSubsystem
     {
         READY,
         TRANSFER,
+        TRANSFER_FINISH,
         SAMPLE,
         SPECIMEN,
         INTAKE
@@ -143,6 +150,9 @@ public class OuttakeSubsystem
                 leftArmS.setPosition(leftArmTransferPos);
                 //rightArmS.setPosition(rightArmTransferPos);
                 break;
+            case TRANSFER_FINISH:
+                leftArmS.setPosition(leftArmTransferFinishPos);
+                break;
             case SAMPLE:
                 leftArmS.setPosition(leftArmSamplePos);
                 //rightArmS.setPosition(rightArmSamplePos);
@@ -177,6 +187,9 @@ public class OuttakeSubsystem
             case TRANSFER:
                 pivotS.setPosition(pivotTransferPos);
                 break;
+            case TRANSFER_FINISH:
+                pivotS.setPosition(pivotTransferFinishPos);
+                break;
             case SAMPLE:
                 pivotS.setPosition(pivotSamplePos);
                 break;
@@ -203,12 +216,21 @@ public class OuttakeSubsystem
         liftTarget = (int) inchesToTicksSlidesMotor(inches);
         liftMotor.setTargetPosition(liftTarget);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftMotor.setPower(1);
+    }
+    public void liftToInternalPID(double inches, double pow)
+    {
+        liftTarget = (int) inchesToTicksSlidesMotor(inches);
+        liftMotor.setTargetPosition(liftTarget);
+        liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftMotor.setPower(pow);
     }
     public void liftToInternalPIDTicks(int rotations)
     {
         liftTarget = rotations;
         liftMotor.setTargetPosition(liftTarget);
         liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        liftMotor.setPower(1);
     }
     public void liftMotorEncoderReset()
     {
@@ -231,6 +253,7 @@ public class OuttakeSubsystem
     public double inchesToTicksSlidesMotor (double inches){
         return ((TICKS_PER_BAREMOTOR * 5) / (0.89221 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/14 = 5
+        // 140 / (1.78442 * 3.14159) = 24.9736170335
     }
 
 
