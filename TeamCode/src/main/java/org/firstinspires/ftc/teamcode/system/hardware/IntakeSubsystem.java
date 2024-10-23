@@ -25,7 +25,7 @@ public class IntakeSubsystem
     GeneralHardware.Side side;
 
     public static final double
-        leftArmHighPos = 0.05,
+        leftArmHighPos = 0.1,
         leftArmDropHighPos = 0,
         leftArmLowPos = 0.23;
     public static final double

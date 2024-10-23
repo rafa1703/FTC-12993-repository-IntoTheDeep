@@ -22,8 +22,8 @@ public class ClawTest extends LinearOpMode
 
         while (opModeIsActive())
         {
-           if (gamepad1.a) outtakeSubsystem.clawSetPos(0.6);
-           if (gamepad1.y) outtakeSubsystem.clawSetPos(0);
+           if (gamepad1.a) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+           if (gamepad1.y) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
         }
     }
 }

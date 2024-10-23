@@ -21,9 +21,9 @@ public class OuttakeSubsystem
     private final double TICKS_PER_BAREMOTOR = 28;
 
     public static final double
-        leftArmSlidesOutPos = 0.9,
+        leftArmStraightPos = 0.55,
         leftArmReadyPos = 0.9,
-        leftArmTransferPos = 0.95,
+        leftArmTransferPos = 0.93,
         leftArmTransferFinishPos = 0.8,
         leftArmSamplePos = 0.45,
         leftArmSpecimenPos = 0.7,
@@ -42,8 +42,8 @@ public class OuttakeSubsystem
         clawOpenPos = 0.57,
         clawClosePos = 0.15;
     public static final double
-        pivotReadyPos = 0.5, // makes this smaller
-        pivotTransferPos = 0.345,
+        pivotReadyPos = 0.5,
+        pivotTransferPos = 0.43,
         pivotTransferFinishPos = 0.4,
         pivotSamplePos = 0.5,
         pivotSpecimenPos = 0.2,
@@ -66,6 +66,7 @@ public class OuttakeSubsystem
     public enum OuttakeArmServoState
     {
         READY,
+        STRAIGHT,
         TRANSFER,
         TRANSFER_FINISH,
         SAMPLE,
@@ -145,6 +146,9 @@ public class OuttakeSubsystem
             case READY:
                 leftArmS.setPosition(leftArmReadyPos);
                 //rightArmS.setPosition(rightArmReadyPos);
+                break;
+            case STRAIGHT:
+                leftArmS.setPosition(leftArmStraightPos);
                 break;
             case TRANSFER:
                 leftArmS.setPosition(leftArmTransferPos);

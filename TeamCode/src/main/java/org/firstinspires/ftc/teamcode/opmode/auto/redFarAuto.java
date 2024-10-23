@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -128,3 +129,4 @@ public class redFarAuto extends LinearOpMode
         sequenceTimer = globalTimer;
     }
 }
+*/

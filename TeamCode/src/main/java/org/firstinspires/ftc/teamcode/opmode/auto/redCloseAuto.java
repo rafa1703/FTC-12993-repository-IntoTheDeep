@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -129,3 +130,4 @@ public class redCloseAuto extends LinearOpMode
         sequenceTimer = globalTimer;
     }
 }
+*/

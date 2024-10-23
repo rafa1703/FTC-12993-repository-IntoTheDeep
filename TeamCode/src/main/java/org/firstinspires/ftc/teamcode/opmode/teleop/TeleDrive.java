@@ -75,6 +75,7 @@ public class TeleDrive extends LinearOpMode
             prevIntakeFilterState = intakeSubsystem.intakeFilter;
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
             outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
         }
         // hubs are inside hardware
         waitForStart();
@@ -120,7 +121,7 @@ public class TeleDrive extends LinearOpMode
                     }
                 }
                 intakeClipHoldLogic(slideTeleBase, 8);
-                intakeArmHeight();
+                //intakeArmHeight();
                 if (gamepad1.b || gamepad2.b) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                 break;
@@ -235,7 +236,7 @@ public class TeleDrive extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(300) && intakeSubsystem.slideReached(slideTeleBase))
+                if (delay(600) && intakeSubsystem.slideReached(slideTeleBase))
                 {
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
@@ -244,22 +245,30 @@ public class TeleDrive extends LinearOpMode
                 {
                     // this will hardstop the flap in the sample so the extendo can go back
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                    intakeClipHoldLogic(slideTeleTransfer, -1); // this controls the intake slides and the clip
+                    intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
                 }
                 if (intakeSubsystem.slideReached(slideTeleBase) && delay(100))
                 {
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                     if (delay(150))
                     {
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                        //intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                     }
-                    if (delay(230)) outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                    if (delay(230))
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                    }
+                    if (delay(400))
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
+                    }
                 }
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
-                if (delay(420) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
+                if (delay(530) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
                 {
                     isBucket = true;
                     isLow = false;
@@ -269,16 +278,12 @@ public class TeleDrive extends LinearOpMode
                 }
                 intakeClipHoldLogic(slideTeleTransfer, 5); // this controls the intake slides and the clip
                 outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
-                if (delay(50) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
+                if (delay(500) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    if (delay(100)) intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
-                    if (delay(200))
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
-                        if (delay(310)) // we wait a bit to to pivot
+                    if (delay(350)) intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                    if (delay(360)) // we wait a bit to to pivot
                             outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
-                    }
                 }
                 break;
             case SPECIMEN_INTAKE:
@@ -323,25 +328,27 @@ public class TeleDrive extends LinearOpMode
                     state = isBucket ? OuttakeState.SAMPLE_DROP : OuttakeState.SPECIMEN_DROP;
                     resetTimer();
                 }
+                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 outtakeTypeLogic(gamepad2.left_trigger > 0.2 || gamepad1.left_trigger > 0.2,
                         gamepad2.right_trigger > 0.2 || gamepad1.right_trigger > 0.2);
                 liftHeightLogic(gamepad2.a, gamepad2.x);
-                if (isBucket && !delay(200)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
-                if (isBucket && delay(260)) outtakeSubsystem.pivotSetPos(0.23);
-                if (delay(100000))
+                if (isBucket && delay(130) && !delay(200)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
+                if (delay(10000))
                 {
                     outtakeLiftPresets(isBucket, isLow); // this actually runs the lift
-                    armPositionLogic(isBucket);
+                    if(outtakeLiftHasReachedPresets()) armPositionLogic(isBucket);
+                    else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT); // no fancy cog math if arm is straight up
                 }
+                break;
             case SAMPLE_DROP: // this state is the automated sample deposit, no driver controls here
-                if (delay(400))
+                if (delay(400) && false)
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
                 }
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 break;
-            case SPECIMEN_DROP: // this state is the automated sample deposit, no driver controls here
+            case SPECIMEN_DROP: // this state is the automated specimen deposit, no driver controls here
                 if (delay(300))
                 {
                     state = OuttakeState.RETURN;
@@ -353,7 +360,7 @@ public class TeleDrive extends LinearOpMode
                 if (delay( 200)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 break;
             case RETURN:
-                if (outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos) && delay(300))
+                if (outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos) && delay(500))
                 {
                     intakeSlideBtn.OffsetTargetPosition = 0;
                     state = OuttakeState.READY;
@@ -370,6 +377,9 @@ public class TeleDrive extends LinearOpMode
                     outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
                 }
+                if (delay(400))
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 if (delay(200))
                 {
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
@@ -440,6 +450,20 @@ public class TeleDrive extends LinearOpMode
         {
             if (isLow) outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBarPos);
             else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
+        }
+    }
+    public boolean outtakeLiftHasReachedPresets()
+    {
+        if (isBucket)
+        {
+            if (isLow) return outtakeSubsystem.liftReached(OuttakeSubsystem.liftLowBucketPos);
+            else return outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBucketPos);
+
+        }
+        else
+        {
+            if (isLow) return outtakeSubsystem.liftReached(OuttakeSubsystem.liftLowBarPos);
+            else return outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBarPos);
         }
     }
     public void outtakeLiftPresets(boolean isSample, boolean isLow, int offSet)
