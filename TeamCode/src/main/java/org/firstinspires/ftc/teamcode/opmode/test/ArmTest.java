@@ -26,7 +26,7 @@ public class ArmTest extends LinearOpMode
         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
         while (opModeIsActive())
         {
-            drive.Drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+           /* drive.Drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
             outtakeSubsystem.outtakeReads();
             if (gamepad1.dpad_down) outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
             if (gamepad1.dpad_up) outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
@@ -39,7 +39,23 @@ public class ArmTest extends LinearOpMode
 
             if (gamepad1.right_bumper) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             if (gamepad1.left_bumper) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);*/
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+        }
+    }
+
+    public boolean outtakeLiftHasReachedPresets(boolean isBucket, boolean isLow)
+    {
+        if (isBucket)
+        {
+            if (isLow) return outtakeSubsystem.liftReached(OuttakeSubsystem.liftLowBucketPos);
+            else return outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBucketPos);
+
+        }
+        else
+        {
+            if (isLow) return outtakeSubsystem.liftReached(OuttakeSubsystem.liftLowBarPos);
+            else return outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBarPos);
         }
     }
 }

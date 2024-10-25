@@ -25,7 +25,7 @@ public class OuttakeSubsystem
         leftArmReadyPos = 0.9,
         leftArmTransferPos = 0.93,
         leftArmTransferFinishPos = 0.8,
-        leftArmSamplePos = 0.45,
+        leftArmSamplePos = 0.4,
         leftArmSpecimenPos = 0.7,
         leftArmSpecimenScorePos = 0.65,
         leftArmIntakePos = 0.7;
@@ -57,7 +57,7 @@ public class OuttakeSubsystem
         liftLowBarPos = 4,
         liftSpecimenIntake = 0,
         liftBasePos = 0; // maybe make this -5 because of shit intake clip
-    private final double liftThreshold = 10;
+    private final double liftThreshold = 17;
     public enum OuttakeClawServoState
     {
         OPEN,

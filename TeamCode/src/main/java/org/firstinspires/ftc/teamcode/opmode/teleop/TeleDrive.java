@@ -250,11 +250,6 @@ public class TeleDrive extends LinearOpMode
                 if (intakeSubsystem.slideReached(slideTeleBase) && delay(100))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                    //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
-                    if (delay(150))
-                    {
-                        //intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                    }
                     if (delay(230))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
@@ -268,7 +263,7 @@ public class TeleDrive extends LinearOpMode
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
-                if (delay(530) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
+                if (delay(600))
                 {
                     isBucket = true;
                     isLow = false;
@@ -277,13 +272,23 @@ public class TeleDrive extends LinearOpMode
                     resetTimer();
                 }
                 intakeClipHoldLogic(slideTeleTransfer, 5); // this controls the intake slides and the clip
-                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
-                if (delay(500) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
+                //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
+                if (delay(250) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    if (delay(350)) intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
-                    if (delay(360)) // we wait a bit to to pivot
-                            outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
+                    if (delay(350))
+                    {
+                        intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                    }
+                    if (delay(400))
+                    {// we wait a bit to to pivot
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+                    }
+                    if (delay(440))
+                    {
+                        outtakeSubsystem.liftToInternalPID(5);
+                        if (delay(500)) outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
+                    }
                 }
                 break;
             case SPECIMEN_INTAKE:
@@ -323,25 +328,25 @@ public class TeleDrive extends LinearOpMode
                         gamepad2.right_trigger > 0.2 || gamepad1.right_trigger > 0.2);
                 break;
             case DEPOSIT: // this will actually start the deposit, so lift and arm presets
-                if (gamepad1.right_bumper && delay(100000) && false)
+                if (gamepad1.right_bumper && delay(400))
                 {
                     state = isBucket ? OuttakeState.SAMPLE_DROP : OuttakeState.SPECIMEN_DROP;
                     resetTimer();
                 }
-                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+
                 outtakeTypeLogic(gamepad2.left_trigger > 0.2 || gamepad1.left_trigger > 0.2,
                         gamepad2.right_trigger > 0.2 || gamepad1.right_trigger > 0.2);
                 liftHeightLogic(gamepad2.a, gamepad2.x);
                 if (isBucket && delay(130) && !delay(200)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
-                if (delay(10000))
+                if (delay(300))
                 {
+                    if (delay(1000)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+                    //else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
                     outtakeLiftPresets(isBucket, isLow); // this actually runs the lift
-                    if(outtakeLiftHasReachedPresets()) armPositionLogic(isBucket);
-                    else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT); // no fancy cog math if arm is straight up
                 }
                 break;
             case SAMPLE_DROP: // this state is the automated sample deposit, no driver controls here
-                if (delay(400) && false)
+                if (delay(200) && gamepad1.right_bumper)
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
