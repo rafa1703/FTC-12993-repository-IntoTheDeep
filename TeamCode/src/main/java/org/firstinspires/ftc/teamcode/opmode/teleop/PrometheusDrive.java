@@ -16,8 +16,8 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@TeleOp(name = "PrometheusDrive", group = "Drive")
-public class TeleDrive extends LinearOpMode
+@TeleOp(name = "PrometheusDrive", group = "ADrive")
+public class PrometheusDrive extends LinearOpMode
 {
     ElapsedTime GlobalTimer;
     double globalTimer, sequenceTimer, intakeClipTimer;
@@ -37,6 +37,7 @@ public class TeleDrive extends LinearOpMode
         TRANSFER_START,
         TRANSFER_END,
         SPECIMEN_INTAKE,
+        AFTER_SPECIMEN_INTAKE,
         OUTTAKE_ADJUST,
         DEPOSIT,
         SAMPLE_DROP,
@@ -83,10 +84,14 @@ public class TeleDrive extends LinearOpMode
         {
             hardware.resetCacheHubs();
             globalTimer = GlobalTimer.milliseconds();
-            intakeSubsystem.intakeReads(state == OuttakeState.INTAKE || state == OuttakeState.INTAKE_DROP || state == OuttakeState.INTAKE_EXTENDO);
+
             driveBase.Drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+
+            intakeSubsystem.intakeReads(state == OuttakeState.INTAKE || state == OuttakeState.INTAKE_DROP || state == OuttakeState.INTAKE_EXTENDO);
             outtakeSubsystem.outtakeReads();
             outtakeSequence();
+
+
             telemetry.addData("State", state);
             telemetry.addData("FilterState", intakeSubsystem.intakeFilter);
             telemetry.addData("Color value", intakeSubsystem.getColorValue());
@@ -130,18 +135,18 @@ public class TeleDrive extends LinearOpMode
                 intakeSlideBtn.downToggle(gamepad1.right_bumper, 1);
                 if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleClose;
                 if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
+                if (delay(200) && gamepad1.share)
+                {
+                    state = OuttakeState.INTAKE_EXTENDO_DROP;
+                    resetTimer();
+                }
                 intakeArmHeight();
                 colorValue = intakeSubsystem.getColorValue();
-                if (delay(140))
+                if (delay(170))
                 {
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
-                    if (gamepad1.share)
-                    {
-                        state = OuttakeState.INTAKE_EXTENDO_DROP;
-                        resetTimer();
-                    }
                     if (delay(200) && colorValue > 1000 || (gamepad1.right_trigger > 0.2 || gamepad2.right_trigger > 0.2) ||
                             (intakeSubsystem.intakeFilter == IntakeSubsystem.IntakeFilter.OFF && (gamepad2.right_bumper || gamepad1.right_bumper)))
                     {
@@ -260,6 +265,8 @@ public class TeleDrive extends LinearOpMode
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                     }
                 }
+                else if (delay(40)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
+                // naming makes no sense but this makes sure the arm i high when the slides come back
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
@@ -294,27 +301,45 @@ public class TeleDrive extends LinearOpMode
             case SPECIMEN_INTAKE:
                 if (gamepad1.right_bumper || gamepad2.right_bumper)
                 {
+                    state = OuttakeState.AFTER_SPECIMEN_INTAKE;
+                    resetTimer();
+                }
+                if (delay(40))
+                {
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntake);
+                    if (delay(80))
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                    if (delay(140))
+                    {
+                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.INTAKE);
+                    }
+                    if (delay(230))
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH); // this is so we can get closer to the wall
+                    }
+                }
+                if (delay(250) && (gamepad2.left_bumper || gamepad1.left_bumper))
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                }
+                if (gamepad2.left_trigger > 0.4 || gamepad1.left_trigger > 0.4) // idk if d1 should have this tbh
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                }
+                break;
+            case AFTER_SPECIMEN_INTAKE: // AUTO state no driver controlers here
+                if (delay(200))
+                {
                     isBucket = false;
                     isLow = false;
                     state = OuttakeState.DEPOSIT;
                     resetTimer();
                 }
-                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntake);
+                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntake + 2); // so like little bump to
                 if (delay(40))
                 {
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH); // this is so we can get closer to the wall
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                    outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.INTAKE);
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_SCORE);
                 }
-                if (delay(50) && (gamepad2.left_bumper || gamepad1.left_bumper))
-                {
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                }
-                if (gamepad2.left_trigger > 0.4 && gamepad1.left_trigger > 0.85) // idk if d1 should have this tbh
-                {
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                }
-                liftHeightLogic(gamepad2.a, gamepad2.x);
                 break;
             case OUTTAKE_ADJUST: // this allows for the drivers to pre adjust heights
                 if((gamepad1.right_bumper || gamepad2.right_bumper) && delay(300))
@@ -333,16 +358,24 @@ public class TeleDrive extends LinearOpMode
                     state = isBucket ? OuttakeState.SAMPLE_DROP : OuttakeState.SPECIMEN_DROP;
                     resetTimer();
                 }
-
+                liftHeightLogic(gamepad2.a, gamepad2.x);
                 outtakeTypeLogic(gamepad2.left_trigger > 0.2 || gamepad1.left_trigger > 0.2,
                         gamepad2.right_trigger > 0.2 || gamepad1.right_trigger > 0.2);
-                liftHeightLogic(gamepad2.a, gamepad2.x);
-                if (isBucket && delay(130) && !delay(200)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
-                if (delay(300))
+
+                if (delay(40))
                 {
-                    if (delay(1000)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
-                    //else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
+                    liftHeightLogic(gamepad2.a, gamepad2.x);
+                }
+                if (delay(90))
+                {
                     outtakeLiftPresets(isBucket, isLow); // this actually runs the lift
+                    if (isBucket)
+                    {
+                        if (outtakeLiftHasReachedPresets()) // this reduces the huge backlash on the arm
+                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+                        else
+                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
+                    }
                 }
                 break;
             case SAMPLE_DROP: // this state is the automated sample deposit, no driver controls here
@@ -385,7 +418,7 @@ public class TeleDrive extends LinearOpMode
                 if (delay(400))
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                if (delay(200))
+                if (delay(250))
                 {
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
@@ -461,14 +494,14 @@ public class TeleDrive extends LinearOpMode
     {
         if (isBucket)
         {
-            if (isLow) return outtakeSubsystem.liftReached(OuttakeSubsystem.liftLowBucketPos);
-            else return outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBucketPos);
+            if (isLow) return outtakeSubsystem.liftReached((int) outtakeSubsystem.inchesToTicksSlidesMotor(OuttakeSubsystem.liftLowBucketPos));
+            else return outtakeSubsystem.liftReached((int) outtakeSubsystem.inchesToTicksSlidesMotor(OuttakeSubsystem.liftHighBucketPos));
 
         }
         else
         {
-            if (isLow) return outtakeSubsystem.liftReached(OuttakeSubsystem.liftLowBarPos);
-            else return outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBarPos);
+            if (isLow) return outtakeSubsystem.liftReached((int) outtakeSubsystem.inchesToTicksSlidesMotor(OuttakeSubsystem.liftLowBarPos));
+            else return outtakeSubsystem.liftReached((int) outtakeSubsystem.inchesToTicksSlidesMotor(OuttakeSubsystem.liftHighBarPos));
         }
     }
     public void outtakeLiftPresets(boolean isSample, boolean isLow, int offSet)

@@ -43,7 +43,7 @@ public class IntakeSubsystem
 
     public static final int // in inches
         slideTeleClose = 19,
-        slideTeleFar = 27,
+        slideTeleFar = 22, // max extension is 27 under the extension limit
         slideTeleBase = 0,
         slideTeleTransfer = -10;
     public final double

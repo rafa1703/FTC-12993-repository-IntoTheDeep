@@ -20,7 +20,7 @@ public class ArmServoTest extends LinearOpMode
         leftArmS = hardwareMap.get(ServoImplEx.class, "outtakeLeftArmS");
         rightArmS = hardwareMap.get(ServoImplEx.class, "outtakeRightArmS");
 
-        clawS.setDirection(Servo.Direction.REVERSE);
+        //clawS.setDirection(Servo.Direction.REVERSE);
         waitForStart();
         while (opModeIsActive())
         {

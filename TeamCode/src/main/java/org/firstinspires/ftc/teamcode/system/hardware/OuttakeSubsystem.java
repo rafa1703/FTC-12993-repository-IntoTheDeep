@@ -21,14 +21,14 @@ public class OuttakeSubsystem
     private final double TICKS_PER_BAREMOTOR = 28;
 
     public static final double
-        leftArmStraightPos = 0.55,
+        leftArmStraightPos = 0.5,
         leftArmReadyPos = 0.9,
-        leftArmTransferPos = 0.93,
+        leftArmTransferPos = 0.91,
         leftArmTransferFinishPos = 0.8,
         leftArmSamplePos = 0.4,
-        leftArmSpecimenPos = 0.7,
+        leftArmSpecimenPos = 0.875,
         leftArmSpecimenScorePos = 0.65,
-        leftArmIntakePos = 0.7;
+        leftArmIntakePos = 0.76;
 
 
     public static final double
@@ -43,16 +43,16 @@ public class OuttakeSubsystem
         clawClosePos = 0.15;
     public static final double
         pivotReadyPos = 0.5,
-        pivotTransferPos = 0.43,
+        pivotTransferPos = 0.47,
         pivotTransferFinishPos = 0.4,
         pivotSamplePos = 0.5,
         pivotSpecimenPos = 0.2,
-        pivotIntakePos = 0.28;
+        pivotIntakePos = 0.33;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
         liftHighBucketPos= 20,
-        liftLowBucketPos = 10,
+        liftLowBucketPos = 1,
         liftHighBarPos = 7,
         liftLowBarPos = 4,
         liftSpecimenIntake = 0,
