@@ -5,10 +5,6 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ColorSensor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
@@ -35,7 +31,7 @@ public class PidMotorTest extends LinearOpMode
       double intake = 0;
       while (opModeIsActive())
       {
-          driveBase.Drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+          driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
           intakeSubsystem.intakeReads(true);
           outtakeSubsystem.outtakeReads();
           if (gamepad1.a) intakeTarget = 18.5;

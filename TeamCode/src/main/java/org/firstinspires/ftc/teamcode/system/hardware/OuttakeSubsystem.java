@@ -21,11 +21,11 @@ public class OuttakeSubsystem
     private final double TICKS_PER_BAREMOTOR = 28;
 
     public static final double
-        leftArmStraightPos = 0.5,
+        leftArmStraightPos = 0.4,
         leftArmReadyPos = 0.9,
         leftArmTransferPos = 0.91,
         leftArmTransferFinishPos = 0.8,
-        leftArmSamplePos = 0.2,
+        leftArmSamplePos = 0.3,
         leftArmSpecimenPos = 0.765,
         leftArmSpecimenHighPos = 0.71,
         leftArmIntakePos = 0.71;

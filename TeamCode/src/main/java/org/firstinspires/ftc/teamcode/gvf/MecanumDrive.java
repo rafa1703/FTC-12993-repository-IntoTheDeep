@@ -61,13 +61,18 @@ public class MecanumDrive
     }*/
     public MecanumDrive(GeneralHardware hardware, RunMode mode) // try to only use this
     {
-        this.FL = hardware.intakeM;
+        this.FL = hardware.FL;
         this.FR = hardware.FR;
-        this.BL = hardware.intakeSlidesM;
+        this.BL = hardware.BL;
         this.BR = hardware.BR;
         this.runMode = mode;
         this.voltageSupplier = hardware.voltageSupplier;
         localizer = hardware.localizer;
+
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
 
@@ -123,6 +128,19 @@ public class MecanumDrive
         this.BL.setPower(BL);
         this.FR.setPower(FR);
         this.BR.setPower(BR);
+    }
+    public void driverControlledDrive(double LY, double LX, double RX)
+    {
+        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
+        double frontLeftPower = (-LY + LX + RX) / denominator;
+        double backLeftPower = (-LY - LX + RX) / denominator;
+        double frontRightPower = (-LY - LX - RX) / denominator;
+        double backRightPower = (-LY + LX - RX) / denominator;
+
+        FL.setPower(frontLeftPower);
+        FR.setPower(frontRightPower);
+        BR.setPower(backRightPower);
+        BL.setPower(backLeftPower);
     }
 
     private void P2P()
@@ -201,7 +219,18 @@ public class MecanumDrive
         updateMotors();
     }
 
-
+    public Localizer getLocalizer()
+    {
+        return localizer;
+    }
+    public Pose getPredictedPoseEstimate()
+    {
+        return localizer.getPredictedPoseEstimate();
+    }
+    public Pose getPoseEstimate()
+    {
+        return localizer.getPoseEstimate();
+    }
     public double getVoltage()
     {
         return voltageSupplier.get();

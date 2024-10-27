@@ -10,13 +10,11 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 public class redCloseAuto extends LinearOpMode
 {
-    // IDK what this class does yet, as I don't want to code this tbh :0
+
     enum autoState {
-        DRIVE_DEPOSIT,
+        INTAKE,
         DEPOSIT,
-        DRIVE_SAMPLE,
-        DRIVE_HP,
-        DRIVE_PARK,
+        PARK,
         IDLE
     }
     ElapsedTime GlobalTimer;
@@ -26,6 +24,7 @@ public class redCloseAuto extends LinearOpMode
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     double globalTimer, sequenceTimer, intakeClipTimer;
+    int cycle = 0;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -39,10 +38,11 @@ public class redCloseAuto extends LinearOpMode
         resetTimer();
         while (!isStarted())
         {
-            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+            intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
+            outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-            if (delay(1000)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
         }
         waitForStart();
         while (opModeIsActive())
@@ -57,53 +57,21 @@ public class redCloseAuto extends LinearOpMode
     {
         switch (state)
         {
-            case DRIVE_DEPOSIT:
-                if(trajectories.depositFarTrajectory.isFinished())
+            case INTAKE:
+                if(true)
                 {
                     state = autoState.DEPOSIT;
                     resetTimer();
                 }
-                hardware.drive.followTrajectory(trajectories.depositFarTrajectory);
+
                 break;
             case DEPOSIT:
-                if (delay(1000))
-                {
-                    state = autoState.DRIVE_HP;
-                    resetTimer();
-                }
-                if (delay(250)) outtakeLiftPresets(false, false, -40); // this actually runs the lift
-                else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
-                if (delay(150)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
-                if (delay( 500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                if (delay( 600))
-                {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
-                }
+
                 break;
-            case DRIVE_SAMPLE:
-                if (trajectories.depositFarTrajectory.isFinished())
-                {
-                    state = autoState.DRIVE_HP;
-                    resetTimer();
-                }
-                if(delay(40)) hardware.drive.followTrajectorySplineHeading(trajectories.depositFarTrajectory);
+            case PARK:
+
                 break;
-            case DRIVE_HP:
-                if (trajectories.samplesToHPFarTrajectory.isFinished())
-                {
-                    state = autoState.DRIVE_PARK;
-                    resetTimer();
-                }
-                if (delay(40)) hardware.drive.followTrajectorySplineHeading(trajectories.samplesToHPFarTrajectory);
-                break;
-            case DRIVE_PARK:
-                if(trajectories.hpToParkFarTrajectory.isFinished())
-                {
-                    state = autoState.IDLE;
-                    resetTimer();
-                }
-                if (delay(40)) hardware.drive.followTrajectorySplineHeading(trajectories.hpToParkFarTrajectory);
+            case IDLE:
                 break;
         }
     }

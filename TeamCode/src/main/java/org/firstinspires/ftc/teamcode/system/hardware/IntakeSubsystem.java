@@ -42,7 +42,7 @@ public class IntakeSubsystem
         flapReadyPos = 1;
 
     public static final int // in inches
-        slideTeleClose = 19,
+        slideTeleClose = 14,
         slideTeleFar = 22, // max extension is 27 under the extension limit
         slideTeleBase = 0,
         slideTeleTransfer = -10;
@@ -151,7 +151,7 @@ public class IntakeSubsystem
                 intakeMotor.setPower(0);
                 break;
             case REVERSE:
-                intakeMotor.setPower(-0.6);
+                intakeMotor.setPower(-0.8);
                 break;
         }
     }

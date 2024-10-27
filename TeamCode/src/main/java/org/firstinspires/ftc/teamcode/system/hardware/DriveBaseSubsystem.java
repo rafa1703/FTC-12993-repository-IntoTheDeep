@@ -79,10 +79,7 @@ public class DriveBaseSubsystem
         // zero brake behavior means when motors aren't powered, they will auto brake
         if (Float)
         {
-            FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-            FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+            setUpFloat();
         }
         else
         {
@@ -111,7 +108,7 @@ public class DriveBaseSubsystem
         return Math.pow(x,y);
     }
 
-    public void Drive(double LY, double LX, double RX) {
+    public void drive(double LY, double LX, double RX) {
 //        double f = LY < 0? -adjustedJoystick(Math.abs(LY)):adjustedJoystick(Math.abs(LY));
 //        double s = LX < 0? -adjustedJoystick(Math.abs(LX)):adjustedJoystick(Math.abs(LX));
 //        double t = RX < 0? -adjustedJoystick(Math.abs(RX)):adjustedJoystick(Math.abs(RX));
