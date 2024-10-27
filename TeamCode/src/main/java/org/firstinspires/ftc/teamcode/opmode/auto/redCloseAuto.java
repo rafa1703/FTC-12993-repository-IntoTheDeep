@@ -1,4 +1,4 @@
-/*
+
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -73,7 +73,7 @@ public class redCloseAuto extends LinearOpMode
                 }
                 if (delay(250)) outtakeLiftPresets(false, false, -40); // this actually runs the lift
                 else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
-                if (delay(150)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_SCORE);
+                if (delay(150)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
                 if (delay( 500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 if (delay( 600))
                 {
@@ -130,4 +130,3 @@ public class redCloseAuto extends LinearOpMode
         sequenceTimer = globalTimer;
     }
 }
-*/

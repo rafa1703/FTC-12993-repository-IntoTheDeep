@@ -50,6 +50,8 @@ public class PrometheusDrive extends LinearOpMode
     double colorValue;
     int intakeSlideTarget;
     boolean isLow = false, isBucket = false; // lol this is gonna work this way and i hate it
+    int outtakeSlidesTarget;
+    boolean manualControlLift = false;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -58,8 +60,8 @@ public class PrometheusDrive extends LinearOpMode
             if (gamepad2.dpad_up || gamepad1.dpad_up) side = GeneralHardware.Side.Red;
             else if (gamepad2.dpad_down || gamepad1.dpad_down) side = GeneralHardware.Side.Blue;
 
-            if (side == GeneralHardware.Side.Blue) gamepad1.setLedColor(0, 100, 255, 1000);
-            else gamepad1.setLedColor(255, 0, 255, 1000);
+            if (side == GeneralHardware.Side.Blue) gamepad1.setLedColor(0, 0, 255, 1000);
+            else gamepad1.setLedColor(255, 0, 0, 1000);
 
             telemetry.addData("Side", side);
             telemetry.update();
@@ -236,7 +238,8 @@ public class PrometheusDrive extends LinearOpMode
                     intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
                     if (delay(400)) intakeSubsystem.intakeSlideInternalPID(10);
 
-                    //if (delay(1500)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE); // this assumes that the sample is stuck in the chute so we spin the intake
+                    if (delay(600)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE); // this assumes that the sample is stuck in the chute so we spin the intake
+                    else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                     //else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.DROP); // this stop the motor until it drops
                 }
                 break;
@@ -246,15 +249,16 @@ public class PrometheusDrive extends LinearOpMode
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
                 }
-                if (delay(40))
+                if (delay(70))
                 {
                     // this will hardstop the flap in the sample so the extendo can go back
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
                     intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
                 }
-                if (intakeSubsystem.slideReached(slideTeleBase) && delay(100))
+                if (intakeSubsystem.slideReached(slideTeleBase))
                 {
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    if(delay(100))
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     if (delay(230))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
@@ -265,7 +269,7 @@ public class PrometheusDrive extends LinearOpMode
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                     }
                 }
-                else if (delay(40)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
+                else if (delay(20)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 // naming makes no sense but this makes sure the arm i high when the slides come back
                 break;
             case TRANSFER_END:
@@ -331,14 +335,15 @@ public class PrometheusDrive extends LinearOpMode
                 if (delay(200))
                 {
                     isBucket = false;
-                    isLow = false;
                     state = OuttakeState.DEPOSIT;
                     resetTimer();
                 }
-                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntake + 2); // so like little bump to
-                if (delay(40))
+                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntake + 2); // so like little bump up
+                if (delay(130))
                 {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_SCORE);
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
+                    outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SPECIMEN);
                 }
                 break;
             case OUTTAKE_ADJUST: // this allows for the drivers to pre adjust heights
@@ -353,25 +358,31 @@ public class PrometheusDrive extends LinearOpMode
                         gamepad2.right_trigger > 0.2 || gamepad1.right_trigger > 0.2);
                 break;
             case DEPOSIT: // this will actually start the deposit, so lift and arm presets
-                if (gamepad1.right_bumper && delay(400))
+                if ((gamepad1.right_bumper || gamepad2.right_bumper) && delay(400))
                 {
                     state = isBucket ? OuttakeState.SAMPLE_DROP : OuttakeState.SPECIMEN_DROP;
                     resetTimer();
                 }
-                liftHeightLogic(gamepad2.a, gamepad2.x);
+                liftHeightLogic(gamepad2.x, gamepad2.a);
                 outtakeTypeLogic(gamepad2.left_trigger > 0.2 || gamepad1.left_trigger > 0.2,
                         gamepad2.right_trigger > 0.2 || gamepad1.right_trigger > 0.2);
 
-                if (delay(40))
-                {
-                    liftHeightLogic(gamepad2.a, gamepad2.x);
-                }
                 if (delay(90))
                 {
-                    outtakeLiftPresets(isBucket, isLow); // this actually runs the lift
-                    if (isBucket)
+                    if (!isBucket)
                     {
-                        if (outtakeLiftHasReachedPresets()) // this reduces the huge backlash on the arm
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                    }
+                    if (Math.abs(gamepad2.right_stick_y) > 0.05)
+                    {
+                        manualControlLift = true;
+                    }
+                    if (!manualControlLift)
+                        outtakeLiftPresets(isBucket, isLow); // this actually runs the lift
+                    else outtakeSubsystem.liftMotorRawControl(-gamepad2.right_stick_y);
+                    if (isBucket && !manualControlLift)
+                    {
+                        if (outtakeLiftHasReachedPresets()) // this reduces the huge backlash on the arm and improves liftPID
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
                         else
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
@@ -387,19 +398,21 @@ public class PrometheusDrive extends LinearOpMode
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 break;
             case SPECIMEN_DROP: // this state is the automated specimen deposit, no driver controls here
-                if (delay(300))
+                if (delay(500) && gamepad1.right_bumper)
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
                 }
                 // this sequence should bump down the specimen
-                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_SCORE);
-                if (delay(40)) outtakeLiftPresets(false, isLow, -40); // this actually runs the lift
-                if (delay( 200)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                outtakeSubsystem.armState(isLow ? OuttakeSubsystem.OuttakeArmServoState.SPECIMEN : OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH, 0.055);
+                if (delay(40)) outtakeLiftPresets(false, isLow, -5); // this actually runs the lift
+                if (delay( 500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 break;
             case RETURN:
                 if (outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos) && delay(500))
                 {
+                    manualControlLift = false;
+                    isBucket = true;
                     intakeSlideBtn.OffsetTargetPosition = 0;
                     state = OuttakeState.READY;
                     resetTimer();
@@ -413,7 +426,6 @@ public class PrometheusDrive extends LinearOpMode
                     outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
                 }
                 if (delay(400))
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
@@ -482,7 +494,6 @@ public class PrometheusDrive extends LinearOpMode
         {
             if (isLow) outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBucketPos);
             else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
-
         }
         else
         {

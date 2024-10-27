@@ -25,10 +25,10 @@ public class OuttakeSubsystem
         leftArmReadyPos = 0.9,
         leftArmTransferPos = 0.91,
         leftArmTransferFinishPos = 0.8,
-        leftArmSamplePos = 0.4,
-        leftArmSpecimenPos = 0.875,
-        leftArmSpecimenScorePos = 0.65,
-        leftArmIntakePos = 0.76;
+        leftArmSamplePos = 0.2,
+        leftArmSpecimenPos = 0.765,
+        leftArmSpecimenHighPos = 0.71,
+        leftArmIntakePos = 0.71;
 
 
     public static final double
@@ -40,24 +40,24 @@ public class OuttakeSubsystem
         rightArmIntakePos = 1;
     public static final double
         clawOpenPos = 0.57,
-        clawClosePos = 0.15;
+        clawClosePos = 0.12;
     public static final double
         pivotReadyPos = 0.5,
         pivotTransferPos = 0.47,
         pivotTransferFinishPos = 0.4,
         pivotSamplePos = 0.5,
-        pivotSpecimenPos = 0.2,
-        pivotIntakePos = 0.33;
+        pivotSpecimenPos = 0.375,
+        pivotIntakePos = 0.389;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
         liftHighBucketPos= 20,
         liftLowBucketPos = 1,
-        liftHighBarPos = 7,
-        liftLowBarPos = 4,
+        liftHighBarPos = 27,
+        liftLowBarPos = 6,
         liftSpecimenIntake = 0,
         liftBasePos = 0; // maybe make this -5 because of shit intake clip
-    private final double liftThreshold = 17;
+    private final double liftThreshold = 10;
     public enum OuttakeClawServoState
     {
         OPEN,
@@ -71,7 +71,7 @@ public class OuttakeSubsystem
         TRANSFER_FINISH,
         SAMPLE,
         SPECIMEN,
-        SPECIMEN_SCORE,
+        SPECIMEN_HIGH,
         INTAKE
     }
     public enum OuttakePivotServoState
@@ -165,12 +165,48 @@ public class OuttakeSubsystem
                 leftArmS.setPosition(leftArmSpecimenPos);
                 //rightArmS.setPosition(rightArmSpecimenPos);
                 break;
-            case SPECIMEN_SCORE:
-                leftArmS.setPosition(leftArmSpecimenScorePos);
+            case SPECIMEN_HIGH:
+                leftArmS.setPosition(leftArmSpecimenHighPos);
                 //rightArmS.setPosition(rightArmSpecimenScorePos);
                 break;
             case INTAKE:
                 leftArmS.setPosition(leftArmIntakePos);
+                //rightArmS.setPosition(rightArmIntakePos);
+                break;
+        }
+    }
+    public void armState(OuttakeArmServoState state, double offSet) // 1 is down, 0 is up
+    {
+        switch (state)
+        {
+            case READY:
+                leftArmS.setPosition(leftArmReadyPos + offSet);
+                //rightArmS.setPosition(rightArmReadyPos);
+                break;
+            case STRAIGHT:
+                leftArmS.setPosition(leftArmStraightPos  + offSet);
+                break;
+            case TRANSFER:
+                leftArmS.setPosition(leftArmTransferPos  + offSet);
+                //rightArmS.setPosition(rightArmTransferPos);
+                break;
+            case TRANSFER_FINISH:
+                leftArmS.setPosition(leftArmTransferFinishPos  + offSet);
+                break;
+            case SAMPLE:
+                leftArmS.setPosition(leftArmSamplePos  + offSet);
+                //rightArmS.setPosition(rightArmSamplePos);
+                break;
+            case SPECIMEN:
+                leftArmS.setPosition(leftArmSpecimenPos + offSet);
+                //rightArmS.setPosition(rightArmSpecimenPos);
+                break;
+            case SPECIMEN_HIGH:
+                leftArmS.setPosition(leftArmSpecimenHighPos + offSet);
+                //rightArmS.setPosition(rightArmSpecimenScorePos);
+                break;
+            case INTAKE:
+                leftArmS.setPosition(leftArmIntakePos + offSet);
                 //rightArmS.setPosition(rightArmIntakePos);
                 break;
         }
@@ -240,7 +276,7 @@ public class OuttakeSubsystem
     {
         liftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
     }
-    public void intakeSlideMotorRawControl(double manualControlIntakeSlide)
+    public void liftMotorRawControl(double manualControlIntakeSlide)
     {
         liftMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         liftMotor.setPower(manualControlIntakeSlide * 0.75);
@@ -251,11 +287,11 @@ public class OuttakeSubsystem
     }
 
     public double ticksToInchesSlidesMotor(double ticks){
-        return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
+        return ((0.95485 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.3571428571)) * ticks;
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return ((TICKS_PER_BAREMOTOR * 5) / (0.89221 * 2 * Math.PI)) * inches; //ticks per inches
+        return ((TICKS_PER_BAREMOTOR * 5.3571428571) / (0.95485 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/14 = 5
         // 140 / (1.78442 * 3.14159) = 24.9736170335
     }

@@ -22,7 +22,7 @@ public class ArmTest extends LinearOpMode
         drive = new DriveBaseSubsystem(hardwareMap);
         waitForStart();
         //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
+        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SPECIMEN);
         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
         while (opModeIsActive())
         {
@@ -41,12 +41,12 @@ public class ArmTest extends LinearOpMode
             if (gamepad1.right_bumper) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             if (gamepad1.left_bumper) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);*/
-            outtakeSubsystem.intakeSlideMotorRawControl(0);
-            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-
+            outtakeSubsystem.liftMotorRawControl(0);
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
+            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             telemetry.addData("OuttakeReached", outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBucketPos));
-            telemetry.addData("Target", OuttakeSubsystem.liftHighBucketPos);
-            telemetry.addData("Position", outtakeSubsystem.liftPosition);
+            //telemetry.addData("Target", OuttakeSubsystem.liftHighBucketPos);
+            telemetry.addData("Position", outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition));
             telemetry.update();
         }
     }
