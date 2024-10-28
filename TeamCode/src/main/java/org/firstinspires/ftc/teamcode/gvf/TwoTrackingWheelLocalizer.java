@@ -18,21 +18,20 @@ public class TwoTrackingWheelLocalizer extends com.acmerobotics.roadrunner.local
 {
     private ImuThread imuThread;
     public static double TICKS_PER_REV = 2000;
-    public static double WHEEL_RADIUS = 0.944882; // in
+    public static double WHEEL_RADIUS = 0.629921; // in
     public static double GEAR_RATIO = 1; // output (wheel) speed / input (encoder) speed
 
-    public static double PARALLEL_X = -0.2; // X is the up and down direction
-    public static double PARALLEL_Y =  -6.25; // Y is the strafe direction
+    public static double PARALLEL_X = -6.25; // X is the up and down direction
+    public static double PARALLEL_Y =  4.35; // Y is the strafe direction
 
-    public static double PERPENDICULAR_X = 5.5;
-    public static double PERPENDICULAR_Y = -6.25;
+    public static double PERPENDICULAR_X = -6;
+    public static double PERPENDICULAR_Y = -3.35;
 
-    public static double X_MULTIPLIER = 1.007462686567; // Multiplier in the X direction
-    //
+    public static double X_MULTIPLIER = 1.0006645935143; // Multiplier in the X direction
+    //0.9976947852, 0.9986984448, 1.005600550543
 
-    public static double Y_MULTIPLIER = 0.974495158; // Multiplier in the Y direction
-    //
-
+    public static double Y_MULTIPLIER = 1.000700204928; // Multiplier in the Y direction
+    //1.0002644668732, 1.0002524590385, 1.001583688872
     // Parallel/Perpendicular to the forward axis
     // Parallel wheel is parallel to the forward axis
     // Perpendicular is perpendicular to the forward axis
@@ -47,12 +46,27 @@ public class TwoTrackingWheelLocalizer extends com.acmerobotics.roadrunner.local
 
         this.imuThread = imuThread;
         parallelEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "BR"));
-        perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "FR"));
+        perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "Intake"));
 
         // reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+        //perpendicularEncoder.setDirection(Encoder.Direction.REVERSE);
         parallelEncoder.setDirection(Encoder.Direction.REVERSE);
         imuThread.initImuThread();
         imuThread.startThread(opMode);
+    }
+    public TwoTrackingWheelLocalizer(HardwareMap hardwareMap, ImuThread imuThread) {
+        super(Arrays.asList(
+                new Pose2d(PARALLEL_X, PARALLEL_Y, 0),
+                new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
+        ));
+
+        this.imuThread = imuThread;
+        parallelEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "BR"));
+        perpendicularEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "Intake"));
+
+        // reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
+        //perpendicularEncoder.setDirection(Encoder.Direction.REVERSE);
+        parallelEncoder.setDirection(Encoder.Direction.REVERSE);
     }
 
     public TwoTrackingWheelLocalizer(GeneralHardware hardware) {
@@ -62,11 +76,10 @@ public class TwoTrackingWheelLocalizer extends com.acmerobotics.roadrunner.local
         ));
 
         this.imuThread = hardware.imu;
-        parallelEncoder = hardware.ech0;
-        perpendicularEncoder = hardware.ech3;
+        parallelEncoder = hardware.perpendicularOdo;
+        perpendicularEncoder = hardware.parallelOdo;
 
         // reverse any encoders using Encoder.setDirection(Encoder.Direction.REVERSE)
-        parallelEncoder.setDirection(Encoder.Direction.REVERSE);
     }
 
     public static double encoderTicksToInches(double ticks) {

@@ -12,9 +12,11 @@ public class Paths
 {
     public Trajectory depositFarTrajectory, depositToSamplesFarTrajectory, samplesToHPFarTrajectory, hpToParkFarTrajectory;
     public Trajectory depositCloseTrajectory, depositToSamplesCloseTrajectory, samplesToBucketTrajectory, bucketToParkTrajectory;
+    public Trajectory firstIntakeTrajectory, secondIntakeTrajectory, thirdIntakeTrajectory,
+            firstDepositTrajectory, secondDepositTrajectory, thirdDepositTrajectory, parkTrajectory;
     public Paths()
     {
-        depositFarTrajectory = new TrajectoryBuilder(new Pose(9.5, -62.3 * S, Math.toRadians(90)))
+        /*depositFarTrajectory = new TrajectoryBuilder(new Pose(9.5, -62.3 * S, Math.toRadians(90)))
                 .addSegment(new BezierCurveTrajectorySegment(
                         new Point[]{
                                 new Point(9.5, -62.3 * S),
@@ -92,7 +94,57 @@ public class Paths
                         }
                 ))
                 .addFinalPose(depositToSamplesFarTrajectory.getFinalPose())
+                .build();*/
+        firstIntakeTrajectory = new TrajectoryBuilder(new Pose(9.5, -62.3, Math.toRadians(90))) //SplineHeading
+                .addSegment(new BezierCurveTrajectorySegment(
+                        new Point[]{
+                                new Point(-9.5, -62.3),
+                                new Point(-42.1, -31.8)
+                        }
+                ))
+                .addFinalPose(new Pose(-42.1, -31.8, Math.toRadians(145)))
                 .build();
 
+        firstDepositTrajectory = new TrajectoryBuilder(firstIntakeTrajectory.getFinalPose()) //SplineHeading
+                .addSegment(new BezierCurveTrajectorySegment(
+                        new Point[]{
+                                firstIntakeTrajectory.getFinalPose().toPoint(),
+                                new Point(-50, -59),
+                                new Point(-58.8, -56.7),
+                                // new Point(6, -36)
+                        }
+                ))
+                .addFinalPose(new Pose(-58.8, -56.7, Math.toRadians(45)))
+                .build();
+
+        secondIntakeTrajectory = new TrajectoryBuilder(firstDepositTrajectory.getFinalPose()) //SplineHeading
+                .addSegment(new BezierCurveTrajectorySegment(
+                        new Point[]{
+                                firstDepositTrajectory.getFinalPose().toPoint(),
+                                new Point(-65, -45),
+                                new Point(-60, -34)
+                                // new Point(6, -36)
+                        }
+                ))
+                .addFinalPose(new Pose(-60, -34, Math.toRadians(90)))
+                .build();
+
+        secondDepositTrajectory = new TrajectoryBuilder(secondIntakeTrajectory.getFinalPose()) // Tangent(reverse)
+                .addSegment(new BezierCurveTrajectorySegment(
+                        new Point[]{
+                                secondIntakeTrajectory.getFinalPose().toPoint(),
+                                new Point(-63, -56.7)
+                        }
+                ))
+                .build();
+        parkTrajectory = new TrajectoryBuilder(new Pose(-63, -56.7, Math.toRadians(90))) //SplineHeading
+                .addSegment(new BezierCurveTrajectorySegment(
+                        new Point[]{
+                                new Point(-63, -56.7),
+                                new Point(-32, -10)
+                        }
+                ))
+                .addFinalPose(new Pose(-32, -10, Math.toRadians(0)))
+                .build();
     }
 }

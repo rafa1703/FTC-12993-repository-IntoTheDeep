@@ -42,16 +42,16 @@ public class OuttakeSubsystem
         clawOpenPos = 0.57,
         clawClosePos = 0.12;
     public static final double
-        pivotReadyPos = 0.5,
+        pivotReadyPos = 0.55,
         pivotTransferPos = 0.47,
-        pivotTransferFinishPos = 0.4,
+        pivotTransferFinishPos = 0.445,
         pivotSamplePos = 0.5,
         pivotSpecimenPos = 0.375,
         pivotIntakePos = 0.389;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
-        liftHighBucketPos= 20,
+        liftHighBucketPos= 24,
         liftLowBucketPos = 1,
         liftHighBarPos = 27,
         liftLowBarPos = 6,
@@ -285,6 +285,11 @@ public class OuttakeSubsystem
     {
         return Math.abs(slideTarget - liftTarget) < liftThreshold;
     }
+    public boolean liftAtBase() // as base is 0
+    {
+        return liftPosition < liftThreshold;
+    }
+
 
     public double ticksToInchesSlidesMotor(double ticks){
         return ((0.95485 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.3571428571)) * ticks;

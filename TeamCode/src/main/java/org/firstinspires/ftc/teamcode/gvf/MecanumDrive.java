@@ -41,7 +41,7 @@ public class MecanumDrive
     private static double ks = 0.03;
     public double lateralMultiplier = 1.0;
     public static double headingMultiplier = 1;
-    private double overallMultiplier = 1;
+    private double overallMultiplier = 0.3;
 
     private final double velocityThreshold = 1;
 

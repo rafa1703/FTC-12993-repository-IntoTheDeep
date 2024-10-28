@@ -4,6 +4,7 @@ import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -26,7 +27,7 @@ public class GeneralHardware
     public DcMotorEx intakeM, FR, intakeSlidesM, BR;
     public DcMotorEx FL, BL, outtakeLiftM, meh3;
 
-    public Encoder ech0, ech1, ech2, ech3;
+    public Encoder perpendicularOdo, ech1, ech2, parallelOdo;
     public Encoder eeh0, eeh1, eeh2, eeh3;
 
     public ServoImplEx chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
@@ -80,10 +81,10 @@ public class GeneralHardware
         outtakeLiftM = hm.get(DcMotorEx.class, "OuttakeSlides");
         //meh3 = hm.get(DcMotorEx.class, "eh3");
 
-        ech0 = new Encoder(intakeM);
+        perpendicularOdo = new Encoder(intakeM);
         ech1 = new Encoder(FR);
         ech2 = new Encoder(intakeSlidesM);
-        ech3 = new Encoder(BR);
+        parallelOdo = new Encoder(BR);
 
         eeh0 = new Encoder(FL);
         eeh1 = new Encoder(BL);
@@ -112,8 +113,17 @@ public class GeneralHardware
         //dc0 = hm.get(DigitalChannel.class, "dc0");
         //dc1 = hm.get(DigitalChannel.class, "dc1");
 
+
+        //reverse correct motors
+        //FR.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
+        //BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        BR.setDirection(DcMotorSimple.Direction.REVERSE);
+
         if (auto)
         {
+            //TODO: reverse odo encoder
+            //parallelOdo.setDirection(REVERSE)
             // TODO: change here depending on odometry type
             imu = new ImuThread(hm);
             imu.initImuThread();
@@ -138,7 +148,6 @@ public class GeneralHardware
         resetCacheHubs();
         voltage = voltageSupplier.get();
         //localizer.update();
-        drive.update();
     }
     public void resetCacheHubs()
     {
