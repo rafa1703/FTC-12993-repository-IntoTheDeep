@@ -13,6 +13,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
+import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
@@ -29,7 +30,7 @@ public class MecanumDrive
         GVF
     }
 
-    public static PIDController TRANSLATIONAL_PID = new PIDController(0.27, 0.00000, 0.00034);
+    public static PIDController TRANSLATIONAL_PID = new PIDController(0.07, 0.0008, 0.0045);
     public static PIDController HEADING_PID = new PIDController(0.55, 0, 0.00034);
     private DcMotor FL, FR, BL, BR;
     private RunMode runMode;
@@ -39,11 +40,11 @@ public class MecanumDrive
     public Vector targetVector = new Vector();
 
     private static double ks = 0.03;
-    public double lateralMultiplier = 1.0;
+    public double lateralMultiplier = 1; //1.01364522417;
     public static double headingMultiplier = 1;
-    private double overallMultiplier = 0.3;
+    private double overallMultiplier = 1;
 
-    private final double velocityThreshold = 1;
+    private final double velocityThreshold = 0.2;
 
     private TimedSupplier<Double> voltageSupplier;
     public double FLPower, FRPower, BLPower, BRPower;
@@ -83,7 +84,7 @@ public class MecanumDrive
             case PID:
                 // This is gonna be a standard pid, probably never will be used but so like maybe rename to position lock
                 // driveToPosition(0, 0, 0, null);
-                driveToPosition(targetPose.getX(), targetPose.getY(), targetPose.getHeading(), localizer.getPredictedPoseEstimate());
+                driveToPosition();
                 break;
             case P2P:
                 P2P();
@@ -97,7 +98,7 @@ public class MecanumDrive
                 /*PP();*/
                 break;
         }
-        if (runMode == RunMode.P2P || runMode == RunMode.PP)
+        if (runMode == RunMode.P2P || runMode == RunMode.PID || runMode == RunMode.PP)
         {
             if (Math.abs(powerVector.getX()) + Math.abs(powerVector.getY()) + Math.abs(powerVector.getZ()) > 1)
                 powerVector.scaleToMagnitude(1);
@@ -105,29 +106,33 @@ public class MecanumDrive
         }
     }
 
-    private void driveToPosition(double targetX, double targetY, double targetHeading, Pose poseEstimate)
+    private void driveToPosition()
     {
-        double robotX = poseEstimate.getX();
-        double robotY = poseEstimate.getY();
-        double robotTheta = poseEstimate.getHeading();
-        double x = TRANSLATIONAL_PID.calculate(robotX, targetX);
-        double y = -TRANSLATIONAL_PID.calculate(robotY, targetY);
-        double theta = -HEADING_PID.calculate(normalizeRadians(targetHeading - robotTheta));
+        Pose currentPose = localizer.getPoseEstimate();
 
+        double xDiff = targetPose.getX() - currentPose.getX();
+        double yDiff = targetPose.getY() - currentPose.getY();
 
-        double x_rotated = (x * Math.cos(robotTheta) - y * Math.sin(robotTheta));
-        double y_rotated = (x * Math.sin(robotTheta) + y * Math.cos(robotTheta));
+        double distance = Math.hypot(xDiff, yDiff);
 
-        double FL = MathUtils.clamp(x_rotated + y_rotated + theta, -1, 1);
-        double BL = MathUtils.clamp(x_rotated - y_rotated + theta, -1, 1);
-        double FR = MathUtils.clamp(x_rotated - y_rotated - theta, -1, 1);
-        double BR = MathUtils.clamp(x_rotated + y_rotated - theta, -1, 1);
+        double calculatedCos = xDiff / distance;
+        double calculatedSin = yDiff / distance;
 
+        double translationalPower = TRANSLATIONAL_PID.calculate(0, distance);
 
-        this.FL.setPower(FL);
-        this.BL.setPower(BL);
-        this.FR.setPower(FR);
-        this.BR.setPower(BR);
+        powerVector = new Vector(translationalPower * calculatedCos, translationalPower * calculatedSin);
+        powerVector = Vector.rotateBy(powerVector, currentPose.getHeading());
+
+        double headingDiff = angleWrap(targetPose.getHeading() - currentPose.getHeading());
+
+        double headingPower = HEADING_PID.calculate(0, headingDiff) * headingMultiplier;
+
+        // at heading 0 and 180 the y component is lateral, and at 90 and 270  the x is the lateral
+        // so y * cos(H) * LateralMulti and x * sin(H) * LateralMulti deals with that
+        //double xPow = powerVector.getX() * Math.sin(currentPose.getHeading()) * lateralMultiplier;
+        //double yPow = powerVector.getY() * Math.cos(currentPose.getHeading()) * lateralMultiplier;
+
+        powerVector = new Vector(powerVector.getX(), powerVector.getY() * lateralMultiplier, headingPower);
     }
     public void driverControlledDrive(double LY, double LX, double RX)
     {
@@ -175,7 +180,7 @@ public class MecanumDrive
 
     private void updateMotors()
     {
-        if (runMode == RunMode.P2P)
+        if (runMode == RunMode.P2P || runMode == RunMode.PID)
         {
 
             double actualKs = ks * 14.0 / voltageSupplier.get();

@@ -136,6 +136,7 @@ public class Paths
                                 new Point(-63, -56.7)
                         }
                 ))
+                .addFinalPose(new Pose(-63, -56.7, Math.toRadians(90)))
                 .build();
         parkTrajectory = new TrajectoryBuilder(new Pose(-63, -56.7, Math.toRadians(90))) //SplineHeading
                 .addSegment(new BezierCurveTrajectorySegment(

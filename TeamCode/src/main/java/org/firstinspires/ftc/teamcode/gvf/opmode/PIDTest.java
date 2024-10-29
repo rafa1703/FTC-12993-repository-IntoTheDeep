@@ -23,21 +23,19 @@ public class PIDTest extends LinearOpMode
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.startThreads(this);
         intakeSubsystem = new IntakeSubsystem(hardware);
-        hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
+        hardware.drive.setRunMode(MecanumDrive.RunMode.PID); // works exactly like p2p but with like the actual pose
         hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
-        Pose targetPose = new Pose(10, 0, Math.toRadians(0));
+        Pose targetPose = new Pose(0, 0, Math.toRadians(180));
         hardware.drive.setTargetPose(targetPose);
         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
         waitForStart();
         while (opModeIsActive())
         {
-            hardware.resetCacheHubs();
-
             hardware.update();
-
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose pose = hardware.drive.getPoseEstimate();
+            Pose predictedPose = hardware.drive.getPredictedPoseEstimate();
             packet.put("x ", pose.getX());
             packet.put("y ", pose.getY());
             packet.put("heading (deg) ", Math.toDegrees(pose.getHeading()));
@@ -45,7 +43,10 @@ public class PIDTest extends LinearOpMode
             packet.put("x error ", Math.abs(targetPose.getX() - pose.getX()));
             packet.put("y error ", Math.abs(targetPose.getY() - pose.getY()));
             packet.put("heading error (deg) ", Math.toDegrees(Math.abs(pose.getHeading() - targetPose.getHeading())));
+
             DashboardUtil.drawRobot(fieldOverlay, pose.toPose2d(), true);
+            //DashboardUtil.drawRobot(fieldOverlay, predictedPose.toPose2d(), true);
+
             hardware.drive.update();
             dashboard.sendTelemetryPacket(packet);
 

@@ -21,13 +21,13 @@ public class OuttakeSubsystem
     private final double TICKS_PER_BAREMOTOR = 28;
 
     public static final double
-        leftArmStraightPos = 0.4,
+        leftArmStraightPos = 0.5,
         leftArmReadyPos = 0.9,
         leftArmTransferPos = 0.91,
         leftArmTransferFinishPos = 0.8,
         leftArmSamplePos = 0.3,
-        leftArmSpecimenPos = 0.765,
-        leftArmSpecimenHighPos = 0.71,
+        leftArmSpecimenPos = 0.72,
+        leftArmSpecimenHighPos = 0.675,
         leftArmIntakePos = 0.71;
 
 
@@ -53,8 +53,8 @@ public class OuttakeSubsystem
         liftMaxExtension = 27, // 680 ticks
         liftHighBucketPos= 24,
         liftLowBucketPos = 1,
-        liftHighBarPos = 27,
-        liftLowBarPos = 6,
+        liftHighBarPos = 22,
+        liftLowBarPos = 8,
         liftSpecimenIntake = 0,
         liftBasePos = 0; // maybe make this -5 because of shit intake clip
     private final double liftThreshold = 10;

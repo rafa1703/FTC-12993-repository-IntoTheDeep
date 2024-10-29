@@ -24,16 +24,16 @@ public class LateralMultiplierTest extends LinearOpMode
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.startThreads(this);
 
-        hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
+        hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
         hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
-        Pose targetPose = new Pose(0, 50, Math.toRadians(0));
+        Pose targetPose = new Pose(0, -50, Math.toRadians(0));
         hardware.drive.setTargetPose(targetPose);
         waitForStart();
         while (opModeIsActive())
         {
             hardware.resetCacheHubs();
 
-            hardware.update();
+            hardware.drive.update();
 
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
@@ -45,6 +45,7 @@ public class LateralMultiplierTest extends LinearOpMode
             packet.put("x error ", Math.abs(targetPose.getX() - pose.getX()));
             packet.put("y error ", Math.abs(targetPose.getY() - pose.getY()));
             packet.put("heading error (deg) ", Math.toDegrees(Math.abs(pose.getHeading() - targetPose.getHeading())));
+            packet.put("Lateral multiplier", targetPose.getY() / pose.getY());
             DashboardUtil.drawRobot(fieldOverlay, pose.toPose2d());
 
             dashboard.sendTelemetryPacket(packet);

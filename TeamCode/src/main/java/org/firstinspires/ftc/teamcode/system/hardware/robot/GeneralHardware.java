@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -119,7 +120,10 @@ public class GeneralHardware
         FL.setDirection(DcMotorSimple.Direction.REVERSE);
         //BL.setDirection(DcMotorSimple.Direction.REVERSE);
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         if (auto)
         {
             //TODO: reverse odo encoder

@@ -96,6 +96,13 @@ public class DriveBaseSubsystem
         BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
+    public void setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior zeroPowerBehaviour)
+    {
+        FR.setZeroPowerBehavior(zeroPowerBehaviour);
+        BR.setZeroPowerBehavior(zeroPowerBehaviour);
+        BL.setZeroPowerBehavior(zeroPowerBehaviour);
+        FL.setZeroPowerBehavior(zeroPowerBehaviour);
+    }
 
     public static double adjustedJoystick(double x) {
         double y = Math.pow(c-x,m);

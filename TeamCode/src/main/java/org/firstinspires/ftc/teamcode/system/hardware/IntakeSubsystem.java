@@ -151,7 +151,7 @@ public class IntakeSubsystem
                 intakeMotor.setPower(0);
                 break;
             case REVERSE:
-                intakeMotor.setPower(-0.8);
+                intakeMotor.setPower(-intakeSpeed);
                 break;
         }
     }
@@ -273,8 +273,8 @@ public class IntakeSubsystem
     public boolean colorLogic()
     {
         if (intakeFilter == IntakeFilter.OFF) return true;
-        if (colorValue > 2000) return (side == GeneralHardware.Side.Red); //
-        else if (colorValue < 1000) return (side == GeneralHardware.Side.Blue);
+        if (colorValue < 900) return (side == GeneralHardware.Side.Red); //
+        else if (colorValue < 1500) return (side == GeneralHardware.Side.Blue);
         else return intakeFilter != IntakeFilter.SIDE_SPECIFIC;
     }
     public double getColorValue()
@@ -289,6 +289,10 @@ public class IntakeSubsystem
     {
         return Math.abs(slideTarget - slidePosition) < slideThreshold;
     }
+    public boolean isSlidesAtBase()
+    {
+        return slidePosition < slideThreshold; // this works as slide base is 0
+    }
 
     public double ticksToInchesSlidesMotor(double ticks){
         return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
@@ -298,5 +302,6 @@ public class IntakeSubsystem
         return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/12 = 5
     }
+
 
 }
