@@ -16,7 +16,6 @@ public class OuttakeSubsystem
     PID intakeSlidesPID = new PID(0.04, 0, 0.003, 0, 0);
 
     public int liftTarget, liftPosition;
-    double intakeSpeed = 1;
     GeneralHardware.Side side;
     private final double TICKS_PER_BAREMOTOR = 28;
 
@@ -25,10 +24,10 @@ public class OuttakeSubsystem
         leftArmReadyPos = 0.9,
         leftArmTransferPos = 0.91,
         leftArmTransferFinishPos = 0.8,
-        leftArmSamplePos = 0.3,
+        leftArmSamplePos = 0.35,
         leftArmSpecimenPos = 0.72,
         leftArmSpecimenHighPos = 0.675,
-        leftArmIntakePos = 0.71;
+        leftArmIntakePos = 0.765;
 
 
     public static final double
@@ -39,22 +38,22 @@ public class OuttakeSubsystem
         rightArmSpecimenScorePos = 1,
         rightArmIntakePos = 1;
     public static final double
-        clawOpenPos = 0.57,
-        clawClosePos = 0.12;
+        clawOpenPos = 0.15,
+        clawClosePos = 0.6;
     public static final double
-        pivotReadyPos = 0.55,
-        pivotTransferPos = 0.47,
-        pivotTransferFinishPos = 0.445,
-        pivotSamplePos = 0.5,
-        pivotSpecimenPos = 0.375,
-        pivotIntakePos = 0.389;
+        pivotReadyPos = 0.33,
+        pivotTransferPos = 0.175,
+        pivotTransferFinishPos = 0.225,
+        pivotSamplePos = 0.28,
+        pivotSpecimenPos = 0.155,
+        pivotIntakePos = 0.135;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
         liftHighBucketPos= 24,
         liftLowBucketPos = 1,
-        liftHighBarPos = 22,
-        liftLowBarPos = 8,
+        liftHighBarPos = 16,
+        liftLowBarPos = 2,
         liftSpecimenIntake = 0,
         liftBasePos = 0; // maybe make this -5 because of shit intake clip
     private final double liftThreshold = 10;

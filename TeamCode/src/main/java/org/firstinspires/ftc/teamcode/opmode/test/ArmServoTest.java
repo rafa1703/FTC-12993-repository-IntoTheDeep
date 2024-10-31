@@ -27,7 +27,7 @@ public class ArmServoTest extends LinearOpMode
             clawS.setPosition(clawPos);
             pivotS.setPosition(pivotPos);
             leftArmS.setPosition(leftArmPos);
-            //rightArmS.setPosition(rightArmPos);
+            rightArmS.setPosition(rightArmPos);
         }
     }
 }
