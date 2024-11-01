@@ -419,8 +419,11 @@ public class PrometheusDrive extends LinearOpMode
 
                     if (isBucket)
                     {
-                        if (outtakeLiftHasReachedPresets()) // this reduces the huge backlash on the arm and improves liftPID
+                        if (outtakeLiftHasReachedPresets())
+                        {// this reduces the huge backlash on the arm and improves liftPID
+                            outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SAMPLE);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+                        }
                         else if(!manualControlLift) // this is required or when d2 moves the lift the previous condition is false
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
                     }
@@ -447,7 +450,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 // this sequence should bump down the specimen
                 outtakeSubsystem.armState(isLow ?
-                        OuttakeSubsystem.OuttakeArmServoState.SPECIMEN : OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH, 0.15);
+                        OuttakeSubsystem.OuttakeArmServoState.SPECIMEN : OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH, 0.1);
                 if (delay(40)) {
                     if (!manualControlLift)
                         outtakeLiftPresets(false, isLow, -7); // this actually runs the lift
@@ -456,7 +459,7 @@ public class PrometheusDrive extends LinearOpMode
                         tempLiftPos = outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition);
                         cachedLiftPos = true;
                     }
-                    else outtakeSubsystem.liftToInternalPID(tempLiftPos - 7);
+                    else outtakeSubsystem.liftToInternalPID(isLow ? tempLiftPos - 2 :  tempLiftPos - 7);
                 }
                 if (delay(800))
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);

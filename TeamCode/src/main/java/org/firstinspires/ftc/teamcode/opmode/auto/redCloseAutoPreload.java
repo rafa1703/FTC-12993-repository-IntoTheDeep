@@ -18,7 +18,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@Autonomous(name = "redClose 1 +2", group = "RedClose")
+@Autonomous(name = "RED CLOSE 1 +2", group = "RedClose")
 public class redCloseAutoPreload extends LinearOpMode
 {
 
@@ -29,7 +29,6 @@ public class redCloseAutoPreload extends LinearOpMode
         TRANSFER_END,
         DEPOSIT_DRIVE,
         DROP,
-        RETURN,
         PARK,
         IDLE
     }
@@ -155,7 +154,7 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(650) && intakeSubsystem.slideReached(slideTeleBase))
+                if (delay(650) && intakeSubsystem.isSlidesAtBase())
                 {
                     state = autoState.TRANSFER_END;
                     resetTimer();
@@ -213,7 +212,9 @@ public class redCloseAutoPreload extends LinearOpMode
             case DEPOSIT_DRIVE:
                 if (
                         ((cycle == 0 && hardware.drive.reachedTarget(2)) ||
-                                (cycle == 1 && hardware.drive.reachedTarget(2)))
+                                (cycle == 1 && hardware.drive.reachedTarget(2)) ||
+                                (cycle == 2 && hardware.drive.reachedTarget(2))
+                                )
                                 && delay(600) && hardware.drive.stopped())
                 {
                     state = autoState.DROP;
@@ -256,15 +257,16 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 else // everything here is ran as it was a new state
                 {
-                    if (delay(700))
+                    if (delay(700)) // this is 300 after dropped
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
+                    }
+                    if (delay(900))
                     {
                         outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                         hardware.drive.setTargetPose(new Pose(-50, -50, Math.toRadians(45)));
                     }
-                    if (delay(900)) // this is 300 after dropped
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-                    }
+
                 }
                 break;
             case PARK:

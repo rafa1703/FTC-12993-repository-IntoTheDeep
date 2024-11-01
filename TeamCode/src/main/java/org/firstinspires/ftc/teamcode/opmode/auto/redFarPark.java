@@ -18,8 +18,9 @@ import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
-@Autonomous(name = "RED CLOSE 0+2", group = "RedClose")
-public class redCloseAutoNoPreload extends LinearOpMode
+
+@Autonomous(name = "RED Far Park", group = "RedFar")
+public class redFarPark extends LinearOpMode
 {
 
     enum autoState {
@@ -32,7 +33,7 @@ public class redCloseAutoNoPreload extends LinearOpMode
         IDLE
     }
     ElapsedTime GlobalTimer;
-    autoState state = autoState.INTAKE;
+    autoState state = autoState.PARK;
     GeneralHardware hardware;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Paths trajectories = new Paths();
@@ -42,12 +43,14 @@ public class redCloseAutoNoPreload extends LinearOpMode
     int cycle = 0;
     boolean dropped = false;
 
+    double parkDelay = 10000;
+
     @Override
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
-        hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3  * S, Math.toRadians(90 * S)));
+        hardware.drive.getLocalizer().setPose(new Pose(8.5, -62.3  * S, Math.toRadians(90 * S)));
         hardware.startThreads(this);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
@@ -248,7 +251,8 @@ public class redCloseAutoNoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                hardware.drive.setTargetPose(new Pose(53, -55 * S, Math.toRadians(180 * S)));
+                if (delay(parkDelay))
+                    hardware.drive.setTargetPose(new Pose(53, -55 * S, Math.toRadians(180 * S)));
                 break;
             case IDLE: // we idle here duuhhh
                 break;

@@ -27,7 +27,7 @@ public class OuttakeSubsystem
         leftArmSamplePos = 0.4,
         leftArmSpecimenPos = 0.72,
         leftArmSpecimenHighPos = 0.675,
-        leftArmIntakePos = 0.765;
+        leftArmIntakePos = 0.775;
 
 
     public static final double
@@ -41,12 +41,13 @@ public class OuttakeSubsystem
         clawOpenPos = 0.15,
         clawClosePos = 0.6;
     public static final double
-        pivotReadyPos = 0.33,
-        pivotTransferPos = 0.175,
-        pivotTransferFinishPos = 0.225,
-        pivotSamplePos = 0.28,
-        pivotSpecimenPos = 0.155,
-        pivotIntakePos = 0.135;
+        pivotReadyPos = 0.7,
+        pivotTransferPos = 0.575,
+        pivotTransferFinishPos = 0.65,
+        pivotSamplePos = 0.585,
+        pivotSpecimenPos = 0.35,
+        pivotSpecimenDropPos = 0.3,
+        pivotIntakePos = 0.6;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
@@ -80,6 +81,7 @@ public class OuttakeSubsystem
         TRANSFER_FINISH,
         SAMPLE,
         SPECIMEN,
+        SPECIMEN_DROP,
         INTAKE
     }
 
@@ -234,6 +236,9 @@ public class OuttakeSubsystem
                 break;
             case SPECIMEN:
                 pivotS.setPosition(pivotSpecimenPos);
+                break;
+            case SPECIMEN_DROP:
+                pivotS.setPosition(pivotSpecimenDropPos);
                 break;
             case INTAKE:
                 pivotS.setPosition(pivotIntakePos);

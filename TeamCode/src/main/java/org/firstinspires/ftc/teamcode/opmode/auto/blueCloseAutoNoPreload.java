@@ -18,8 +18,9 @@ import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
-@Autonomous(name = "RED CLOSE 0+2", group = "RedClose")
-public class redCloseAutoNoPreload extends LinearOpMode
+
+@Autonomous(name = "BLUE CLOSE 0+2", group = "BlueClose")
+public class blueCloseAutoNoPreload extends LinearOpMode
 {
 
     enum autoState {
@@ -45,7 +46,7 @@ public class redCloseAutoNoPreload extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Blue, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
         hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3  * S, Math.toRadians(90 * S)));
         hardware.startThreads(this);
@@ -146,7 +147,7 @@ public class redCloseAutoNoPreload extends LinearOpMode
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                         //outtakeSubsystem.pivotSetPos(0.195);
-                        outtakeSubsystem.pivotSetPos(0.21);
+                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
                     }
                     if (delay(300))
                     {
