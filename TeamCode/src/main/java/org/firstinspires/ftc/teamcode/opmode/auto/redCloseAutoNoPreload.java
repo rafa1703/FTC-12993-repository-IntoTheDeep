@@ -67,8 +67,8 @@ public class redCloseAutoNoPreload extends LinearOpMode
             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
         }
         waitForStart();
+        globalTimer = GlobalTimer.milliseconds();
         resetTimer();
-
         while (opModeIsActive())
         {
             hardware.update();
@@ -105,10 +105,10 @@ public class redCloseAutoNoPreload extends LinearOpMode
                 }
                 if (cycle == 0)
                 {
-                    hardware.drive.setTargetPose(new Pose(-44.8, -35.8, Math.toRadians(90)));
-                    if (hardware.drive.reachedTarget(4))
+                    hardware.drive.setTargetPose(new Pose(-41.8, -39.8, Math.toRadians(90)));
+                    if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-44.8, -35.8 + 6, Math.toRadians(90));
+                        Pose intakePose = new Pose(-41.8, -39.8 + 9, Math.toRadians(90));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(400))
@@ -116,10 +116,10 @@ public class redCloseAutoNoPreload extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    hardware.drive.setTargetPose(new Pose(-53.4, -35.8, Math.toRadians(90)));
+                    hardware.drive.setTargetPose(new Pose(-53.4, -39.8, Math.toRadians(90)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-53.8, -35.8 + 6, Math.toRadians(90));
+                        Pose intakePose = new Pose(-53.8, -39.8 + 9, Math.toRadians(90));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -127,7 +127,7 @@ public class redCloseAutoNoPreload extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(650) && intakeSubsystem.slideReached(slideTeleBase))
+                if (delay(750) && intakeSubsystem.slideReached(slideTeleBase))
                 {
                     state = autoState.TRANSFER_END;
                     resetTimer();
@@ -136,17 +136,19 @@ public class redCloseAutoNoPreload extends LinearOpMode
                 if (delay(70))
                 {
                     intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                 }
-                if (intakeSubsystem.slideReached(slideTeleBase))
+                if (intakeSubsystem.isSlidesAtBase())
                 {
                     if (delay(100))
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     if (delay(230))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                        //outtakeSubsystem.pivotSetPos(0.195);
+                        outtakeSubsystem.pivotSetPos(0.21);
                     }
-                    if (delay(400))
+                    if (delay(300))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                     }
@@ -156,7 +158,7 @@ public class redCloseAutoNoPreload extends LinearOpMode
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
-                if (delay(700))
+                if (delay(975))
                 {
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
@@ -164,26 +166,23 @@ public class redCloseAutoNoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                intakeClipHoldLogic(slideTeleTransfer, 5); // this controls the intake slides and the clip
+                intakeClipHoldLogic(slideTeleTransfer, 20); // this controls the intake slides and the clip
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
-                if (delay(150)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                if (delay(350))
+                if (delay(200)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                if (delay(400))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    if (delay(450))
+                    if (delay(650))
                     {
                         intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                     }
-                    if (delay(400))
-                    {// we wait a bit to to pivot
-                        //intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-                    }
-                    if (delay(500))
+                    if (delay(800))
                     {
                         outtakeSubsystem.liftToInternalPID(5);
-                        if (delay(540))
+                        if (delay(850))
                             outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
                     }
+                    else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                 }
                 break;
             case DEPOSIT_DRIVE:
@@ -196,12 +195,12 @@ public class redCloseAutoNoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                if (delay(100))
+                if (delay(500))
                 {
                     if (cycle == 0)
-                        hardware.drive.setTargetPose(new Pose(-50, -54, Math.toRadians(45)));
+                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5, Math.toRadians(45)));
                     else if (cycle == 1)
-                        hardware.drive.setTargetPose(new Pose(-50, -54, Math.toRadians(45)));
+                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5, Math.toRadians(45)));
                 }
                 break;
             case DROP:
@@ -221,7 +220,7 @@ public class redCloseAutoNoPreload extends LinearOpMode
                         outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SAMPLE);
                         if (delay(400)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
                     }
-                    if (delay(1500))
+                    if (delay(2500))
                     {
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                         dropped = true;
@@ -230,28 +229,34 @@ public class redCloseAutoNoPreload extends LinearOpMode
                 }
                 else
                 {
-                    if (delay(200))
+                    if (delay(700))
+                    {
+                        outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                         hardware.drive.setTargetPose(new Pose(-50, -50, Math.toRadians(45)));
-                    if (delay(500)) // this is 300 after dropped
+                    }
+                    if (delay(900)) // this is 300 after dropped
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
                     }
                     //else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-
-                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                 }
                 break;
             case PARK:
                 if (hardware.drive.reachedTarget(2) && delay(200))
                 {
-                    state = autoState.IDLE;
+                    state = autoState.IDLE; //
                     resetTimer();
                     break;
                 }
-                hardware.drive.setTargetPose(trajectories.parkTrajectory.getFinalPose());
+                hardware.drive.setTargetPose(new Pose(53, -55, Math.toRadians(180)));
                 break;
             case IDLE: // we idle here duuhhh
                 break;
+        }
+        if (delay(7500) && state == autoState.INTAKE)// if the sample is stuck we just park
+        {
+            state = autoState.PARK; // THIS IS THE FIRST PART OF PARK
+            resetTimer();
         }
     }
     public void intakeClipHoldLogic(int slideToPosition, int closeThreshold)

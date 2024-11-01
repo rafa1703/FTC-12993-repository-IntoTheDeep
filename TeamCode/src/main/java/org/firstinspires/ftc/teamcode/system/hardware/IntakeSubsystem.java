@@ -151,7 +151,7 @@ public class IntakeSubsystem
                 intakeMotor.setPower(0);
                 break;
             case REVERSE:
-                intakeMotor.setPower(-intakeSpeed);
+                intakeMotor.setPower(-0.7);
                 break;
         }
     }

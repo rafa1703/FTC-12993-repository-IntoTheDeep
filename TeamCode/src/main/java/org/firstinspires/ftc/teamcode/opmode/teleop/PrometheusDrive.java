@@ -6,8 +6,6 @@ import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.sli
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleFar;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
 
-import android.graphics.Path;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -58,6 +56,7 @@ public class PrometheusDrive extends LinearOpMode
     boolean manualControlLift = false;
     boolean cachedLiftPos = false;
     double tempLiftPos = 0;
+    boolean notTransferringFromExtendo = true;
 
 
     @Override
@@ -107,6 +106,7 @@ public class PrometheusDrive extends LinearOpMode
             telemetry.addData("State", state);
             telemetry.addData("FilterState", intakeSubsystem.intakeFilter);
             telemetry.addData("Color value", intakeSubsystem.getColorValue());
+            telemetry.addData("Color logic", intakeSubsystem.colorLogic());
             telemetry.update();
         }
     }
@@ -171,6 +171,7 @@ public class PrometheusDrive extends LinearOpMode
                                         && (gamepad2.right_bumper || gamepad1.right_bumper))
                         {
                             state = OuttakeState.TRANSFER_START;
+                            notTransferringFromExtendo = false;
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                             gamepad1.rumbleBlips(2);
                             resetTimer();
@@ -183,7 +184,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case INTAKE_EXTENDO_DROP:
-                if ((colorValue < 800 && delay(1000)) || gamepad1.right_bumper || gamepad2.right_bumper)
+                if ((colorValue < 800 && delay(2000)) || gamepad1.right_bumper || gamepad2.right_bumper)
                 {
                     intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
                     state = OuttakeState.INTAKE_EXTENDO;
@@ -191,7 +192,8 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 colorValue = intakeSubsystem.getColorValue();
                 intakeArmHeight();
-                intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget + 5);
+                if (delay(400))
+                    intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget + 5);
                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
 
                 if (delay(50))
@@ -220,7 +222,7 @@ public class PrometheusDrive extends LinearOpMode
                 // whenever we want to intake the intake goes down but with this the driver can hold the button to control it
                 intakeArmHeight();
                 colorValue = intakeSubsystem.getColorValue();
-                if (delay(200) && colorValue > 800 ||
+                if (delay(200) && colorValue > 500 ||
                         (intakeSubsystem.intakeFilter == IntakeSubsystem.IntakeFilter.OFF && (gamepad2.right_bumper || gamepad1.right_bumper)))
                 {
                     if (true) // if we picked the wrong color we initialize the drop sequence
@@ -228,6 +230,7 @@ public class PrometheusDrive extends LinearOpMode
                         state = OuttakeState.TRANSFER_START;
                         intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                         gamepad1.rumbleBlips(2);
+                        notTransferringFromExtendo = true;
                         resetTimer();
                     } else
                     {
@@ -258,7 +261,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(600) && intakeSubsystem.isSlidesAtBase())
+                if (notTransferringFromExtendo ? delay(600) : delay(950) && intakeSubsystem.isSlidesAtBase())
                 {
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
@@ -271,18 +274,18 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 if (intakeSubsystem.isSlidesAtBase())
                 {
-                    if (delay(120))
+                    if (notTransferringFromExtendo ? delay(120) : delay(320))
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                    if (delay(230))
+                    if ((notTransferringFromExtendo ? delay(230) : delay(530)))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                         outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
                     }
-                    if (delay(400))
+                    if (notTransferringFromExtendo ? delay(400) : delay(400))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                     }
-                } else if (delay(20))
+                } else if (delay(35))
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 // naming makes no sense but this makes sure the arm i high when the slides come back
                 break;
@@ -383,12 +386,15 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     state = OuttakeState.SAMPLE_DROP;
                     resetTimer();
+                    break;
                 }
                 if (delay(40))
                 {
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                    outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.INTAKE);
                 }
+                if (delay(450))
+                    outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SAMPLE);
+                else outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
                 break;
             case DEPOSIT: // this will actually start the deposit, so lift and arm presets
                 if ((gamepad1.right_bumper || gamepad2.right_bumper) && delay(400))
@@ -462,6 +468,7 @@ public class PrometheusDrive extends LinearOpMode
                     manualControlLift = false;
                     isBucket = true;
                     cachedLiftPos = false;
+                    notTransferringFromExtendo = true;
                     intakeSlideBtn.OffsetTargetPosition = 0;
                     state = OuttakeState.READY;
                     resetTimer();

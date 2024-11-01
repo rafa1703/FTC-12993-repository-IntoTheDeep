@@ -24,7 +24,7 @@ public class OuttakeSubsystem
         leftArmReadyPos = 0.9,
         leftArmTransferPos = 0.91,
         leftArmTransferFinishPos = 0.8,
-        leftArmSamplePos = 0.35,
+        leftArmSamplePos = 0.4,
         leftArmSpecimenPos = 0.72,
         leftArmSpecimenHighPos = 0.675,
         leftArmIntakePos = 0.765;
@@ -50,7 +50,7 @@ public class OuttakeSubsystem
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
-        liftHighBucketPos= 24,
+        liftHighBucketPos= 22,
         liftLowBucketPos = 1,
         liftHighBarPos = 16,
         liftLowBarPos = 2,
