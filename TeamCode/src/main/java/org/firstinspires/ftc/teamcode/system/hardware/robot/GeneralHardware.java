@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.system.hardware.robot;
 
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -33,7 +34,7 @@ public class GeneralHardware
 
     public ServoImplEx chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
     public ServoImplEx clawS, pivotS, flapS, seh3, seh4, seh5;
-    public ColorSensor cs0;
+    public RevColorSensorV3 cs0;
     public ImuThread imu;
 
     public Localizer localizer;
@@ -107,7 +108,7 @@ public class GeneralHardware
         //seh4 = hm.get(ServoImplEx.class, "seh4");
         //seh5 = hm.get(ServoImplEx.class, "seh5");
 
-        cs0 = hm.get(ColorSensor.class, "colorSensor");
+        cs0 = hm.get(RevColorSensorV3.class, "colorSensor");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltageSupplier = new TimedSupplier<>(voltageSensor::getVoltage, 40);

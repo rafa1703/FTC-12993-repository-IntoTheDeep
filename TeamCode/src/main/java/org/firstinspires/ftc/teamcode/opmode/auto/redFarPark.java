@@ -251,8 +251,8 @@ public class redFarPark extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                if (delay(parkDelay))
-                    hardware.drive.setTargetPose(new Pose(53, -55 * S, Math.toRadians(180 * S)));
+                if (delay(0))
+                    hardware.drive.setTargetPose(new Pose(60, -55 * S, Math.toRadians(90 * S)));
                 break;
             case IDLE: // we idle here duuhhh
                 break;

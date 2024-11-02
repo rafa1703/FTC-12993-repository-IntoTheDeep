@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.qualcomm.hardware.rev.RevColorSensorV3;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -16,7 +17,7 @@ public class IntakeSubsystem
     ServoImplEx chuteS, flapS, leftArmS, rightArmS, clipS;
 
     DcMotorEx intakeMotor, intakeSlideMotor;
-    ColorSensor colorSensor;
+    RevColorSensorV3 colorSensor;
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
@@ -43,7 +44,7 @@ public class IntakeSubsystem
 
     public static final int // in inches
         slideTeleClose = 14,
-        slideTeleFar = 22, // max extension is 27 under the extension limit
+        slideTeleFar = 20, // max extension is 27 under the extension limit
         slideTeleBase = 0,
         slideTeleTransfer = -10;
     public final double
@@ -88,6 +89,7 @@ public class IntakeSubsystem
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
     private final double TICKS_PER_BAREMOTOR = 28;
+    private boolean isRed = false;
 
     public IntakeSubsystem(GeneralHardware hardware)
     {
@@ -114,7 +116,7 @@ public class IntakeSubsystem
         leftArmS = hardware.get(ServoImplEx.class, "intakeLeftArmS");;
         rightArmS = hardware.get(ServoImplEx.class, "intakeRightArmS");;
         clipS = hardware.get(ServoImplEx.class, "clipS");;
-        colorSensor = hardware.get(ColorSensor.class, "colorSensor");; // no supplier as i want this to pool immediately and synchronously
+        colorSensor = hardware.get(RevColorSensorV3.class, "colorSensor");; // no supplier as i want this to pool immediately and synchronously
 
         intakeMotor = hardware.get(DcMotorEx.class, "Intake");
         intakeSlideMotor = hardware.get(DcMotorEx.class, "IntakeSlides");
@@ -135,7 +137,14 @@ public class IntakeSubsystem
     public void intakeReads(boolean i2c)
     {
         slidePosition = intakeSlideMotor.getCurrentPosition();
-        if (i2c) colorValue = colorSensor.alpha();
+        //if (i2c) colorValue = colorSensor.alpha();
+        if (i2c)
+        {
+            double redValue = colorSensor.getNormalizedColors().red;
+            double blueValue = colorSensor.getNormalizedColors().blue;
+            isRed = !(blueValue > redValue);
+            colorValue = colorSensor.alpha();
+        }
     }
 
     public void intakeSpin(IntakeSpinState state)
@@ -273,9 +282,9 @@ public class IntakeSubsystem
     public boolean colorLogic()
     {
         if (intakeFilter == IntakeFilter.OFF) return true;
-        if (colorValue < 900) return (side == GeneralHardware.Side.Red); //
-        else if (colorValue < 1500) return (side == GeneralHardware.Side.Blue);
-        else return intakeFilter != IntakeFilter.SIDE_SPECIFIC;
+        if (colorValue > 1500) return intakeFilter != IntakeFilter.SIDE_SPECIFIC;
+        else if (!isRed) return (side == GeneralHardware.Side.Blue);
+        else return (side == GeneralHardware.Side.Red);
     }
     public double getColorValue()
     {

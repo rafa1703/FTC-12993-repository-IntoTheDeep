@@ -19,8 +19,8 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@Autonomous(name = "BLUE CLOSE 1 +2 NO PARK", group = "BlueClose")
-public class blueCloseAutoPreload extends LinearOpMode
+@Autonomous(name = "RED CLOSE 1 +2 NO PARK", group = "RedClose")
+public class redCloseAutoPreloadNoPark extends LinearOpMode
 {
 
     enum autoState {
@@ -47,9 +47,9 @@ public class blueCloseAutoPreload extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Blue, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
-        hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3 * S, Math.toRadians(90 + 180)));
+        hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3 * S, Math.toRadians(90 * S)));
         hardware.startThreads(this);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
@@ -117,7 +117,7 @@ public class blueCloseAutoPreload extends LinearOpMode
                 outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                hardware.drive.setTargetPose(new Pose(-48 * S, -56.5 * S, Math.toRadians(45 + 180))); // this is the same drop pos as the other auto
+                hardware.drive.setTargetPose(new Pose(-54.5, -56.5 * S, Math.toRadians(45 * S))); // this is the same drop pos as the other auto
                 break;
             case INTAKE:
                 if (intakeSubsystem.getColorValue() > 800)
@@ -133,10 +133,10 @@ public class blueCloseAutoPreload extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    hardware.drive.setTargetPose(new Pose(-39.8 * S, -39.8 * S, Math.toRadians(90 + 180)));
+                    hardware.drive.setTargetPose(new Pose(-43.8, -39.8 * S, Math.toRadians(90 * S)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-39.8 * S, (-39.8 + 9) * S, Math.toRadians(90 + 180));
+                        Pose intakePose = new Pose(-43.8, (-39.8 + 9) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -144,10 +144,10 @@ public class blueCloseAutoPreload extends LinearOpMode
                 }
                 if (cycle == 2)
                 {
-                    hardware.drive.setTargetPose(new Pose(-49.4 * S, -39.8 * S, Math.toRadians(90 + 180)));
+                    hardware.drive.setTargetPose(new Pose(-53.4, -39.8 * S, Math.toRadians(90 * S)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-49.8 * S, (-39.8 + 9) * S, Math.toRadians(90 + 180));
+                        Pose intakePose = new Pose(-53.8, (-39.8 + 9) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -163,6 +163,7 @@ public class blueCloseAutoPreload extends LinearOpMode
                 }
                 if (delay(70))
                 {
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                     intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
                 }
                 if (intakeSubsystem.slideReached(slideTeleBase))
@@ -225,9 +226,9 @@ public class blueCloseAutoPreload extends LinearOpMode
                 if (delay(100))
                 {
                     if (cycle == 1)
-                        hardware.drive.setTargetPose(new Pose(-48.5 * S, -55.5 * S, Math.toRadians(45 + 180)));
+                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5 * S, Math.toRadians(45 * S)));
                     else if (cycle == 2)
-                        hardware.drive.setTargetPose(new Pose(-48.5 * S, -55.5 * S, Math.toRadians(45 + 180)));
+                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5 * S, Math.toRadians(45 * S)));
                 }
                 break;
             case DROP:
@@ -267,7 +268,7 @@ public class blueCloseAutoPreload extends LinearOpMode
                     if (delay(900))
                     {
                         outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
-                        hardware.drive.setTargetPose(new Pose(-43 * S, -50 * S, Math.toRadians(45 + 180)));
+                        hardware.drive.setTargetPose(new Pose(-50, -50 * S, Math.toRadians(45 * S)));
                     }
 
                 }
@@ -279,7 +280,7 @@ public class blueCloseAutoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                hardware.drive.setTargetPose(new Pose(-32 * S, -10 * S, Math.toRadians(0 + 180)));
+                hardware.drive.setTargetPose(new Pose(-32, -10 * S, Math.toRadians(0 * S)));
                 break;
             case IDLE: // we idle here duuhhh
                 break;

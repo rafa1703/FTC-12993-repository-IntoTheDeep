@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
+import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
@@ -48,7 +50,7 @@ public class redCloseAutoPreload extends LinearOpMode
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
-        hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3, Math.toRadians(90)));
+        hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3 * S, Math.toRadians(90 * S)));
         hardware.startThreads(this);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
@@ -116,7 +118,7 @@ public class redCloseAutoPreload extends LinearOpMode
                 outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                hardware.drive.setTargetPose(new Pose(-54.5, -56.5, Math.toRadians(45))); // this is the same drop pos as the other auto
+                hardware.drive.setTargetPose(new Pose(-54.5, -56.5 * S, Math.toRadians(45 * S))); // this is the same drop pos as the other auto
                 break;
             case INTAKE:
                 if (intakeSubsystem.getColorValue() > 800)
@@ -132,10 +134,10 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    hardware.drive.setTargetPose(new Pose(-43.8, -39.8, Math.toRadians(90)));
+                    hardware.drive.setTargetPose(new Pose(-43.8, -39.8 * S, Math.toRadians(90 * S)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-43.8, -39.8 + 9, Math.toRadians(90));
+                        Pose intakePose = new Pose(-43.8, (-39.8 + 9) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -143,10 +145,10 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 if (cycle == 2)
                 {
-                    hardware.drive.setTargetPose(new Pose(-53.4, -39.8, Math.toRadians(90)));
+                    hardware.drive.setTargetPose(new Pose(-53.4, -39.8 * S, Math.toRadians(90 * S)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-53.8, -39.8 + 9, Math.toRadians(90));
+                        Pose intakePose = new Pose(-53.8, (-39.8 + 9) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -224,9 +226,9 @@ public class redCloseAutoPreload extends LinearOpMode
                 if (delay(100))
                 {
                     if (cycle == 1)
-                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5, Math.toRadians(45)));
+                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5 * S, Math.toRadians(45 * S)));
                     else if (cycle == 2)
-                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5, Math.toRadians(45)));
+                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5 * S, Math.toRadians(45 * S)));
                 }
                 break;
             case DROP:
@@ -260,11 +262,13 @@ public class redCloseAutoPreload extends LinearOpMode
                     if (delay(700)) // this is 300 after dropped
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
+                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                     }
                     if (delay(900))
                     {
                         outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
-                        hardware.drive.setTargetPose(new Pose(-50, -50, Math.toRadians(45)));
+                        hardware.drive.setTargetPose(new Pose(-50, -50 * S, Math.toRadians(45 * S)));
                     }
 
                 }
@@ -276,7 +280,7 @@ public class redCloseAutoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                hardware.drive.setTargetPose(new Pose(53, -55, Math.toRadians(180)));
+                hardware.drive.setTargetPose(new Pose(53, -55 * S, Math.toRadians(180 * S)));
                 break;
             case IDLE: // we idle here duuhhh
                 break;

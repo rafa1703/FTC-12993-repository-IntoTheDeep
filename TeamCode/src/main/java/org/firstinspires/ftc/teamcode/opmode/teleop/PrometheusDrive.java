@@ -26,7 +26,7 @@ public class PrometheusDrive extends LinearOpMode
     OuttakeSubsystem outtakeSubsystem;
     DriveBaseSubsystem driveBase;
     GeneralHardware hardware;
-    GeneralHardware.Side side = GeneralHardware.Side.Blue;
+    GeneralHardware.Side side = GeneralHardware.Side.Red;
     // this matches the initial value in the intakeSubsystem
     IntakeSubsystem.IntakeFilter prevIntakeFilterState;
     enum OuttakeState {
@@ -66,8 +66,8 @@ public class PrometheusDrive extends LinearOpMode
             if (gamepad2.dpad_up || gamepad1.dpad_up) side = GeneralHardware.Side.Red;
             else if (gamepad2.dpad_down || gamepad1.dpad_down) side = GeneralHardware.Side.Blue;
 
-            if (side == GeneralHardware.Side.Blue) gamepad1.setLedColor(0, 0, 255, 1000);
-            else gamepad1.setLedColor(255, 0, 0, 1000);
+            if (side == GeneralHardware.Side.Blue) gamepad2.setLedColor(0, 0, 255, 1000);
+            else gamepad2.setLedColor(255, 0, 0, 1000);
 
             telemetry.addData("Side", side);
             telemetry.update();
@@ -146,10 +146,11 @@ public class PrometheusDrive extends LinearOpMode
                 intakeSlideBtn.downToggle(gamepad1.right_bumper, 1);
                 if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleClose;
                 if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
-                if (delay(200) && gamepad1.share)
+                if (delay(200) && gamepad2.dpad_left)
                 {
                     state = OuttakeState.INTAKE_EXTENDO_DROP;
                     resetTimer();
+                    break;
                 }
                 intakeArmHeight();
                 colorValue = intakeSubsystem.getColorValue();
@@ -162,7 +163,7 @@ public class PrometheusDrive extends LinearOpMode
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                     else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
-                    if (delay(200) && colorValue > 800 ||
+                    if (delay(1000) && colorValue > 500 ||
                             (gamepad1.right_trigger > 0.2 || gamepad2.right_trigger > 0.2) ||
                             (intakeSubsystem.intakeFilter == IntakeSubsystem.IntakeFilter.OFF &&
                                     (gamepad2.right_bumper || gamepad1.right_bumper)))
@@ -496,7 +497,7 @@ public class PrometheusDrive extends LinearOpMode
 
                 if (delay(550))
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-                else if (delay(40) && !intakeSubsystem.isSlidesAtBase())
+                else if (delay(40))
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 break;
             case MANUAL_ENCODER_RESET:
@@ -523,10 +524,17 @@ public class PrometheusDrive extends LinearOpMode
                 break;
         }
         // we run everything here that isn't state specific
-        if ((gamepad2.b || gamepad1.b) &&
+        if ((gamepad1.b &&
                 (state != OuttakeState.READY) &&
                 (state != OuttakeState.MANUAL_ENCODER_RESET) &&
-                (state != OuttakeState.RETURN))
+                (state != OuttakeState.RETURN)) ||
+                (gamepad2.b &&
+                (state != OuttakeState.READY) &&
+                (state != OuttakeState.MANUAL_ENCODER_RESET) &&
+                (state != OuttakeState.RETURN) &&
+                (state != OuttakeState.INTAKE_EXTENDO) &&
+                (state != OuttakeState.INTAKE_EXTENDO_DROP)
+        ))
         {
             // can't reset if in manual reset lmao
             state = OuttakeState.RETURN; // if b is pressed at any state then return to ready

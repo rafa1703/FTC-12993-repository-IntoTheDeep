@@ -41,17 +41,17 @@ public class OuttakeSubsystem
         clawOpenPos = 0.15,
         clawClosePos = 0.6;
     public static final double
-        pivotReadyPos = 0.7,
-        pivotTransferPos = 0.575,
+        pivotReadyPos = 0.685,
+        pivotTransferPos = 0.530,
         pivotTransferFinishPos = 0.65,
         pivotSamplePos = 0.585,
         pivotSpecimenPos = 0.35,
         pivotSpecimenDropPos = 0.3,
-        pivotIntakePos = 0.6;
+        pivotIntakePos = 0.55;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
-        liftHighBucketPos= 22,
+        liftHighBucketPos= 24,
         liftLowBucketPos = 1,
         liftHighBarPos = 16,
         liftLowBarPos = 2,
@@ -300,9 +300,7 @@ public class OuttakeSubsystem
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return ((TICKS_PER_BAREMOTOR * 5.3571428571) / (0.95485 * 2 * Math.PI)) * inches; //ticks per inches
-        // ratio is 70/14 = 5
-        // 140 / (1.78442 * 3.14159) = 24.9736170335
+        return ((TICKS_PER_BAREMOTOR * 5.3571428571) / (0.95485 * 2 * Math.PI)) * inches;
     }
 
 
