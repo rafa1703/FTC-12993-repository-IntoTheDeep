@@ -262,7 +262,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (notTransferringFromExtendo ? delay(600) : delay(950) && intakeSubsystem.isSlidesAtBase())
+                if (notTransferringFromExtendo ? delay(700) : delay(1050) && intakeSubsystem.isSlidesAtBase())
                 {
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
@@ -271,7 +271,7 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     // this will hardstop the flap in the sample so the extendo can go back
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                    intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
+                    intakeClipHoldLogic(slideTeleTransfer, 10); // this controls the intake slides and the clip
                 }
                 if (intakeSubsystem.isSlidesAtBase())
                 {
@@ -280,11 +280,14 @@ public class PrometheusDrive extends LinearOpMode
                     if ((notTransferringFromExtendo ? delay(230) : delay(530)))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
                     }
                     if (notTransferringFromExtendo ? delay(400) : delay(400))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
+                    }
+                    if (notTransferringFromExtendo ? delay(450) : delay(500))
+                    {
+                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
                     }
                 } else if (delay(35))
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);

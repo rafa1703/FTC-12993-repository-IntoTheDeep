@@ -22,7 +22,7 @@ public class OuttakeSubsystem
     public static final double
         leftArmStraightPos = 0.5,
         leftArmReadyPos = 0.9,
-        leftArmTransferPos = 0.91,
+        leftArmTransferPos = 0.885,
         leftArmTransferFinishPos = 0.8,
         leftArmSamplePos = 0.4,
         leftArmSpecimenPos = 0.72,
@@ -38,11 +38,11 @@ public class OuttakeSubsystem
         rightArmSpecimenScorePos = 1,
         rightArmIntakePos = 1;
     public static final double
-        clawOpenPos = 0.15,
+        clawOpenPos = 0.3,
         clawClosePos = 0.6;
     public static final double
-        pivotReadyPos = 0.685,
-        pivotTransferPos = 0.530,
+        pivotReadyPos = 0.72,
+        pivotTransferPos = 0.6,
         pivotTransferFinishPos = 0.65,
         pivotSamplePos = 0.585,
         pivotSpecimenPos = 0.35,
