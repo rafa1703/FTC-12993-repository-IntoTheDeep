@@ -295,7 +295,7 @@ public class PrometheusDrive extends LinearOpMode
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
-                if (delay(600))
+                if (delay(700))
                 {
                     isBucket = true;
                     isLow = false;
@@ -304,7 +304,7 @@ public class PrometheusDrive extends LinearOpMode
                     state = OuttakeState.OUTTAKE_ADJUST;
                     resetTimer();
                 }
-                intakeClipHoldLogic(slideTeleTransfer, 5); // this controls the intake slides and the clip
+                intakeClipHoldLogic(slideTeleTransfer, 15); // this controls the intake slides and the clip
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
                 if ((delay(250) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos)) || delay(400))
                 {

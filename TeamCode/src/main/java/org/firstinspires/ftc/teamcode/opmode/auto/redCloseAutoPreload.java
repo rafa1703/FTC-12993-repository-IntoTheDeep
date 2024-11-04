@@ -1,7 +1,6 @@
 
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
 import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
 
@@ -10,7 +9,6 @@ import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
@@ -64,14 +62,14 @@ public class redCloseAutoPreload extends LinearOpMode
             intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
 
-            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
             if (delay(300)) outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
             else outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
 
             if (delay(1500))
             {
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                //intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
             }
             else
             {
@@ -134,10 +132,10 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    hardware.drive.setTargetPose(new Pose(-43.8, -39.8 * S, Math.toRadians(90 * S)));
+                    hardware.drive.setTargetPose(new Pose(-44, -45.8 * S, Math.toRadians(90 * S)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-43.8, (-39.8 + 9) * S, Math.toRadians(90 * S));
+                        Pose intakePose = new Pose(-44, (-45.8 + 19) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -145,10 +143,10 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 if (cycle == 2)
                 {
-                    hardware.drive.setTargetPose(new Pose(-53.4, -39.8 * S, Math.toRadians(90 * S)));
+                    hardware.drive.setTargetPose(new Pose(-53.9, -39.8 * S, Math.toRadians(90 * S)));
                     if (hardware.drive.reachedTarget(2))
                     {
-                        Pose intakePose = new Pose(-53.8, (-39.8 + 9) * S, Math.toRadians(90 * S));
+                        Pose intakePose = new Pose(-53.9, (-39.8 + 19) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
                     }
                     if (delay(200))
@@ -156,32 +154,36 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(650) && intakeSubsystem.isSlidesAtBase())
+                if (delay(700) && intakeSubsystem.isSlidesAtBase())
                 {
                     state = autoState.TRANSFER_END;
                     resetTimer();
                     break;
                 }
-                if (delay(70))
+                if (delay(40))
                 {
-                    intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
+                    // this will hardstop the flap in the sample so the extendo can go back
+                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
+                    intakeClipHoldLogic(slideTeleTransfer, 10); // this controls the intake slides and the clip
                 }
-                if (intakeSubsystem.slideReached(slideTeleBase))
+                if (intakeSubsystem.isSlidesAtBase())
                 {
-                    if (delay(100))
+                    if (delay(120))
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     if (delay(230))
                     {
-                        //intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                     }
                     if (delay(400))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                     }
-                } else if (delay(20))
-                    //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
-                // naming makes no sense but this makes sure the arm i high when the slides come back
+                    if (delay(450))
+                    {
+                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                    }
+                } else if (delay(35))
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 break;
             case TRANSFER_END:
                 // so this is when the thing will grip and we are assuming that the slides are at transfer position
@@ -195,19 +197,25 @@ public class redCloseAutoPreload extends LinearOpMode
                 }
                 intakeClipHoldLogic(slideTeleTransfer, 5); // this controls the intake slides and the clip
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
-                if (delay(150)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                if (delay(350))
+                if ((delay(250) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos)) ||
+                        delay(400))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    if (delay(450))
+                    if (delay(350))
                     {
                         intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                     }
-                    if (delay(500))
+                    if (delay(400))
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+                    }
+                    if (delay(440))
                     {
                         outtakeSubsystem.liftToInternalPID(5);
-                        if (delay(540))
+                        if (delay(500))
+                        {
                             outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
+                        }
                     }
                 }
                 break;
@@ -280,6 +288,8 @@ public class redCloseAutoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
+                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                // park pose new Pose(53, -55 * S, Math.toRadians(180 * S))
                 hardware.drive.setTargetPose(new Pose(53, -55 * S, Math.toRadians(180 * S)));
                 break;
             case IDLE: // we idle here duuhhh

@@ -39,23 +39,23 @@ public class OuttakeSubsystem
         rightArmIntakePos = 1;
     public static final double
         clawOpenPos = 0.3,
-        clawClosePos = 0.6;
+        clawClosePos = 0.665;
     public static final double
-        pivotReadyPos = 0.72,
-        pivotTransferPos = 0.6,
+        pivotReadyPos = 0.68,
+        pivotTransferPos = 0.53,
         pivotTransferFinishPos = 0.65,
         pivotSamplePos = 0.585,
-        pivotSpecimenPos = 0.35,
-        pivotSpecimenDropPos = 0.3,
+        pivotSpecimenPos = 0.31,
+        pivotSpecimenDropPos = 0.1,
         pivotIntakePos = 0.55;
 
     public static final int
         liftMaxExtension = 27, // 680 ticks
         liftHighBucketPos= 24,
         liftLowBucketPos = 1,
-        liftHighBarPos = 16,
-        liftLowBarPos = 2,
-        liftSpecimenIntake = 0,
+        liftHighBarPos = 19,
+        liftLowBarPos = 4,
+        liftSpecimenIntake = 1,
         liftBasePos = 0; // maybe make this -5 because of shit intake clip
     private final double liftThreshold = 10;
     public enum OuttakeClawServoState
