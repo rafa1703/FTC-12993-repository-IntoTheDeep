@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 
 
 import org.firstinspires.ftc.teamcode.gvf.Localizer;
+import org.firstinspires.ftc.teamcode.gvf.LocalizerCustomVel;
 import org.firstinspires.ftc.teamcode.gvf.LocalizerOTOS;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
@@ -37,7 +38,7 @@ public class GeneralHardware
     public RevColorSensorV3 cs0;
     public ImuThread imu;
 
-    public Localizer localizer;
+    public LocalizerCustomVel localizer;
     public LocalizerOTOS otosLocalizer;
     public MecanumDrive drive;
 
@@ -132,11 +133,12 @@ public class GeneralHardware
             // TODO: change here depending on odometry type
             imu = new ImuThread(hm);
             imu.initImuThread();
-            localizer = new Localizer(this);
+            localizer = new LocalizerCustomVel(this);
             //otosLocalizer = new LocalizerOTOS(this);
 
             MecanumDrive.headingMultiplier = 1;
             drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);
+            drive.setRunMode(MecanumDrive.RunMode.Vector);
 
             S = side == Side.Red ? 1 : -1;
             A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);
@@ -152,6 +154,7 @@ public class GeneralHardware
     {
         resetCacheHubs();
         voltage = voltageSupplier.get();
+        drive.update();
         //localizer.update();
     }
     public void resetCacheHubs()

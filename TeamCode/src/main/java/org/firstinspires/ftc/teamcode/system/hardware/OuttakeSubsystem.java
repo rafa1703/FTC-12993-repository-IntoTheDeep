@@ -46,7 +46,7 @@ public class OuttakeSubsystem
         pivotTransferFinishPos = 0.65,
         pivotSamplePos = 0.585,
         pivotSpecimenPos = 0.31,
-        pivotSpecimenDropPos = 0.1,
+        pivotSpecimenDropPos = 0.5,
         pivotIntakePos = 0.55;
 
     public static final int

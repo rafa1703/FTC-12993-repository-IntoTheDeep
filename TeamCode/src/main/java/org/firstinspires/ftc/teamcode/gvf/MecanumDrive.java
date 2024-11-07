@@ -34,7 +34,7 @@ public class MecanumDrive
     public static PIDController HEADING_PID = new PIDController(0.55, 0, 0.00034);
     private DcMotor FL, FR, BL, BR;
     private RunMode runMode;
-    private Localizer localizer;
+    private LocalizerCustomVel localizer;
     public Vector powerVector = new Vector();
     private Pose targetPose = new Pose();
     public Vector targetVector = new Vector();
@@ -134,19 +134,6 @@ public class MecanumDrive
 
         powerVector = new Vector(powerVector.getX(), powerVector.getY() * lateralMultiplier, headingPower);
     }
-    public void driverControlledDrive(double LY, double LX, double RX)
-    {
-        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
-        double frontLeftPower = (-LY + LX + RX) / denominator;
-        double backLeftPower = (-LY - LX + RX) / denominator;
-        double frontRightPower = (-LY - LX - RX) / denominator;
-        double backRightPower = (-LY + LX - RX) / denominator;
-
-        FL.setPower(frontLeftPower);
-        FR.setPower(frontRightPower);
-        BR.setPower(backRightPower);
-        BL.setPower(backLeftPower);
-    }
 
     private void P2P()
     {
@@ -183,7 +170,7 @@ public class MecanumDrive
         if (runMode == RunMode.P2P || runMode == RunMode.PID)
         {
 
-            double actualKs = ks * 14.0 / voltageSupplier.get();
+            double actualKs = ks * 12.0 / voltageSupplier.get();
 
             FLPower = (powerVector.getX() - powerVector.getY() - powerVector.getZ()) * (1 - actualKs)
                     + actualKs * Math.signum(powerVector.getX() - powerVector.getY() - powerVector.getZ());
@@ -224,7 +211,7 @@ public class MecanumDrive
         updateMotors();
     }
 
-    public Localizer getLocalizer()
+    public LocalizerCustomVel getLocalizer()
     {
         return localizer;
     }

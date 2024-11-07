@@ -23,9 +23,9 @@ public class PIDTest extends LinearOpMode
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.startThreads(this);
         intakeSubsystem = new IntakeSubsystem(hardware);
-        hardware.drive.setRunMode(MecanumDrive.RunMode.PID); // works exactly like p2p but with like the actual pose
+        hardware.drive.setRunMode(MecanumDrive.RunMode.P2P); // works exactly like p2p but with like the actual pose
         hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
-        Pose targetPose = new Pose(0, 0, Math.toRadians(180));
+        Pose targetPose = new Pose(15, 0, Math.toRadians(0));
         hardware.drive.setTargetPose(targetPose);
         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
         waitForStart();

@@ -38,7 +38,7 @@ public class IntakeSubsystem
         chuteUpPos = 0.05,
         chuteDropPos = 0.6;
     public static final double
-        flapTransferPos = 0.1,
+        flapTransferPos = 0,
         flapDownPos = 1,
         flapReadyPos = 1;
 

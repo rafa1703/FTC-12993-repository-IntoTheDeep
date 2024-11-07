@@ -29,6 +29,11 @@ public class TrajectoryBuilder
         finalPose = pose;
         return this;
     }
+    public TrajectoryBuilder addFinalPose(double x, double y, double heading)
+    {
+        finalPose = new Pose(x, y, heading);
+        return this;
+    }
     public TrajectoryBuilder addSpatialMarker(Pose markerPose, Callback callback)
     {
         spatialMarkers.add(new SpatialMarker(markerPose, callback));

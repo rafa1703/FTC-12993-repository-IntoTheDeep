@@ -7,6 +7,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.opencv.core.Point;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DashboardUtil
@@ -61,4 +62,5 @@ public class DashboardUtil
         double x2 = pose.getX() + v.getX(), y2 = pose.getY() + v.getY();
         canvas.strokeLine(x1, y1, x2, y2);
     }
+
 }

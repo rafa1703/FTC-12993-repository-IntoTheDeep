@@ -17,7 +17,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@TeleOp(name = "PrometheusDrive", group = "ADrive")
+@TeleOp(name = "PrometheusDrive", group = "A Drive")
 public class PrometheusDrive extends LinearOpMode
 {
     ElapsedTime GlobalTimer;
@@ -454,16 +454,16 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 // this sequence should bump down the specimen
                 outtakeSubsystem.armState(isLow ?
-                        OuttakeSubsystem.OuttakeArmServoState.SPECIMEN : OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH, 0.1);
+                        OuttakeSubsystem.OuttakeArmServoState.SPECIMEN : OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH, -0.1);
                 if (delay(40)) {
                     if (!manualControlLift)
-                        outtakeLiftPresets(false, isLow, -7); // this actually runs the lift
+                        outtakeLiftPresets(false, isLow, +7); // this actually runs the lift
                     else if (!cachedLiftPos)
                     {
                         tempLiftPos = outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition);
                         cachedLiftPos = true;
                     }
-                    else outtakeSubsystem.liftToInternalPID(isLow ? tempLiftPos - 2 :  tempLiftPos - 7);
+                    else outtakeSubsystem.liftToInternalPID(isLow ? tempLiftPos - 2 :  tempLiftPos + 7);
                 }
                 if (delay(800))
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
