@@ -17,7 +17,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+ *//*
+
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
@@ -38,6 +39,7 @@ import org.opencv.core.RotatedRect;
 
 import java.util.List;
 
+*/
 /*
  * This OpMode illustrates how to use a video source (camera) to locate specifically colored regions
  *
@@ -58,7 +60,8 @@ import java.util.List;
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
- */
+ *//*
+
 
 @Disabled
 @TeleOp(name = "Concept: Vision Color-Locator", group = "Concept")
@@ -67,7 +70,8 @@ public class ConceptVisionColorLocator extends LinearOpMode
     @Override
     public void runOpMode()
     {
-        /* Build a "Color Locator" vision processor based on the ColorBlobLocatorProcessor class.
+        */
+/* Build a "Color Locator" vision processor based on the ColorBlobLocatorProcessor class.
          * - Specify the color range you are looking for.  You can use a predefined color, or create you own color range
          *     .setTargetColorRange(ColorRange.BLUE)                      // use a predefined color match
          *       Available predefined colors are: RED, BLUE YELLOW GREEN
@@ -106,7 +110,8 @@ public class ConceptVisionColorLocator extends LinearOpMode
          *                                    and making filled shapes appear larger. Dilation is useful for joining broken parts of an
          *                                    object, such as when removing noise from an image.
          *                                    "pixels" in the range of 2-4 are suitable for low res images.
-         */
+         *//*
+
         ColorBlobLocatorProcessor colorLocator = new ColorBlobLocatorProcessor.Builder()
                 .setTargetColorRange(ColorRange.BLUE)         // use a predefined color match
                 .setContourMode(ColorBlobLocatorProcessor.ContourMode.EXTERNAL_ONLY)    // exclude blobs inside blobs
@@ -115,7 +120,8 @@ public class ConceptVisionColorLocator extends LinearOpMode
                 .setBlurSize(5)                               // Smooth the transitions between different colors in image
                 .build();
 
-        /*
+        */
+/*
          * Build a vision portal to run the Color Locator process.
          *
          *  - Add the colorLocator process created above.
@@ -126,7 +132,8 @@ public class ConceptVisionColorLocator extends LinearOpMode
          *      .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))  .....   for a webcam
          *  or
          *      .setCamera(BuiltinCameraDirection.BACK)    ... for a Phone Camera
-         */
+         *//*
+
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(colorLocator)
                 .setCameraResolution(new Size(320, 240))
@@ -144,7 +151,8 @@ public class ConceptVisionColorLocator extends LinearOpMode
             // Read the current list
             List<ColorBlobLocatorProcessor.Blob> blobs = colorLocator.getBlobs();
 
-            /*
+            */
+/*
              * The list of Blobs can be filtered to remove unwanted Blobs.
              *   Note:  All contours will be still displayed on the Stream Preview, but only those that satisfy the filter
              *          conditions will remain in the current list of "blobs".  Multiple filters may be used.
@@ -163,16 +171,19 @@ public class ConceptVisionColorLocator extends LinearOpMode
              * ColorBlobLocatorProcessor.Util.filterByAspectRatio(minAspect, maxAspect, blobs);
              *   A blob's Aspect ratio is the ratio of boxFit long side to short side.
              *   A perfect Square has an aspect ratio of 1.  All others are > 1
-             */
+             *//*
+
             ColorBlobLocatorProcessor.Util.filterByArea(50, 20000, blobs);  // filter out very small blobs.
 
-            /*
+            */
+/*
              * The list of Blobs can be sorted using the same Blob attributes as listed above.
              * No more than one sort call should be made.  Sorting can use ascending or descending order.
              *     ColorBlobLocatorProcessor.Util.sortByArea(SortOrder.DESCENDING, blobs);      // Default
              *     ColorBlobLocatorProcessor.Util.sortByDensity(SortOrder.DESCENDING, blobs);
              *     ColorBlobLocatorProcessor.Util.sortByAspectRatio(SortOrder.DESCENDING, blobs);
-             */
+             *//*
+
 
             telemetry.addLine(" Area Density Aspect  Center");
 
@@ -189,3 +200,4 @@ public class ConceptVisionColorLocator extends LinearOpMode
         }
     }
 }
+*/

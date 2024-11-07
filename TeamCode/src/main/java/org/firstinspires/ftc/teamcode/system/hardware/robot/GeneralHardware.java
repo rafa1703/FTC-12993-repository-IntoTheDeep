@@ -18,6 +18,7 @@ import org.firstinspires.ftc.teamcode.gvf.Localizer;
 import org.firstinspires.ftc.teamcode.gvf.LocalizerCustomVel;
 import org.firstinspires.ftc.teamcode.gvf.LocalizerOTOS;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
+import org.firstinspires.ftc.teamcode.gvf.odo.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
 import org.firstinspires.ftc.teamcode.system.accessory.imu.ImuThread;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
@@ -40,6 +41,7 @@ public class GeneralHardware
 
     public LocalizerCustomVel localizer;
     public LocalizerOTOS otosLocalizer;
+    public GoBildaPinpointDriver pinpointLocalizer;
     public MecanumDrive drive;
 
     public VoltageSensor voltageSensor;
@@ -134,7 +136,14 @@ public class GeneralHardware
             imu = new ImuThread(hm);
             imu.initImuThread();
             localizer = new LocalizerCustomVel(this);
+
             //otosLocalizer = new LocalizerOTOS(this);
+
+//            pinpointLocalizer = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
+//            pinpointLocalizer.setOffsets(0, 0);
+//            pinpointLocalizer.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+//            pinpointLocalizer.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+//            pinpointLocalizer.resetPosAndIMU();
 
             MecanumDrive.headingMultiplier = 1;
             drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);

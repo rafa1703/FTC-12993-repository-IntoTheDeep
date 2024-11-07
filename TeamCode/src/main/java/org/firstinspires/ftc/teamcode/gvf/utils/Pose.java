@@ -5,6 +5,9 @@ import androidx.annotation.NonNull;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.hardware.sparkfun.SparkFunOTOS;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.opencv.core.Point;
 
 public class Pose
@@ -39,6 +42,10 @@ public class Pose
     public Pose(Pose2d pose2d)
     {
         this(pose2d.getX(), pose2d.getY(), pose2d.getHeading());
+    }
+    public Pose(Pose2D pose2D)
+    {
+        this(pose2D.getX(DistanceUnit.INCH), pose2D.getY(DistanceUnit.INCH), pose2D.getHeading(AngleUnit.RADIANS));
     }
 
     public Pose(SparkFunOTOS.Pose2D pose2D)
@@ -76,6 +83,10 @@ public class Pose
 
     public Pose2d toPose2d(){
         return new Pose2d(x,y,heading);
+    }
+    public Pose2D toPose2D()
+    {
+        return new Pose2D(DistanceUnit.INCH, x, y, AngleUnit.RADIANS, heading);
     }
 
     public Point toPoint()

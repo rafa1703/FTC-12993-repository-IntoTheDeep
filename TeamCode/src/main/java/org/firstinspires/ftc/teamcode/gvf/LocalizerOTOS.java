@@ -129,6 +129,7 @@ public class LocalizerOTOS
 //      Cyliis cooked hard on this so...
         SparkFunOTOS.Pose2D pose2d = otos.getPosition();
         pose = new Pose(pose2d);
+        //TODO: idk if this is robot or field centric
         velocity = new Vector(xVelocityFilter.getValue(otos.getVelocity().x), yVelocityFilter.getValue(otos.getVelocity().y));
         driveTrainVelocity = Vector.rotateBy(velocity, 0);
         Vector predictedGlideVector = new Vector(Math.signum(driveTrainVelocity.getX()) * Math.pow(driveTrainVelocity.getX(), 2) / (2.0 * xDeceleration),

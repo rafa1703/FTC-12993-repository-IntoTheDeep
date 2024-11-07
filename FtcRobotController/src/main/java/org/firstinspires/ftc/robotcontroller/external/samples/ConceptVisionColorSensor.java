@@ -17,7 +17,8 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- */
+ *//*
+
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
@@ -33,6 +34,7 @@ import org.firstinspires.ftc.vision.VisionPortal;
 import org.firstinspires.ftc.vision.opencv.ImageRegion;
 import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
 
+*/
 /*
  * This OpMode illustrates how to use a video source (camera) as a color sensor
  *
@@ -53,7 +55,8 @@ import org.firstinspires.ftc.vision.opencv.PredominantColorProcessor;
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this OpMode to the Driver Station OpMode list
- */
+ *//*
+
 
 @Disabled
 @TeleOp(name = "Concept: Vision Color-Sensor", group = "Concept")
@@ -62,7 +65,8 @@ public class ConceptVisionColorSensor extends LinearOpMode
     @Override
     public void runOpMode()
     {
-        /* Build a "Color Sensor" vision processor based on the PredominantColorProcessor class.
+        */
+/* Build a "Color Sensor" vision processor based on the PredominantColorProcessor class.
          *
          * - Focus the color sensor by defining a RegionOfInterest (ROI) which you want to inspect.
          *     This can be the entire frame, or a sub-region defined using:
@@ -82,7 +86,8 @@ public class ConceptVisionColorSensor extends LinearOpMode
          *     Note that in the example shown below, only some of the available colors are included.
          *     This will force any other colored region into one of these colors.
          *     eg: Green may be reported as YELLOW, as this may be the "closest" match.
-         */
+         *//*
+
         PredominantColorProcessor colorSensor = new PredominantColorProcessor.Builder()
                 .setRoi(ImageRegion.asUnityCenterCoordinates(-0.1, 0.1, 0.1, -0.1))
                 .setSwatches(
@@ -93,7 +98,8 @@ public class ConceptVisionColorSensor extends LinearOpMode
                         PredominantColorProcessor.Swatch.WHITE)
                 .build();
 
-        /*
+        */
+/*
          * Build a vision portal to run the Color Sensor process.
          *
          *  - Add the colorSensor process created above.
@@ -104,7 +110,8 @@ public class ConceptVisionColorSensor extends LinearOpMode
          *      .setCamera(hardwareMap.get(WebcamName.class, "Webcam 1"))  .....   for a webcam
          *  or
          *      .setCamera(BuiltinCameraDirection.BACK)    ... for a Phone Camera
-         */
+         *//*
+
         VisionPortal portal = new VisionPortal.Builder()
                 .addProcessor(colorSensor)
                 .setCameraResolution(new Size(320, 240))
@@ -134,3 +141,4 @@ public class ConceptVisionColorSensor extends LinearOpMode
         }
     }
 }
+*/
