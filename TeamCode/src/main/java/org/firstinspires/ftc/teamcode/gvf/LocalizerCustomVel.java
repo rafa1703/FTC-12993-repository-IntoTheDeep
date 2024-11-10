@@ -88,7 +88,7 @@ public class LocalizerCustomVel
     private final LowPassFilter xVelFilter = new LowPassFilter(filterParameter, 0),
             yVelFilter = new LowPassFilter(filterParameter, 0);
 
-    public static double xDeceleration = 100, yDeceleration = 150;
+    public static double xDeceleration = 75, yDeceleration = 100;
 
     public Vector getVelocity(){
         return velocity;
