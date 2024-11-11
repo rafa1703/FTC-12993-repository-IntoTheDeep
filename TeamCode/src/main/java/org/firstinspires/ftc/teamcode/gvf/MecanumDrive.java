@@ -48,6 +48,7 @@ public class MecanumDrive
 
     private TimedSupplier<Double> voltageSupplier;
     public double FLPower, FRPower, BLPower, BRPower;
+    public Trajectory trajectoryFollowing = null;
 
     /*  public MecanumDrive(DcMotor FL, DcMotor FR, DcMotor BL, DcMotor BR, RunMode runMode, TimedSupplier<Double> supplier)
     {
@@ -291,6 +292,7 @@ public class MecanumDrive
     public void followTrajectory(@NonNull Trajectory trajectory)
     {
         runMode = RunMode.Vector;
+        trajectoryFollowing = trajectory;
         Pose currentPose = localizer.getPredictedPoseEstimate();
         setTargetVector(trajectory.getPowerVector(currentPose));
         if (trajectory.usePid())
@@ -302,17 +304,22 @@ public class MecanumDrive
     public void followTrajectoryTangentially(@NonNull Trajectory trajectory, boolean reverse)
     {
         runMode = RunMode.Vector;
+        trajectoryFollowing = trajectory;
         Pose currentPose = localizer.getPredictedPoseEstimate();
         setTargetVector(trajectory.getTangentPowerVector(currentPose, reverse));
         if (trajectory.usePid())
         {
             runMode = RunMode.P2P;
-            setTargetPose(trajectory.getFinalPose());
+            Pose finalPose = new Pose(trajectory.getFinalPose().getX(), trajectory.getFinalPose().getY(), trajectory.getTangentFinalHeading());
+
+
+            setTargetPose(finalPose);
         }
     }
     public void followTrajectorySplineHeading(@NonNull Trajectory trajectory)
     {
         runMode = RunMode.Vector;
+        trajectoryFollowing = trajectory;
         Pose currentPose = localizer.getPredictedPoseEstimate();
         setTargetVector(trajectory.getPowerVectorSplineHeading(currentPose));
         if (trajectory.usePid())

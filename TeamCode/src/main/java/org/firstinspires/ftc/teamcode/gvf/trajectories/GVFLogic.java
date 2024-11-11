@@ -17,6 +17,7 @@ public class GVFLogic
     public boolean reverse = false;
     public boolean splineHeading = false;
     public boolean usePID = false;
+    public double tangentFinalHeading;
 
     public Vector calculate(@NonNull BezierCurve curve, double t, Pose pose, boolean slowDown, double maxSpeed)
     {
@@ -75,6 +76,7 @@ public class GVFLogic
             }
             double angle = derivative.getAngle();
             if (reverse) angle += Math.toRadians(180);
+            if(t==1 && slowDown) tangentFinalHeading = angle;
             double headingScale = Math.abs(Math.min(normalizeRadians(angle - pose.getHeading()) / Math.toRadians(70), 1)); // rn i think 70 is the best angle to consider max thing
             double headingDiff = headingInterpolation(pose.getHeading(), angle, headingScale) - pose.getHeading();  //Math.min(normalizeRadians(derivative.getAngle() - pose.getHeading()) / Math.toRadians(30), 1); // Who the fuck knows if this is gonna work
             // we want to remove the current heading because interpolation at t = 0 returns the current heading
@@ -106,50 +108,6 @@ public class GVFLogic
         return (1 - t) * p1 + t * p2;
     }
 
-
-    private double binomalSearch(BezierCurve curve, Point robot, double start, double end)
-    {
-        double middle = (start + end) / 2;
-
-        Point startPoint = curve.parametric(start);
-        Point endPoint = curve.parametric(end);
-        Vector robotToEnd = new Vector(endPoint.x - robot.x, endPoint.y - robot.y);
-        Vector robotToStart = new Vector(startPoint.x - robot.x, startPoint.y - robot.y);
-
-        if (robotToStart.getMagnitude() < robotToEnd.getMagnitude())
-        {
-            return binomalSearch(curve, robot, start, middle);
-        }
-        else if (robotToStart.getMagnitude() > robotToEnd.getMagnitude())
-        {
-            return binomalSearch(curve, robot, middle, end);
-        }
-        else return middle;
-        //if ()
-
-    }
-
-        private double binomalSearch2(BezierCurve curve, Point point, double start, double end)
-    {
-        // is this just like not the same ans iterating trough the whole fucking curve??
-        Vector robot = new Vector(point);
-        Point startPoint = curve.parametric(start);
-        Point endPoint = curve.parametric(end);
-        Vector robotToEnd = new Vector(endPoint.x - robot.getX(), endPoint.y - robot.getY());
-        Vector robotToStart = new Vector(startPoint.x - robot.getX(), startPoint.y - robot.getY());
-
-        if (robotToStart.getMagnitude() < robotToEnd.getMagnitude())
-        {
-            return binomalSearch(curve, point, start, end - (1/curve.getInterval()));
-        }
-        else if (robotToStart.getMagnitude() > robotToEnd.getMagnitude())
-        {
-            return binomalSearch(curve, point, start +(1/ curve.getInterval()), end);
-        }
-        return start;
-
-    }
-
     public void setFollowTangentially(boolean followTangentially)
     {
         this.followTangentially = followTangentially;
@@ -178,5 +136,9 @@ public class GVFLogic
     public boolean usePID()
     {
         return usePID;
+    }
+    public double getTangentFinalHeading()
+    {
+        return tangentFinalHeading;
     }
 }

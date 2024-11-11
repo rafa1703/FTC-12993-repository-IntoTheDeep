@@ -28,6 +28,7 @@ public class DashboardUtil
     }
 
     public static void drawSampledPath(Canvas canvas, Trajectory path) {
+        if (path == null) return;
         double[] xPoints = new double[(int) path.length()];
         double[] yPoints = new double[(int) path.length()];
         int i = 0;
@@ -38,6 +39,15 @@ public class DashboardUtil
             i++;
         }
         canvas.strokePolyline(xPoints, yPoints);
+    }
+    public static void drawCurve(Canvas canvas, Trajectory path)
+    {
+        if (path == null) return;
+        ArrayList<Point> curve = path.getFullCurve();
+        for (Point point : curve)
+        {
+            canvas.fillCircle(point.x, point.y, 1);
+        }
     }
 
     public static void drawRobot(Canvas canvas, Pose2d pose) {

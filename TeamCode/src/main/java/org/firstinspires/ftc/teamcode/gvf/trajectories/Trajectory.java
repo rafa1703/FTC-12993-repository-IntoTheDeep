@@ -310,4 +310,8 @@ public class Trajectory
         // this returns the sampled number of the path
         return (fullCurve.size() + 1) * segments.get(0).returnCurve().getInterval();
     }
+    public double getTangentFinalHeading()
+    {
+        return gvfLogic.getTangentFinalHeading();
+    }
 }

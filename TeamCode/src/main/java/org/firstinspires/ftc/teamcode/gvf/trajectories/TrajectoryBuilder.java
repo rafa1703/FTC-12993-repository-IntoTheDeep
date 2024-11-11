@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.gvf.trajectories;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
+import org.opencv.core.Point;
 
 import java.util.ArrayList;
 
@@ -22,6 +23,15 @@ public class TrajectoryBuilder
 
     public TrajectoryBuilder addSegment(TrajectorySegment segment){
         segments.add(segment);
+        return this;
+    }
+    /*
+    public TrajectoryBuilder addBezierSegment(Point[] segment){
+        segments.add(new BezierCurveTrajectorySegment(segment));
+        return this;
+    }*/
+    public TrajectoryBuilder addBezierSegment(Point... points){
+        segments.add(new BezierCurveTrajectorySegment(points));
         return this;
     }
     public TrajectoryBuilder addFinalPose(Pose pose)
@@ -44,7 +54,7 @@ public class TrajectoryBuilder
         if (finalPose == null) // this is use when following tangentially that we dont know what will be the tangent heading
         {
             Vector finalVector = segments.get(segments.size() -1).getEndPoint(); // transform vector into the final pose
-            finalPose = new Pose(finalVector.getX(), finalVector.getY(), finalVector.getAngle());
+            finalPose = new Pose(finalVector.getX(), finalVector.getY(), finalVector.getAngle()); // keep in mind this angle is wrong as it gets the angle from arctan(y/x).
         }
         return new Trajectory(segments, startPose, finalPose, spatialMarkers);
     }

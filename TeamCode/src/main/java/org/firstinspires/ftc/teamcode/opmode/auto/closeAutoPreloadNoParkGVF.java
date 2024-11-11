@@ -1,7 +1,6 @@
 
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
 import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
 
@@ -15,13 +14,12 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
-import org.firstinspires.ftc.teamcode.opmode.teleop.PrometheusDrive;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@Autonomous(name = "RED CLOSE 1 +2 NO PARK", group = "RedClose")
-public class redCloseAutoPreloadNoPark extends LinearOpMode
+@Autonomous(name = "GVF CLOSE 1 +2 NO PARK", group = "Close")
+public class closeAutoPreloadNoParkGVF extends LinearOpMode
 {
 
     enum autoState {
@@ -50,7 +48,7 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
-        hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
+        hardware.drive.setRunMode(MecanumDrive.RunMode.Vector);
         hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3 * S, Math.toRadians(90 * S)));
         hardware.startThreads(this);
         intakeSubsystem = new IntakeSubsystem(hardware);
@@ -86,9 +84,9 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
         waitForStart();
         globalTimer = GlobalTimer.milliseconds();
         resetTimer();
+        hardware.resetCacheHubs();
         while (opModeIsActive())
         {
-            hardware.update();
             globalTimer = GlobalTimer.milliseconds();
             intakeSubsystem.intakeReads(state == autoState.INTAKE || state == autoState.TRANSFER_START);
             outtakeSubsystem.outtakeReads();
@@ -97,14 +95,15 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
             Canvas fieldOverlay = packet.fieldOverlay();
 
             autoSequence();
-            hardware.drive.update();
+            hardware.update();
             Pose poseEstimate = hardware.drive.getPoseEstimate();
-            DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true);
+            DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true, "red");
+            DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPredictedPoseEstimate().toPose2d(), true);
+            DashboardUtil.drawCurve(fieldOverlay, hardware.drive.trajectoryFollowing);
             dashboard.sendTelemetryPacket(packet);
+
             telemetry.addData("State", state);
             telemetry.addData("Pose", hardware.drive.getPoseEstimate());
-            telemetry.addData("Went back", wentBack);
-            telemetry.addData("Reached",hardware.drive.reachedTarget(2));
             telemetry.addData("ColorValue", intakeSubsystem.getColorValue());
             telemetry.update();
         }
@@ -114,7 +113,7 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
         switch (state)
         {
             case PRELOAD_DEPOSIT:
-                if (delay(400) && hardware.drive.reachedTarget(2) && hardware.drive.stopped())
+                if (delay(400) && trajectories.preloadTrajectory.isFinished() && hardware.drive.stopped())
                 {
                     state = autoState.DROP;
                     resetTimer();
@@ -123,6 +122,7 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
                 outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
                 hardware.drive.setTargetPose(new Pose(-54.5, -56.5 * S, Math.toRadians(45 * S))); // this is the same drop pos as the other auto
                 break;
             case INTAKE:
@@ -139,33 +139,13 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    if (!wentBack)
-                    {
-                        hardware.drive.setTargetPose(new Pose(-44, -45.8 * S, Math.toRadians(90 * S)));
-                    }
-                    if (hardware.drive.reachedTarget(2) && !wentBack)
-                    {
-                        Pose intakePose = new Pose(-44, (-45.8 + 12) * S, Math.toRadians(90 * S));
-                        hardware.drive.setTargetPose(intakePose);
-                        wentBack = true;
-                    }
+                    hardware.drive.followTrajectoryTangentially(trajectories.firstIntakeTrajectory, false);
                     if (delay(200))
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                 }
                 if (cycle == 2)
                 {
-                    if (!wentBack)
-                    {
-                        hardware.drive.setTargetPose(new Pose(-53.9, -39.8 * S, Math.toRadians(90 * S)));
-                    }
-                    if (hardware.drive.reachedTarget(2) && !wentBack)
-                    {
-                        Pose intakePose = new Pose(-53.9, (-39.8 + 12) * S, Math.toRadians(90 * S));
-                        hardware.drive.setTargetPose(intakePose);
-                        wentBack = true;
-                    }
-                    if (delay(200))
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    hardware.drive.followTrajectorySplineHeading(trajectories.secondIntakeTrajectory);
                 }
                 break;
             case TRANSFER_START:
@@ -236,9 +216,9 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
                 break;
             case DEPOSIT_DRIVE:
                 if (
-                        ((cycle == 0 && hardware.drive.reachedTarget(2)) ||
-                                (cycle == 1 && hardware.drive.reachedTarget(2)) ||
-                                (cycle == 2 && hardware.drive.reachedTarget(2))
+                        ((cycle == 0 && trajectories.preloadTrajectory.isFinished()) ||
+                                (cycle == 1 && trajectories.firstDepositTrajectory.isFinished()) ||
+                                (cycle == 2 && trajectories.secondDepositTrajectory.isFinished())
                                 )
                                 && delay(600) && hardware.drive.stopped())
                 {
@@ -249,9 +229,9 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
                 if (delay(100))
                 {
                     if (cycle == 1)
-                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5 * S, Math.toRadians(45 * S)));
+                        hardware.drive.followTrajectorySplineHeading(trajectories.firstDepositTrajectory);
                     else if (cycle == 2)
-                        hardware.drive.setTargetPose(new Pose(-53.5, -55.5 * S, Math.toRadians(45 * S)));
+                        hardware.drive.followTrajectorySplineHeading(trajectories.secondDepositTrajectory);
                 }
                 break;
             case DROP:
@@ -292,24 +272,20 @@ public class redCloseAutoPreloadNoPark extends LinearOpMode
                     if (delay(900))
                     {
                         outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
-                        hardware.drive.setTargetPose(new Pose(-50, -50 * S, Math.toRadians(45 * S)));
+                        hardware.drive.followTrajectory(trajectories.goBackAfterDrop);
                     }
 
                 }
                 break;
             case PARK:
-                if (hardware.drive.reachedTarget(2) && delay(2000))
+                if (trajectories.parkTrajectory.isFinished() && delay(2000))
                 {
                     state = autoState.IDLE;
                     resetTimer();
                     break;
                 }
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                hardware.drive.setTargetPose(new Pose(-32, -11.5 * S, Math.toRadians(0 * S)));
-                if (delay(1000))
-                {
-                    //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
-                }
+                hardware.drive.followTrajectorySplineHeading(trajectories.parkTrajectory);
                 break;
             case IDLE: // we idle here duuhhh
                 break;
