@@ -70,7 +70,7 @@ public class MecanumDrive
         this.BR = hardware.BR;
         this.runMode = mode;
         this.voltageSupplier = hardware.voltageSupplier;
-        localizer = hardware.pinpointLocalizer;
+        localizer = hardware.localizerPinpoint;
 
         FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -213,7 +213,7 @@ public class MecanumDrive
         updateMotors();
     }
 
-    public LocalizerCustomVel getLocalizer()
+    public LocalizerPinpoint getLocalizer()
     {
         return localizer;
     }

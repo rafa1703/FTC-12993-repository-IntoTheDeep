@@ -75,7 +75,7 @@ public class TwoTrackingWheelLocalizer extends com.acmerobotics.roadrunner.local
                 new Pose2d(PERPENDICULAR_X, PERPENDICULAR_Y, Math.toRadians(90))
         ));
 
-        this.imuThread = hardware.imu;
+        //this.imuThread = hardware.imu;
         parallelEncoder = hardware.perpendicularOdo;
         perpendicularEncoder = hardware.parallelOdo;
 
