@@ -7,48 +7,40 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.hardware.configuration.LynxConstants;
 
 
-import org.firstinspires.ftc.teamcode.gvf.Localizer;
-import org.firstinspires.ftc.teamcode.gvf.LocalizerCustomVel;
-import org.firstinspires.ftc.teamcode.gvf.LocalizerOTOS;
+import org.firstinspires.ftc.teamcode.gvf.LocalizerPinpoint;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.odo.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
-import org.firstinspires.ftc.teamcode.system.accessory.imu.ImuThread;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
 
 
 public class GeneralHardware
 {
     public HardwareMap hardwareMap;
 
-    public DcMotorEx intakeM, FR, intakeSlidesM, BR;
-    public DcMotorEx FL, BL, outtakeLiftM, meh3;
+    public MotorPika intakeM, FR, intakeSlidesM, BR;
+    public MotorPika FL, BL, outtakeLiftM, hangM;
 
-    public Encoder perpendicularOdo, ech1, ech2, parallelOdo;
-    public Encoder eeh0, eeh1, eeh2, eeh3;
-
-    public ServoImplEx chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
-    public ServoImplEx clawS, pivotS, flapS, seh3, seh4, seh5;
+    public Encoder perpendicularOdo, parallelOdo;
+    public ServoPika chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
+    public ServoPika clawS, wristS, flapS, seh3, seh4, seh5;
     public RevColorSensorV3 cs0;
-    public ImuThread imu;
+    public GoBildaPinpointDriver pinpoint;
+    public LocalizerPinpoint localizerPinpoint;
 
-    public LocalizerCustomVel localizer;
-    public LocalizerOTOS otosLocalizer;
-    public GoBildaPinpointDriver pinpointLocalizer;
     public MecanumDrive drive;
 
     public VoltageSensor voltageSensor;
     public TimedSupplier<Double> voltageSupplier;
     public static double voltage;
-
-    public DigitalChannel dc0, dc1;
     public ColorSensor csO;
 
     public enum Side
@@ -76,37 +68,32 @@ public class GeneralHardware
             else ehub = hub;
         }
 
-        intakeM = hm.get(DcMotorEx.class, "Intake");
-        FR = hm.get(DcMotorEx.class, "FR");
-        intakeSlidesM = hm.get(DcMotorEx.class, "IntakeSlides");
-        BR = hm.get(DcMotorEx.class, "BR");
+        intakeM = new MotorPika(hm.get(DcMotorEx.class, "Intake"));
+        FR = new MotorPika(hm.get(DcMotorEx.class, "FR"));
+        intakeSlidesM = new MotorPika(hm.get(DcMotorEx.class, "IntakeSlides"));
+        BR = new MotorPika(hm.get(DcMotorEx.class, "BR"));
 
-        FL = hm.get(DcMotorEx.class, "FL");
-        BL = hm.get(DcMotorEx.class, "BL");
-        outtakeLiftM = hm.get(DcMotorEx.class, "OuttakeSlides");
-        //meh3 = hm.get(DcMotorEx.class, "eh3");
+        FL = new MotorPika(hm.get(DcMotorEx.class, "FL"));
+        BL = new MotorPika(hm.get(DcMotorEx.class, "BL"));
+        outtakeLiftM = new MotorPika(hm.get(DcMotorEx.class, "OuttakeSlides"));
+        hangM = new MotorPika(hm.get(DcMotorEx.class, "Hang"));
 
-        perpendicularOdo = new Encoder(intakeM);
-        ech1 = new Encoder(FR);
-        ech2 = new Encoder(intakeSlidesM);
-        parallelOdo = new Encoder(BR);
+        perpendicularOdo = new Encoder(intakeM.getMotor());
+        parallelOdo = new Encoder(BR.getMotor());
 
-        eeh0 = new Encoder(FL);
-        eeh1 = new Encoder(BL);
-        eeh2 = new Encoder(outtakeLiftM);
         //eeh3 = new Encoder(meh3);
 
 
-        chuteS = hm.get(ServoImplEx.class, "chuteS");
-        clipS = hm.get(ServoImplEx.class, "clipS");
-        intakeLeftArmS = hm.get(ServoImplEx.class, "intakeLeftArmS");
-        intakeRightArmS = hm.get(ServoImplEx.class, "intakeRightArmS");
-        outtakeLeftArmS = hm.get(ServoImplEx.class, "outtakeLeftArmS");
-        outtakeRightArmS = hm.get(ServoImplEx.class, "outtakeRightArmS");
+        chuteS = new ServoPika(hm.get(ServoImplEx.class, "chuteS"));
+        clipS = new ServoPika(hm.get(ServoImplEx.class, "clipS"));
+        intakeLeftArmS = new ServoPika(hm.get(ServoImplEx.class, "intakeLeftArmS"));
+        intakeRightArmS = new ServoPika(hm.get(ServoImplEx.class, "intakeRightArmS"));
+        outtakeLeftArmS = new ServoPika(hm.get(ServoImplEx.class, "outtakeLeftArmS"));
+        outtakeRightArmS = new ServoPika(hm.get(ServoImplEx.class, "outtakeRightArmS"));
 
-        clawS = hm.get(ServoImplEx.class, "clawS");
-        pivotS = hm.get(ServoImplEx.class, "pivotS");
-        flapS = hm.get(ServoImplEx.class, "flapS");
+        clawS = new ServoPika(hm.get(ServoImplEx.class, "clawS"));
+        wristS = new ServoPika(hm.get(ServoImplEx.class, "pivotS"));
+        flapS = new ServoPika(hm.get(ServoImplEx.class, "flapS"));
         //seh3 = hm.get(ServoImplEx.class, "seh3");
         //seh4 = hm.get(ServoImplEx.class, "seh4");
         //seh5 = hm.get(ServoImplEx.class, "seh5");
@@ -130,21 +117,13 @@ public class GeneralHardware
         BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         if (auto)
         {
-            //TODO: reverse odo encoder
-            //parallelOdo.setDirection(REVERSE)
-            // TODO: change here depending on odometry type
-            imu = new ImuThread(hm);
-            imu.initImuThread();
-            localizer = new LocalizerCustomVel(this);
-
-            //otosLocalizer = new LocalizerOTOS(this);
-
-//            pinpointLocalizer = hardwareMap.get(GoBildaPinpointDriver.class, "odo");
-//            pinpointLocalizer.setOffsets(0, 0);
-//            pinpointLocalizer.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-//            pinpointLocalizer.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
-//            pinpointLocalizer.resetPosAndIMU();
-
+            pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+            //TODO: here we change the wheels offsets
+            pinpoint.setOffsets(0, 0);
+            pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
+            pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            pinpoint.resetPosAndIMU();
+            localizerPinpoint = new LocalizerPinpoint(this);
             MecanumDrive.headingMultiplier = 1;
             drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);
             drive.setRunMode(MecanumDrive.RunMode.Vector);
@@ -153,10 +132,11 @@ public class GeneralHardware
             A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);
         }
     }
+    @Deprecated
     /** This has to be called when the opMode initializes, only auto **/
     public void startThreads(LinearOpMode opMode)
     {
-        imu.startThread(opMode);
+
     }
     // this is only for auto, i want to only have to call a single update method inside the opMode
     public void update()
@@ -164,7 +144,6 @@ public class GeneralHardware
         resetCacheHubs();
         voltage = voltageSupplier.get();
         drive.update();
-        //localizer.update();
     }
     public void resetCacheHubs()
     {

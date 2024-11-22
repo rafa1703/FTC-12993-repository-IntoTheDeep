@@ -9,16 +9,18 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
 
 @Config // Allows dashboard to tune
 public class DriveBaseSubsystem
 {  // no constructor for this class
 
-    public DcMotorEx
+    public MotorPika
             FL,
             FR,
             BL,
-            BR;
+            BR,
+            hang;
 
     // higher values of k means more adjustment.
     // c centers the adjustment
@@ -46,16 +48,12 @@ public class DriveBaseSubsystem
     double PowerBase = 1;
     double PowerBaseTurn = 0.88;
     double PowerStrafe = 1.1;
-
-    public static double DrivebaseXKp = 0.22, DrivebaseXKi = 0.00, DrivebaseXKd = 0.018, DrivebaseXIntegralSumLimit = 10, DrivebaseXKf = 0;
-    public static double DrivebaseYKp = 0.22, DrivebaseYKi = 0.00, DrivebaseYKd = 0.018, DrivebaseYIntegralSumLimit = 10, DrivebaseYKf = 0;
-    public static double DrivebaseThetaKp = 2, DrivebaseThetaKi = 0.0008, DrivebaseThetaKd = 0.024, DrivebaseThetaIntegralSumLimit = 10, DrivebaseThetaKf = 0;
-
-    // should be able to use one instance of a drivebase pid because the x,y,z translation should all be the same
-    PID drivebaseXPID = new PID(DrivebaseXKp,DrivebaseXKi,DrivebaseXKd,DrivebaseXIntegralSumLimit,DrivebaseXKf);
-    PID drivebaseYPID = new PID(DrivebaseYKp,DrivebaseYKi,DrivebaseYKd,DrivebaseYIntegralSumLimit,DrivebaseYKf);
-    PID drivebaseThetaPID = new PID(DrivebaseThetaKp,DrivebaseThetaKi,DrivebaseThetaKd,DrivebaseThetaIntegralSumLimit,DrivebaseThetaKf);
-
+    public enum HangState
+    {
+        READY,
+        OUT,
+        UP
+    }
     Telemetry telemetry;
     public DriveBaseSubsystem(GeneralHardware hardware)
     {
@@ -63,38 +61,18 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
+        hang = hardware.hangM;
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
-    public DriveBaseSubsystem(HardwareMap hardware)
-    {
-        FL = hardware.get(DcMotorEx.class, "FL");
-        FR = hardware.get(DcMotorEx.class, "FR");
-        BL = hardware.get(DcMotorEx.class, "BL");
-        BR = hardware.get(DcMotorEx.class, "BR");
-        drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
-    }
-
     // this could be run in robothardware
-    public void drivebaseSetup(boolean Float){
-        // zero brake behavior means when motors aren't powered, they will auto brake
-        if (Float)
-        {
-            setUpFloat();
-        }
-        else
-        {
-            FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-            FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        }
-    }
-    public void setUpFloat()
+    public void drivebaseSetup(boolean Float)
     {
-        FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        BR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        // zero brake behavior means when motors aren't powered, they will auto brake
+        if (Float) setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
+        else setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+        hang.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        hang.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior zeroPowerBehaviour)
     {
@@ -103,7 +81,20 @@ public class DriveBaseSubsystem
         BL.setZeroPowerBehavior(zeroPowerBehaviour);
         FL.setZeroPowerBehavior(zeroPowerBehaviour);
     }
-
+    public void HangState(HangState state)
+    {
+        switch (state)
+        {
+            case READY:
+                break;
+            case OUT:
+                hang.setPower(0.1);
+                break;
+            case UP:
+                hang.setPower(-1);
+                break;
+        }
+    }
     public static double adjustedJoystick(double x) {
         double y = Math.pow(c-x,m);
         return Math.pow(x,y);

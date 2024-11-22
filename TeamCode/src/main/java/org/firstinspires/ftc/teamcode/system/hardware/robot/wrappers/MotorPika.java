@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
@@ -30,7 +31,7 @@ public class MotorPika
             motor.setPower(pow);
         }
     }
-    public double getCurrentPosition()
+    public int getCurrentPosition()
     {
         return motor.getCurrentPosition();
     }
@@ -42,10 +43,32 @@ public class MotorPika
     {
         motor.setMode(mode);
     }
+    public void setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior zeroPowerBehaviour)
+    {
+        motor.setZeroPowerBehavior(zeroPowerBehaviour);
+    }
     public void resetEncoder()
     {
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
-    // i don't see much use for the internal pid rn so i won't implement it
+
+    public void setZeroPowerBehavior(DcMotor.ZeroPowerBehavior zeroPowerBehavior)
+    {
+        motor.setZeroPowerBehavior(zeroPowerBehavior);
+    }
+
+    public void setTargetPosition(int targetPosition)
+    {
+        motor.setTargetPosition(targetPosition);
+    }
+
+    public DcMotorEx getMotor()
+    {
+        return motor;
+    }
+    public void setDirection(DcMotorSimple.Direction direction)
+    {
+        motor.setDirection(direction);
+    }
 }
 

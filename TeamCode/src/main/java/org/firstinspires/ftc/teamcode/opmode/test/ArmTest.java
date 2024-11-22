@@ -22,7 +22,7 @@ public class ArmTest extends LinearOpMode
         drive = new DriveBaseSubsystem(hardwareMap);
         waitForStart();
         //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SPECIMEN);
+        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
         while (opModeIsActive())
         {

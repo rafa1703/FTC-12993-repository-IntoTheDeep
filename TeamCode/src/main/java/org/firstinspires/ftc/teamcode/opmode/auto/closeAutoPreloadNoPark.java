@@ -64,8 +64,8 @@ public class closeAutoPreloadNoPark extends LinearOpMode
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
 
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
-            if (delay(300)) outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
-            else outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
+            if (delay(300)) outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
+            else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
 
             if (delay(1500))
             {
@@ -118,7 +118,7 @@ public class closeAutoPreloadNoPark extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
+                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 hardware.drive.setTargetPose(new Pose(-54.5, -56.5 * S, Math.toRadians(45 * S))); // this is the same drop pos as the other auto
@@ -193,7 +193,7 @@ public class closeAutoPreloadNoPark extends LinearOpMode
                     }
                     if (delay(450))
                     {
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
                     }
                 } else if (delay(35))
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
@@ -227,7 +227,7 @@ public class closeAutoPreloadNoPark extends LinearOpMode
                         outtakeSubsystem.liftToInternalPID(5);
                         if (delay(500))
                         {
-                            outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH);
                         }
                     }
                 }
@@ -268,7 +268,7 @@ public class closeAutoPreloadNoPark extends LinearOpMode
                     if (delay(90))
                     {
                         outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SAMPLE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
                         if (delay(400)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
                         else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
                     }
@@ -284,7 +284,7 @@ public class closeAutoPreloadNoPark extends LinearOpMode
                     if (delay(700)) // this is 300 after dropped
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                     }
                     if (delay(900))

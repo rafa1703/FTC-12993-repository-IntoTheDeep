@@ -65,7 +65,7 @@ public class closeAutoNoPreload extends LinearOpMode
             intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
 
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-            outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.READY);
+            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
         }
         waitForStart();
@@ -148,7 +148,7 @@ public class closeAutoNoPreload extends LinearOpMode
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                         //outtakeSubsystem.pivotSetPos(0.195);
-                        outtakeSubsystem.pivotSetPos(0.21);
+                        outtakeSubsystem.wristSetPos(0.21);
                     }
                     if (delay(300))
                     {
@@ -182,7 +182,7 @@ public class closeAutoNoPreload extends LinearOpMode
                     {
                         outtakeSubsystem.liftToInternalPID(5);
                         if (delay(850))
-                            outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.TRANSFER_FINISH);
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH);
                     }
                     else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                 }
@@ -219,7 +219,7 @@ public class closeAutoNoPreload extends LinearOpMode
                     if (delay(90))
                     {
                         outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
-                        outtakeSubsystem.pivotState(OuttakeSubsystem.OuttakePivotServoState.SAMPLE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
                         if (delay(400)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
                     }
                     if (delay(2500))

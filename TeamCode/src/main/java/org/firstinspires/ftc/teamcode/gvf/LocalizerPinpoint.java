@@ -26,12 +26,18 @@ public class LocalizerPinpoint
     public LocalizerPinpoint(GeneralHardware hardware, Pose startPose)
     {
         this.pose = startPose;
-        this.localizer = hardware.pinpointLocalizer;
+        this.localizer = hardware.pinpoint;
         localizer.setPosition(startPose.toPose2D());
     }
     public LocalizerPinpoint(GeneralHardware hardware)
     {
         this(hardware, new Pose());
+    }
+    public LocalizerPinpoint(GoBildaPinpointDriver driver)
+    {
+        this.pose = new Pose();
+        this.localizer = driver;
+        localizer.setPosition(pose.toPose2D());
     }
     @Deprecated
     public Pose getPredictedPose()
@@ -73,16 +79,19 @@ public class LocalizerPinpoint
         Pose2D pose2d = localizer.getPosition();
         pose = new Pose(pose2d);
         velocity = new Vector(
-                xVelFilter.getValue(localizer.getVelX()),
-                yVelFilter.getValue(localizer.getVelY()));
+                xVelFilter.getValue(mmPerSecondToInPerSecond(localizer.getVelX())),
+                yVelFilter.getValue(mmPerSecondToInPerSecond(localizer.getVelY())));
         driveBaseVelocity = Vector.rotateBy(velocity, 0);
         Vector sVector = new Vector(
                 Math.signum(driveBaseVelocity.getX()) * Math.pow(driveBaseVelocity.getX(), 2) / (2.0 * xDeceleration),
                 Math.signum(driveBaseVelocity.getY()) * Math.pow(driveBaseVelocity.getY(), 2) / (2.0 * yDeceleration));
-        driveBaseSVector = sVector.rotated(-pose.getHeading());
+        driveBaseSVector = sVector.rotated(0);
     }
 
     // sign of u * uˆ2 / 2a
 
-
+    public double mmPerSecondToInPerSecond(double mm)
+    {
+        return mm / 25.4;
+    }
 }

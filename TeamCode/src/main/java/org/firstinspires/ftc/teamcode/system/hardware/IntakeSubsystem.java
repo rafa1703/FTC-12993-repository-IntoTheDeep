@@ -2,21 +2,21 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
+
 @Config
 public class IntakeSubsystem
 {
-    ServoImplEx chuteS, flapS, leftArmS, rightArmS, clipS;
+    ServoPika chuteS, flapS, leftArmS, rightArmS, clipS;
 
-    DcMotorEx intakeMotor, intakeSlideMotor;
+    MotorPika intakeMotor, intakeSlideMotor;
     RevColorSensorV3 colorSensor;
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
@@ -46,7 +46,7 @@ public class IntakeSubsystem
         slideTeleClose = 14,
         slideTeleFar = 20, // max extension is 27 under the extension limit
         slideTeleBase = 0,
-        slideTeleTransfer = -10;
+        slideTeleTransfer = -2;
     public final double
         clipHoldPos = 0.7,
         clipOpenPos = 1;
@@ -82,8 +82,9 @@ public class IntakeSubsystem
     }
     public enum IntakeFilter
     {
-        SIDE_SPECIFIC, // Only alliance samples
+        SIDE_ONLY, // Only alliance samples
         NEUTRAL, // both alliance and neutral samples
+        YELLOW_ONLY,
         OFF // intakes everything
     }
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
@@ -104,22 +105,6 @@ public class IntakeSubsystem
 
         intakeMotor = hardware.intakeM;
         intakeSlideMotor = hardware.intakeSlidesM;
-
-        intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
-    }
-    public IntakeSubsystem(HardwareMap hardware, GeneralHardware.Side side)
-    {
-        this.side = side;
-
-        chuteS = hardware.get(ServoImplEx.class, "chuteS");;
-        flapS = hardware.get(ServoImplEx.class, "flapS");;
-        leftArmS = hardware.get(ServoImplEx.class, "intakeLeftArmS");;
-        rightArmS = hardware.get(ServoImplEx.class, "intakeRightArmS");;
-        clipS = hardware.get(ServoImplEx.class, "clipS");;
-        colorSensor = hardware.get(RevColorSensorV3.class, "colorSensor");; // no supplier as i want this to pool immediately and synchronously
-
-        intakeMotor = hardware.get(DcMotorEx.class, "Intake");
-        intakeSlideMotor = hardware.get(DcMotorEx.class, "IntakeSlides");
 
         intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
@@ -281,10 +266,23 @@ public class IntakeSubsystem
     }
     public boolean colorLogic()
     {
-        if (intakeFilter == IntakeFilter.OFF) return true;
-        if (colorValue > 1500) return intakeFilter != IntakeFilter.SIDE_SPECIFIC;
-        else if (!isRed) return (side == GeneralHardware.Side.Blue);
-        else return (side == GeneralHardware.Side.Red);
+        switch (intakeFilter)
+        {
+            case SIDE_ONLY:
+                if (colorValue > 1500) return false;
+                else return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+            case NEUTRAL:
+                return (colorValue > 1500) || isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+            case YELLOW_ONLY:
+                return (colorValue > 1500);
+            default:
+                return true;
+        }
+//
+//        if (intakeFilter == IntakeFilter.OFF) return true;
+//        if (colorValue > 1500) return intakeFilter != IntakeFilter.SIDE_ONLY;
+//        else if (!isRed) return (side == GeneralHardware.Side.Blue);
+//        else return (side == GeneralHardware.Side.Red);
     }
     public double getColorValue()
     {

@@ -16,6 +16,7 @@ import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
 
 public class MecanumDrive
 {
@@ -32,9 +33,9 @@ public class MecanumDrive
 
     public static PIDController TRANSLATIONAL_PID = new PIDController(0.07, 0.0008, 0.0045);
     public static PIDController HEADING_PID = new PIDController(0.55, 0, 0.00034);
-    private DcMotor FL, FR, BL, BR;
+    private MotorPika FL, FR, BL, BR;
     private RunMode runMode;
-    private LocalizerCustomVel localizer;
+    private LocalizerPinpoint localizer;
     public Vector powerVector = new Vector();
     private Pose targetPose = new Pose();
     public Vector targetVector = new Vector();
@@ -69,7 +70,7 @@ public class MecanumDrive
         this.BR = hardware.BR;
         this.runMode = mode;
         this.voltageSupplier = hardware.voltageSupplier;
-        localizer = hardware.localizer;
+        localizer = hardware.pinpointLocalizer;
 
         FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
