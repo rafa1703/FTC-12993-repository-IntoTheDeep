@@ -28,4 +28,9 @@ public class ServoPika
             prevPos = position;
         }
     }
+
+    public double getPosition()
+    {
+        return servo.getPosition();
+    }
 }

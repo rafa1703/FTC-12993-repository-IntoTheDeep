@@ -36,6 +36,7 @@ public class OuttakeSubsystem
             wristReadyPos = 0.68,
             wristTransferPos = 0.53,
             wristTransferFinishPos = 0.65,
+            wristPerpendicularPos = 0.5,
             wristSamplePos = 0.585,
             wristSpecimenPos = 0.31,
             wristSpecimenDropPos = 0.5,
@@ -44,9 +45,11 @@ public class OuttakeSubsystem
             railReadyPos = 0,
             railHighPos = 0,
             railMiddlePos = 0,
+            railOverTheTopPos = 0,
             railTransferPos = 1,
             railTransferFinishPos = 1,
-            railSpecimenPos = 0,
+            railSpecimenLowPos = 0,
+            railSpecimenHighPos = 0,
             railSamplePos = 0,
             railIntakePos = 0,
             railLowPos = 1;
@@ -84,6 +87,7 @@ public class OuttakeSubsystem
         READY,
         TRANSFER,
         TRANSFER_FINISH,
+        PERPENDICULAR,
         SAMPLE,
         SPECIMEN,
         SPECIMEN_DROP,
@@ -95,10 +99,12 @@ public class OuttakeSubsystem
         HIGH,
         MIDDLE,
         LOW,
+        OVER_THE_TOP,
         TRANSFER,
         TRANSFER_FINISH,
         SAMPLE,
-        SPECIMEN,
+        SPECIMEN_LOW,
+        SPECIMEN_HIGH,
         INTAKE
     }
 
@@ -193,6 +199,9 @@ public class OuttakeSubsystem
             case TRANSFER_FINISH:
                 wristS.setPosition(wristTransferFinishPos);
                 break;
+            case PERPENDICULAR:
+                wristS.setPosition(wristPerpendicularPos);
+                break;
             case SAMPLE:
                 wristS.setPosition(wristSamplePos);
                 break;
@@ -228,6 +237,9 @@ public class OuttakeSubsystem
             case LOW:
                 railS.setPosition(railLowPos);
                 break;
+            case OVER_THE_TOP:
+                railS.setPosition(railOverTheTopPos);
+                break;
             case TRANSFER:
                 railS.setPosition(railTransferPos);
                 break;
@@ -237,8 +249,11 @@ public class OuttakeSubsystem
             case SAMPLE:
                 railS.setPosition(railSamplePos);
                 break;
-            case SPECIMEN:
-                railS.setPosition(railSpecimenPos);
+            case SPECIMEN_LOW:
+                railS.setPosition(railSpecimenLowPos);
+                break;
+            case SPECIMEN_HIGH:
+                railS.setPosition(railSpecimenHighPos);
                 break;
             case INTAKE:
                 railS.setPosition(railIntakePos);
@@ -314,11 +329,16 @@ public class OuttakeSubsystem
     public double inchesToTicksSlidesMotor (double inches){
         return ((TICKS_PER_BARE_MOTOR * 5.3571428571) / (0.95485 * 2 * Math.PI)) * inches;
     }
-
+    public double getArmAngle()
+    {
+        return servoPosToAngle(armS.getPosition());
+    }
+    /**Degrees**/
     public double angleToServoPos(double angle)
     {
         return angle / maxAngleAxon;
     }
+    /**Degrees**/
     public double servoPosToAngle(double pos)
     {
         return pos * maxAngleAxon;
