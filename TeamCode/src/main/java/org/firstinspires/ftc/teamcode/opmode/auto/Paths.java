@@ -108,6 +108,88 @@ public class Paths
                 )
                 .addFinalPose(6.5, -25, Math.toRadians(90))
                 .build();
-        parkTrajectory = new TrajectoryBuilder().build();
+        firstIntake = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(6.5, -25),
+                        new Point(6, -54),
+                        new Point(34, -37),
+                        new Point(36, -55)
+                )
+                .addSegment(
+                        new BezierCurveTrajectorySegment(
+                                0.35,
+                                new Point(36, -55),
+                                new Point(36, -61)
+                        )
+                )
+                .addFinalPose(36, -61, Math.toRadians(90))
+                .build();
+        secondDeposit = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(36, -61),
+                        new Point(4, -54),
+                        new Point(4.5, -25)
+
+                )
+                .addFinalPose(4.5, -25, Math.toRadians(90))
+                .build();
+        secondIntake = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(4.5, -25),
+                        new Point(4, -54),
+                        new Point(34, -37),
+                        new Point(36, -55)
+                )
+                .addSegment(
+                        new BezierCurveTrajectorySegment(
+                                0.35,
+                                new Point(36, -55),
+                                new Point(36, -61)
+                        )
+                )
+                .addFinalPose(36, -61, Math.toRadians(90))
+                .build();
+        thirdDeposit = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(36, -61),
+                        new Point(2, -54),
+                        new Point(2.5, -25)
+
+                )
+                .addFinalPose(2.5, -25, Math.toRadians(90))
+                .build();
+        thirdIntake = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(2.5, -25),
+                        new Point(2, -54),
+                        new Point(34, -37),
+                        new Point(36, -55)
+                )
+                .addSegment(
+                        new BezierCurveTrajectorySegment(
+                                0.35,
+                                new Point(36, -55),
+                                new Point(36, -61)
+                        )
+                )
+                .addFinalPose(36, -61, Math.toRadians(90))
+                .build();
+        forthDeposit = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(36, -61),
+                        new Point(0, -54),
+                        new Point(0.5, -25)
+
+                )
+                .addFinalPose(0.5, -25, Math.toRadians(90))
+                .build();
+        parkTrajectory = new TrajectoryBuilder() // tangent reversed should be faster or we can spline heading (so we are looking at other alliance samples)
+                .addBezierSegment(
+                        new Point(0.5, -25),
+                        new Point(46, -60)
+
+                )
+                .addFinalPose(46, -60, Math.toRadians(90))
+                .build();
     }
 }
