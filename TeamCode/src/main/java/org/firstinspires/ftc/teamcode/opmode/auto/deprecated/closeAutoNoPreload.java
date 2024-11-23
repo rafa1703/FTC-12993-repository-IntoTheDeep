@@ -1,8 +1,8 @@
 
-package org.firstinspires.ftc.teamcode.opmode.auto;
+package org.firstinspires.ftc.teamcode.opmode.auto.deprecated;
 
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTransfer;
 import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
 
 import com.acmerobotics.dashboard.FtcDashboard;
@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.opmode.auto.PathsFar;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -37,7 +38,7 @@ public class closeAutoNoPreload extends LinearOpMode
     autoState state = autoState.INTAKE;
     GeneralHardware hardware;
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    Paths trajectories = new Paths();
+    PathsFar trajectories = new PathsFar();
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     double globalTimer, sequenceTimer, intakeClipTimer;
@@ -137,7 +138,7 @@ public class closeAutoNoPreload extends LinearOpMode
                 }
                 if (delay(70))
                 {
-                    intakeClipHoldLogic(slideTeleTransfer, 1); // this controls the intake slides and the clip
+                    intakeClipHoldLogic(slideTransfer, 1); // this controls the intake slides and the clip
                     outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                 }
                 if (intakeSubsystem.isSlidesAtBase())
@@ -168,7 +169,7 @@ public class closeAutoNoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                intakeClipHoldLogic(slideTeleTransfer, 20); // this controls the intake slides and the clip
+                intakeClipHoldLogic(slideTransfer, 20); // this controls the intake slides and the clip
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
                 if (delay(200)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                 if (delay(400))

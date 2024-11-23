@@ -46,7 +46,7 @@ public class DashboardUtil
         ArrayList<Point> curve = path.getFullCurve();
         for (Point point : curve)
         {
-            canvas.fillCircle(point.x, point.y, 1);
+            canvas.setFill("orange").fillCircle(point.x, point.y, 1);
         }
     }
 

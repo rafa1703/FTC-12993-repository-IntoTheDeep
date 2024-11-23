@@ -4,7 +4,7 @@ package org.firstinspires.ftc.teamcode.opmode.teleop;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleClose;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleFar;
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTransfer;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -284,7 +284,7 @@ public class PrometheusDrive extends LinearOpMode
                     break;
                 }
 
-                intakeClipHoldLogicWithoutPowerCutout(slideTeleTransfer, 10); // this controls the intake slides and the clip
+                intakeClipHoldLogicWithoutPowerCutout(slideTransfer, 10); // this controls the intake slides and the clip
                 outtakeSubsystem.liftMotorRawControl(-0.085);
                 if (delay(40))
                 {

@@ -89,7 +89,7 @@ public class redCloseAuto extends LinearOpMode
         {
             case INTAKE:
                 if (((cycle == 0 && trajectories.firstIntakeTrajectory.isFinished()) ||
-                        (cycle == 1 && trajectories.secondIntakeTrajectory.isFinished()))
+                        (cycle == 1 && trajectories.firstSampleToHP.isFinished()))
                         && intakeSubsystem.getColorValue() > 800)
                 {
                     state = autoState.DEPOSIT_DRIVE;
@@ -104,7 +104,7 @@ public class redCloseAuto extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    hardware.drive.followTrajectorySplineHeading(trajectories.secondIntakeTrajectory);
+                    hardware.drive.followTrajectorySplineHeading(trajectories.firstSampleToHP);
                     if (delay(200))
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                 }
@@ -169,7 +169,7 @@ public class redCloseAuto extends LinearOpMode
                 }
                 break;
             case DEPOSIT_DRIVE:
-                if ((cycle == 0 && trajectories.firstDepositTrajectory.isFinished()) ||
+                if ((cycle == 0 && trajectories.secondSampleToHP.isFinished()) ||
                         (cycle == 1 && trajectories.secondDepositTrajectory.isFinished()))
                 {
                     cycle++;
@@ -178,7 +178,7 @@ public class redCloseAuto extends LinearOpMode
                     break;
                 }
                 if (cycle == 0)
-                    hardware.drive.followTrajectory(trajectories.firstDepositTrajectory);
+                    hardware.drive.followTrajectory(trajectories.secondSampleToHP);
                 else if (cycle == 1)
                     hardware.drive.followTrajectoryTangentially(trajectories.secondDepositTrajectory, true);
                 break;

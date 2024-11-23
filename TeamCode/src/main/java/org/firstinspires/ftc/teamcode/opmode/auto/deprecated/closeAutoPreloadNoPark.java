@@ -1,26 +1,26 @@
 
-package org.firstinspires.ftc.teamcode.opmode.auto;
+package org.firstinspires.ftc.teamcode.opmode.auto.deprecated;
 
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleTransfer;
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTransfer;
 import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.opmode.auto.PathsFar;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
-@Disabled
-@Autonomous(name = "CLOSE 1 +2", group = "Close")
-public class closeAutoPreload extends LinearOpMode
+
+@Autonomous(name = "CLOSE 1 +2 NO PARK", group = "Close")
+public class closeAutoPreloadNoPark extends LinearOpMode
 {
 
     enum autoState {
@@ -37,12 +37,13 @@ public class closeAutoPreload extends LinearOpMode
     autoState state = autoState.PRELOAD_DEPOSIT;
     GeneralHardware hardware;
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    Paths trajectories = new Paths();
+    PathsFar trajectories = new PathsFar();
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     double globalTimer, sequenceTimer, intakeClipTimer;
     int cycle = 0;
     boolean dropped = false;
+    boolean wentBack = false;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -100,6 +101,10 @@ public class closeAutoPreload extends LinearOpMode
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true);
             dashboard.sendTelemetryPacket(packet);
             telemetry.addData("State", state);
+            telemetry.addData("Pose", hardware.drive.getPoseEstimate());
+            telemetry.addData("Went back", wentBack);
+            telemetry.addData("Reached",hardware.drive.reachedTarget(2));
+            telemetry.addData("ColorValue", intakeSubsystem.getColorValue());
             telemetry.update();
         }
     }
@@ -133,22 +138,30 @@ public class closeAutoPreload extends LinearOpMode
                 }
                 if (cycle == 1)
                 {
-                    hardware.drive.setTargetPose(new Pose(-44, -45.8 * S, Math.toRadians(90 * S)));
-                    if (hardware.drive.reachedTarget(2))
+                    if (!wentBack)
                     {
-                        Pose intakePose = new Pose(-44, (-45.8 + 19) * S, Math.toRadians(90 * S));
+                        hardware.drive.setTargetPose(new Pose(-44, -45.8 * S, Math.toRadians(90 * S)));
+                    }
+                    if (hardware.drive.reachedTarget(2) && !wentBack)
+                    {
+                        Pose intakePose = new Pose(-44, (-45.8 + 12) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
+                        wentBack = true;
                     }
                     if (delay(200))
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                 }
                 if (cycle == 2)
                 {
-                    hardware.drive.setTargetPose(new Pose(-53.9, -39.8 * S, Math.toRadians(90 * S)));
-                    if (hardware.drive.reachedTarget(2))
+                    if (!wentBack)
                     {
-                        Pose intakePose = new Pose(-53.9, (-39.8 + 19) * S, Math.toRadians(90 * S));
+                        hardware.drive.setTargetPose(new Pose(-53.9, -39.8 * S, Math.toRadians(90 * S)));
+                    }
+                    if (hardware.drive.reachedTarget(2) && !wentBack)
+                    {
+                        Pose intakePose = new Pose(-53.9, (-39.8 + 12) * S, Math.toRadians(90 * S));
                         hardware.drive.setTargetPose(intakePose);
+                        wentBack = true;
                     }
                     if (delay(200))
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
@@ -165,7 +178,7 @@ public class closeAutoPreload extends LinearOpMode
                 {
                     // this will hardstop the flap in the sample so the extendo can go back
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                    intakeClipHoldLogic(slideTeleTransfer, 10); // this controls the intake slides and the clip
+                    intakeClipHoldLogic(slideTransfer, 10); // this controls the intake slides and the clip
                 }
                 if (intakeSubsystem.isSlidesAtBase())
                 {
@@ -196,7 +209,7 @@ public class closeAutoPreload extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                intakeClipHoldLogic(slideTeleTransfer, 5); // this controls the intake slides and the clip
+                intakeClipHoldLogic(slideTransfer, 5); // this controls the intake slides and the clip
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos); // may be necessary an offset, hopefully not with box tube
                 if ((delay(250) && outtakeSubsystem.liftReached(OuttakeSubsystem.liftBasePos)) ||
                         delay(400))
@@ -244,6 +257,7 @@ public class closeAutoPreload extends LinearOpMode
                 if (delay(1000) && dropped)
                 {
                     dropped = false;
+                    wentBack = false;
                     state = cycle == 2 ? autoState.PARK : autoState.INTAKE;
                     cycle++;
                     resetTimer();
@@ -283,20 +297,19 @@ public class closeAutoPreload extends LinearOpMode
                 }
                 break;
             case PARK:
-                if (hardware.drive.reachedTarget(2) && delay(200))
+                if (hardware.drive.reachedTarget(2) && delay(2000))
                 {
                     state = autoState.IDLE;
                     resetTimer();
                     break;
                 }
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                // park pose new Pose(53, -55 * S, Math.toRadians(180 * S))
-                hardware.drive.setTargetPose(new Pose(53, -55 * S, Math.toRadians(180 * S)));
+                hardware.drive.setTargetPose(new Pose(-32, -11.5 * S, Math.toRadians(0 * S)));
                 break;
             case IDLE: // we idle here duuhhh
                 break;
         }
-        if (delay(7500) && state == autoState.INTAKE)// if the sample is stuck we just park
+        if (delay(5000) && state == autoState.INTAKE)// if the sample is stuck we just park
         {
             state = autoState.PARK;
             resetTimer();

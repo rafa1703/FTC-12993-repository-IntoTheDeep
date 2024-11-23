@@ -46,7 +46,7 @@ public class IntakeSubsystem
         slideTeleClose = 14,
         slideTeleFar = 20, // max extension is 27 under the extension limit
         slideTeleBase = 0,
-        slideTeleTransfer = -2;
+        slideTransfer = -2;
     public final double
         clipHoldPos = 0.7,
         clipOpenPos = 1;

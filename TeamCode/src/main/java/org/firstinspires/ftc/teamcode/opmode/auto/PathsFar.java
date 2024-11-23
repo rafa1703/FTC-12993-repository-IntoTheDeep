@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.gvf.trajectories.TrajectoryBuilder;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.opencv.core.Point;
 
-public class Paths
+public class PathsFar
 {
 
     public Trajectory
@@ -19,10 +19,9 @@ public class Paths
             secondIntake, thirdDeposit, // cycle 3
             thirdIntake, forthDeposit, // cycle 4
             parkTrajectory;
-    public Pose farStartPose, closeStartPose;
-    public Paths()
+    public Pose farStartPose = new Pose(7.2, -62.5, Math.toRadians(90));;
+    public PathsFar()
     {
-        farStartPose = new Pose(7.2, -62.5, Math.toRadians(90));
         preloadTrajectory = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(7.2, -62.5),
@@ -47,7 +46,7 @@ public class Paths
 
         firstSampleToHP = new TrajectoryBuilder() // tangent
                 .addBezierSegment(
-                        submersibleToSamplesTrajectory.getFinalPose().toPoint(),
+                        new Point(48, -13),
                         new Point(48, -57)
                 )
                 .addFinalPose(48, -57, Math.toRadians(90))
