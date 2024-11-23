@@ -63,7 +63,6 @@ public class SpecimenAuto extends LinearOpMode
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
             outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
-            //TODO: think on how to load the preload
             globalTimer = GlobalTimer.milliseconds();
         }
         waitForStart();
