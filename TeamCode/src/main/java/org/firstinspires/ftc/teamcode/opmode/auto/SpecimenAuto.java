@@ -57,7 +57,7 @@ public class SpecimenAuto extends LinearOpMode
         while (!isStarted())
         {
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-            if (delay(1000)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+            if (delay(1500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
 
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
@@ -227,6 +227,7 @@ public class SpecimenAuto extends LinearOpMode
                 }
                 if (delay(100))
                 {
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
                     if (delay(200))
                     {
@@ -287,19 +288,7 @@ public class SpecimenAuto extends LinearOpMode
             intakeClipTimer = globalTimer;
         }
     }
-    public void outtakeLiftPresets(boolean isSample, boolean isLow, int offSet)
-    {
-        if (isSample)
-        {
-            if (isLow) outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBucketPos + offSet);
-            else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos + offSet);
-        }
-        else
-        {
-            if (isLow) outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBarPos + offSet);
-            else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos + offSet);
-        }
-    }
+
     public boolean delay(double delayTime)
     {
         return (globalTimer - sequenceTimer) > delayTime;
