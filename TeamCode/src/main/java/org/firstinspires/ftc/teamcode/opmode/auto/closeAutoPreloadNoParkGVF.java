@@ -113,7 +113,7 @@ public class closeAutoPreloadNoParkGVF extends LinearOpMode
         switch (state)
         {
             case PRELOAD_DEPOSIT:
-                if (delay(400) && trajectories.preloadTrajectory.isFinished() && hardware.drive.stopped())
+                if (delay(400) && trajectories.hpToSecondSample.isFinished() && hardware.drive.stopped())
                 {
                     state = autoState.DROP;
                     resetTimer();
@@ -122,7 +122,7 @@ public class closeAutoPreloadNoParkGVF extends LinearOpMode
                 outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FINISH);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
+                hardware.drive.followTrajectorySplineHeading(trajectories.hpToSecondSample);
                 hardware.drive.setTargetPose(new Pose(-54.5, -56.5 * S, Math.toRadians(45 * S))); // this is the same drop pos as the other auto
                 break;
             case INTAKE:
@@ -145,7 +145,7 @@ public class closeAutoPreloadNoParkGVF extends LinearOpMode
                 }
                 if (cycle == 2)
                 {
-                    hardware.drive.followTrajectorySplineHeading(trajectories.secondIntakeTrajectory);
+                    hardware.drive.followTrajectorySplineHeading(trajectories.firstSampleToHP);
                 }
                 break;
             case TRANSFER_START:
@@ -216,8 +216,8 @@ public class closeAutoPreloadNoParkGVF extends LinearOpMode
                 break;
             case DEPOSIT_DRIVE:
                 if (
-                        ((cycle == 0 && trajectories.preloadTrajectory.isFinished()) ||
-                                (cycle == 1 && trajectories.firstDepositTrajectory.isFinished()) ||
+                        ((cycle == 0 && trajectories.hpToSecondSample.isFinished()) ||
+                                (cycle == 1 && trajectories.secondSampleToHP.isFinished()) ||
                                 (cycle == 2 && trajectories.secondDepositTrajectory.isFinished())
                                 )
                                 && delay(600) && hardware.drive.stopped())
@@ -229,7 +229,7 @@ public class closeAutoPreloadNoParkGVF extends LinearOpMode
                 if (delay(100))
                 {
                     if (cycle == 1)
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstDepositTrajectory);
+                        hardware.drive.followTrajectorySplineHeading(trajectories.secondSampleToHP);
                     else if (cycle == 2)
                         hardware.drive.followTrajectorySplineHeading(trajectories.secondDepositTrajectory);
                 }

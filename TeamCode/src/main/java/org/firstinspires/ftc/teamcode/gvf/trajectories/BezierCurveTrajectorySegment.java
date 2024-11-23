@@ -11,9 +11,14 @@ public class BezierCurveTrajectorySegment extends TrajectorySegment
     {
         this.curve = curve;
     }
-    public BezierCurveTrajectorySegment(Point[] points) // use this from now on lol
+    public BezierCurveTrajectorySegment(Point... points) // use this from now on lol
     {
         this.curve = new BezierCurve(points);
+    }
+    public BezierCurveTrajectorySegment(double maxSpeed, Point... points) // use this from now on lol
+    {
+        this.curve = new BezierCurve(points);
+        this.maxSpeed = maxSpeed;
     }
     public BezierCurveTrajectorySegment(BezierCurve curve, double maxSpeed)
     {

@@ -77,7 +77,7 @@ public class GVFLogic
             double angle = derivative.getAngle();
             if (reverse) angle += Math.toRadians(180);
             if(t==1 && slowDown) tangentFinalHeading = angle;
-            double headingScale = Math.abs(Math.min(normalizeRadians(angle - pose.getHeading()) / Math.toRadians(70), 1)); // rn i think 70 is the best angle to consider max thing
+            double headingScale = Math.abs(Math.min(normalizeRadians(angle - pose.getHeading()) / Math.toRadians(50), 1)); // rn i think 70 is the best angle to consider max thing
             double headingDiff = headingInterpolation(pose.getHeading(), angle, headingScale) - pose.getHeading();  //Math.min(normalizeRadians(derivative.getAngle() - pose.getHeading()) / Math.toRadians(30), 1); // Who the fuck knows if this is gonna work
             // we want to remove the current heading because interpolation at t = 0 returns the current heading
             movementVector = new Vector(movementVector.getX(), movementVector.getY(), headingDiff);
