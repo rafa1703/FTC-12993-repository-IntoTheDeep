@@ -610,7 +610,7 @@ public class PrometheusDrive extends LinearOpMode
         else if (gamepad1.a || gamepad2.a) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
     }
 
-    public void intakeClipHoldLogic(int slideToPosition, int closeThreshold)
+    public void intakeClipHoldLogic(double slideToPosition, int closeThreshold)
     {
         if (intakeSubsystem.slidePosition < closeThreshold)
         {
@@ -630,19 +630,19 @@ public class PrometheusDrive extends LinearOpMode
             intakeClipTimer = globalTimer;
         }
     }
-    public void intakeClipHoldLogicWithoutPowerCutout(int slideToPosition, int closeThreshold){
+    public void intakeClipHoldLogicWithoutPowerCutout(double slideToPosition, int closeThreshold){
         if (intakeSubsystem.slidePosition < closeThreshold) {
             if (globalTimer - intakeClipTimer > 100){
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD); // turn the intake slide pid running to pos off to save battery draw
-                intakeSubsystem.intakeSlideInternalPID(0,1);
+                intakeSubsystem.intakeSlideInternalPID(0);
             } else {
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD); // turn the intake slide pid running to pos off to save battery draw
-                intakeSubsystem.intakeSlideInternalPID(slideToPosition,1);
+                intakeSubsystem.intakeSlideInternalPID(slideToPosition);
                 // intakeSubsystem.intakeSlideTo(slideToPosition,intakeSubsystem.intakeSlidePosition,1);
             }
         } else {
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN); // this might break something when as the intake slides won't go in, but stops jittering
-            intakeSubsystem.intakeSlideInternalPID(slideToPosition,1);
+            intakeSubsystem.intakeSlideInternalPID(slideToPosition);
             // intakeSubsystem.intakeSlideTo(slideToPosition,intakeSubsystem.intakeSlidePosition,1);
             intakeClipTimer = globalTimer;
         }

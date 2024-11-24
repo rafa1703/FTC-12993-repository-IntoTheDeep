@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTransfer;
-import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -18,15 +15,17 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@Autonomous(name = "5+0 Far", group = "Far")
-public class SpecimenAuto extends LinearOpMode
+@Autonomous(name = "1+3 Close", group = "Close")
+public class SampleAuto extends LinearOpMode
 {
 
     enum autoState {
         PRELOAD_DEPOSIT,
-        PUSH,
         INTAKE,
-        DEPOSIT_DRIVE,
+        INTAKE_SUB,
+        TRANSFER_START,
+        TRANSFER_END,
+        DEPOSIT,
         DROP,
         PARK,
         IDLE
@@ -35,20 +34,21 @@ public class SpecimenAuto extends LinearOpMode
     autoState state = autoState.PRELOAD_DEPOSIT;
     GeneralHardware hardware;
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    PathsFar trajectories = new PathsFar();
+    PathsClose trajectories = new PathsClose();
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     double globalTimer, sequenceTimer, intakeClipTimer;
     int cycle = 0;
-    int pushCycle = 0;
     boolean intaked = false;
+    double yPosition;
+    boolean dropped = false;
 
     @Override
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.Vector);
-        hardware.drive.getLocalizer().setPose(trajectories.farStartPose);
+        hardware.drive.getLocalizer().setPose(trajectories.closeStartPose);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         GlobalTimer = new ElapsedTime(System.nanoTime());
@@ -57,13 +57,17 @@ public class SpecimenAuto extends LinearOpMode
 
         while (!isStarted())
         {
-            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
             if (delay(1500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
 
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
             outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
+
+            intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.READY);
+            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
             globalTimer = GlobalTimer.milliseconds();
         }
         waitForStart();
@@ -73,7 +77,7 @@ public class SpecimenAuto extends LinearOpMode
         while (opModeIsActive())
         {
             globalTimer = GlobalTimer.milliseconds();
-            intakeSubsystem.intakeReads(false); // we dont need the color sensor in this auto
+            intakeSubsystem.intakeReads(state == autoState.INTAKE || state == autoState.INTAKE_SUB || state == autoState.TRANSFER_START); // we dont need the color sensor in this auto
             outtakeSubsystem.outtakeReads();
 
             TelemetryPacket packet = new TelemetryPacket();
@@ -82,6 +86,7 @@ public class SpecimenAuto extends LinearOpMode
             autoSequence();
             hardware.update();
             Pose poseEstimate = hardware.drive.getPoseEstimate();
+            yPosition = poseEstimate.getY();
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true, "red");
             DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPredictedPoseEstimate().toPose2d(), true);
             DashboardUtil.drawCurve(fieldOverlay, hardware.drive.trajectoryFollowing);
@@ -97,77 +102,46 @@ public class SpecimenAuto extends LinearOpMode
         switch (state)
         {
             case PRELOAD_DEPOSIT:
-                if (trajectories.preloadTrajectory.isFinished() && hardware.drive.stopped())
+                if (dropped && delay(200))
                 {
-                    state = autoState.DROP;
+                    state = autoState.INTAKE;
+                    cycle++;
                     resetTimer();
                     break;
                 }
                 hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
-                if (delay(40))
+                if (!dropped)
                 {
-                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
-                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
-
-                    if (delay(400))
+                    if (delay(40))
                     {
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
+
+                        if (delay(400))
+                        {
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                        }
+                        if (trajectories.preloadTrajectory.isFinished() && hardware.drive.stopped() && delay(500))
+                        {
+                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                            dropped = true;
+                            resetTimer();
+                        }
+                    }
+                }
+                else // we want to wait for the arm to lower after we release to start driving
+                {
+                    if (delay(100))
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
                     }
                 }
                 break;
-            case PUSH:
-                if (trajectories.thirdSampleToHPAndIntake.isFinished() && hardware.drive.stopped() && delay(0))
-                {
-                    state = autoState.DEPOSIT_DRIVE;
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    resetTimer();
-                    break;
-                }
-                switch (pushCycle)
-                {
-                    case 0:
-                        if (trajectories.submersibleToSamplesTrajectory.isFinished()) pushCycle++;
-                        hardware.drive.followTrajectorySplineHeading(trajectories.submersibleToSamplesTrajectory);
-                        break;
-                    case 1:
-                        if (trajectories.firstSampleToHP.isFinished()) pushCycle++;
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstSampleToHP);
-                        break;
-                    case 2:
-                        if (trajectories.hpToSecondSample.isFinished()) pushCycle++;
-                        hardware.drive.followTrajectorySplineHeading(trajectories.hpToSecondSample);
-                        break;
-                    case 3:
-                        if (trajectories.secondSampleToHP.isFinished()) pushCycle++;
-                        hardware.drive.followTrajectorySplineHeading(trajectories.secondSampleToHP);
-                        break;
-                    case 4:
-                        if (trajectories.hpToThirdSample.isFinished())
-                        {
-                            pushCycle++;
-                            resetTimer();
-                        }
-                        hardware.drive.followTrajectorySplineHeading(trajectories.hpToThirdSample);
-                        break;
-                    case 5:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdSampleToHPAndIntake);
-
-                        if (delay(130))
-                        {
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.PERPENDICULAR);
-                        }
-                        if (delay(230))
-                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.INTAKE);
-                        else outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
-                        break;
-                }
-                break;
             case INTAKE:
-                if (intaked && delay(190))
+                if (intakeSubsystem.getColorValue() > 500 && delay(190))
                 {
-                    state =  autoState.DEPOSIT_DRIVE;
+                    state =  autoState.TRANSFER_START;
                     intaked = false;
                     resetTimer();
                     break;
@@ -175,62 +149,85 @@ public class SpecimenAuto extends LinearOpMode
                 switch (cycle)
                 {
                     case 1:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
-                        if (trajectories.firstIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intaked = true;
-                            resetTimer();
-                        }
+                        hardware.drive.followTrajectorySplineHeading(trajectories.submersibleToFirstIntake);
                         break;
                     case 2:
                         hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
-                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intaked = true;
-                            resetTimer();
-                        }
                         break;
                     case 3:
                         hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
-                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intaked = true;
-                            resetTimer();
-                        }
                         break;
                 }
-                if (!intaked)
+                if (!outtakeSubsystem.liftAtBase()) // this just continue making sure the lift is going down after drop
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
+                if (delay(40))
                 {
-                    if (delay(40))
-                    {
-                        if (delay(140))
-                        {
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                        }
-                        if (delay(240))
-                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.INTAKE);
-                        else
-                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
-                        if (delay(300))
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                        else
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.PERPENDICULAR);
-
-                        if (delay(550))
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-                    }
-                }
-                else
-                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
                     if (delay(90))
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
+                        intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    if (((trajectories.submersibleToFirstIntake.isFinished() && cycle == 1) || (yPosition > -20 && cycle != 1)) && delay(200))
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoFar);
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    }
+                    else intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideTeleBase);
                 }
                 break;
-            case DEPOSIT_DRIVE:
+            case INTAKE_SUB:
+                break;
+            case TRANSFER_START:
+                if (delay(1000))
+                {
+                    state = autoState.TRANSFER_END;
+                    resetTimer();
+                    break;
+                }
+                if (delay(40))
+                {
+                    intakeClipHoldLogicWithoutPowerCutout(IntakeSubsystem.slideTransfer, 5);
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
+                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.READY);
+                    if (delay(120))
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    }
+                    if (intakeSubsystem.isSlidesAtBase() && delay(140))
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                    }
+                }
+                break;
+            case TRANSFER_END:
+                if (delay(430))
+                {
+                    state = autoState.DEPOSIT;
+                    resetTimer();
+                    break;
+                }
+                if (delay(20))
+                {
+                    if (delay(140))
+                    {
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                    }
+                    if (delay(200))
+                    {
+                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER_FINISH);
+                    }
+                    else outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
+                    if (delay(290))
+                    {
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH);
+                    }
+                    if (delay(350))
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+                    }
+                }
+                break;
+            case DEPOSIT:
                 if ((
                         (cycle == 1 && trajectories.firstDeposit.isFinished()) ||
                         (cycle == 2 && trajectories.secondDeposit.isFinished()) ||
@@ -257,25 +254,25 @@ public class SpecimenAuto extends LinearOpMode
                         hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
                         break;
                 }
-                if (delay(100))
+                if (delay(200))
                 {
-                    //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
-                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
-                    if (delay(200))
+                    if (delay(290))
                     {
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
                     }
-                    if (delay(300))
+                    if (delay(400)) outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SAMPLE);
+                    else outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
+                    if (yPosition > -30)
                     {
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
+                        outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
                     }
                 }
                 break;
             case DROP:
-                if (delay(230))
+                if (delay(250))
                 {
-                    state = cycle == 0 ? autoState.PUSH : cycle == 4 ? autoState.PARK : autoState.INTAKE;
+                    state = cycle == 3 ? autoState.PARK : autoState.INTAKE; // add the sub cycle here
                     cycle++;
                     resetTimer();
                     break;
@@ -284,6 +281,12 @@ public class SpecimenAuto extends LinearOpMode
                 if (delay(120))
                 {
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
+                }
+                if (delay(200))
+                {
+                    outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
+                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.READY);
+                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
                 }
                 break;
             case PARK:
@@ -316,6 +319,22 @@ public class SpecimenAuto extends LinearOpMode
         {
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
             intakeSubsystem.intakeSlideInternalPID(slideToPosition);
+            intakeClipTimer = globalTimer;
+        }
+    }
+    public void intakeClipHoldLogicWithoutPowerCutout(double slideToPosition, int closeThreshold){
+        if (intakeSubsystem.slidePosition < closeThreshold) {
+            if (globalTimer - intakeClipTimer > 100){
+                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
+                intakeSubsystem.intakeSlideInternalPID(0);
+            } else {
+                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
+                intakeSubsystem.intakeSlideInternalPID(slideToPosition);
+            }
+        } else {
+            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+            intakeSubsystem.intakeSlideInternalPID(slideToPosition);
+            //
             intakeClipTimer = globalTimer;
         }
     }
