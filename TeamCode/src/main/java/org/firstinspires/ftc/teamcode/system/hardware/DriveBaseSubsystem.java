@@ -2,12 +2,8 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
 
@@ -20,7 +16,7 @@ public class DriveBaseSubsystem
             FR,
             BL,
             BR,
-            hang;
+            hangMotor;
 
     // higher values of k means more adjustment.
     // c centers the adjustment
@@ -48,6 +44,7 @@ public class DriveBaseSubsystem
     double PowerBase = 1;
     double PowerBaseTurn = 0.88;
     double PowerStrafe = 1.1;
+    int hangUpPos, hangDownPos;
     public enum HangState
     {
         READY,
@@ -61,7 +58,7 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
-        hang = hardware.hangM;
+        hangMotor = hardware.hangM;
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     // this could be run in robothardware
@@ -70,9 +67,9 @@ public class DriveBaseSubsystem
         // zero brake behavior means when motors aren't powered, they will auto brake
         if (Float) setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
         else setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
-        hang.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hang.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        hang.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+        hangMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        hangMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior zeroPowerBehaviour)
     {
@@ -86,12 +83,28 @@ public class DriveBaseSubsystem
         switch (state)
         {
             case READY:
+                if (Math.abs(hangMotor.getCurrentPosition() - hangDownPos) < 5)
+                {
+                    hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    hangMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+                    hangMotor.setPower(0); // cut power
+                }
+                else
+                {
+                    hangMotor.setTargetPosition(hangDownPos);
+                    hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    hangMotor.setPower(1);
+                }
                 break;
             case OUT:
-                hang.setPower(0.1);
+                hangMotor.setTargetPosition(hangDownPos);
+                hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                hangMotor.setPower(1);
                 break;
             case UP:
-                hang.setPower(-1);
+                hangMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
+                hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                hangMotor.setPower(-1);
                 break;
         }
     }
@@ -101,15 +114,15 @@ public class DriveBaseSubsystem
     }
 
     public void drive(double LY, double LX, double RX) {
-//        double f = LY < 0? -adjustedJoystick(Math.abs(LY)):adjustedJoystick(Math.abs(LY));
-//        double s = LX < 0? -adjustedJoystick(Math.abs(LX)):adjustedJoystick(Math.abs(LX));
-//        double t = RX < 0? -adjustedJoystick(Math.abs(RX)):adjustedJoystick(Math.abs(RX));
+        double f = LY < 0? -adjustedJoystick(Math.abs(LY)):adjustedJoystick(Math.abs(LY));
+        double s = LX < 0? -adjustedJoystick(Math.abs(LX)):adjustedJoystick(Math.abs(LX));
+        double t = RX < 0? -adjustedJoystick(Math.abs(RX)):adjustedJoystick(Math.abs(RX));
 
         double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
-        double frontLeftPower = (-LY * PowerBase + LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
-        double backLeftPower = (-LY * PowerBase - LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
-        double frontRightPower = (-LY * PowerBase - LX * PowerStrafe - RX * PowerBaseTurn) / denominator;
-        double backRightPower = (-LY * PowerBase + LX * PowerStrafe - RX * PowerBaseTurn) / denominator;
+        double frontLeftPower = (-f*PowerBase + s*PowerStrafe + t*PowerBaseTurn) / denominator;
+        double backLeftPower = (-f*PowerBase - s*PowerStrafe + t*PowerBaseTurn) / denominator;
+        double frontRightPower = (-f*PowerBase - s*PowerStrafe - t*PowerBaseTurn) / denominator;
+        double backRightPower = (-f*PowerBase + s*PowerStrafe - t*PowerBaseTurn) / denominator;
 
         FL.setPower(frontLeftPower);
         FR.setPower(frontRightPower);

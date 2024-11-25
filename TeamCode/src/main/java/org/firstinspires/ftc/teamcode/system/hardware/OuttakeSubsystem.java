@@ -329,6 +329,15 @@ public class OuttakeSubsystem
     public double inchesToTicksSlidesMotor (double inches){
         return ((TICKS_PER_BARE_MOTOR * 5.3571428571) / (0.95485 * 2 * Math.PI)) * inches;
     }
+
+    public boolean isArmOver()
+    {
+        return armS.getPosition() < 0.5; //TODO: tune this
+    }
+    public boolean isRailUnderTheTop()
+    {
+        return railS.getPosition() < railOverTheTopPos;
+    }
     public double getArmAngle()
     {
         return servoPosToAngle(armS.getPosition());

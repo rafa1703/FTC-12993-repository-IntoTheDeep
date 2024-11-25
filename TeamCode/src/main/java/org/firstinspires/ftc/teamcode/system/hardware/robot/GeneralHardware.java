@@ -78,11 +78,8 @@ public class GeneralHardware
         outtakeLiftM = new MotorPika(hm.get(DcMotorEx.class, "OuttakeSlides"));
         hangM = new MotorPika(hm.get(DcMotorEx.class, "Hang"));
 
-        perpendicularOdo = new Encoder(intakeM.getMotor());
-        parallelOdo = new Encoder(BR.getMotor());
-
-        //eeh3 = new Encoder(meh3);
-
+       /* perpendicularOdo = new Encoder(intakeM.getMotor());
+        parallelOdo = new Encoder(BR.getMotor());*/
 
         chuteS = new ServoPika(hm.get(ServoImplEx.class, "chuteS"));
         clipS = new ServoPika(hm.get(ServoImplEx.class, "clipS"));
