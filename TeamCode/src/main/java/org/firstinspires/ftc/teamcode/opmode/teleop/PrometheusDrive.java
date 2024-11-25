@@ -141,7 +141,13 @@ public class PrometheusDrive extends LinearOpMode
                         resetTimer();
                         break;
                     }
-                    if (gamepad1LeftTrigger())
+                    if (gamepad2LeftTrigger() && gamepad1.dpad_up)
+                    {
+                        state = OuttakeState.HANG_START;
+                        resetTimer();
+                        break;
+                    }
+                    if (gamepad2LeftTrigger())
                     {
                         state = OuttakeState.SPECIMEN_INTAKE;
                         resetTimer();
