@@ -294,7 +294,7 @@ public class IntakeSubsystem
     {
         return side;
     }
-    public boolean slideReached(int slideTarget)
+    public boolean slideReached(double slideTarget)
     {
         return Math.abs(inchesToTicksSlidesMotor(slideTarget) - slidePosition) < slideThreshold;
     }

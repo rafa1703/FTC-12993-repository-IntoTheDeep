@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.system.accessory.ToggleRisingEdge;
+import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDownWithLimit;
 import org.firstinspires.ftc.teamcode.system.accessory.LoopTime;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
@@ -53,9 +55,11 @@ public class PrometheusDrive extends LinearOpMode
     }
     OuttakeState state = OuttakeState.READY;
     ToggleUpOrDown intakeSlideBtn = new ToggleUpOrDown(1, 1, 0);
-    ToggleUpOrDown intakeSlideSubBtn = new ToggleUpOrDown(1, 1, 0); // this instance will control
+    ToggleUpOrDownWithLimit intakeSlideSubBtn = new ToggleUpOrDownWithLimit(1, 1, 0, 4); // this instance will control
+    ToggleRisingEdge toggleRisingEdge = new ToggleRisingEdge();
+    int intakeSLideIncrement = 5; // in
     double colorValue;
-    int intakeSlideTarget;
+    double intakeSlideTarget;
     boolean dropped = false;
     boolean comingFromSub = false;
     boolean isLow = false, isSample = false;
@@ -146,8 +150,9 @@ public class PrometheusDrive extends LinearOpMode
                     else if (gamepad2.left_bumper)
                     {
                         state = OuttakeState.INTAKE_EXTENDO_SUB;
-                        intakeSlideTarget = slideTeleClose;
-                        intakeSlideSubBtn.upToggle(gamepad2LeftTrigger());
+                        intakeSlideTarget = intakeSLideIncrement;
+                        intakeSlideSubBtn.upToggle(gamepad2.left_bumper);
+                        toggleRisingEdge.mode(gamepad2.left_bumper);
                         resetTimer();
                         break;
                     }
@@ -184,17 +189,25 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case INTAKE_EXTENDO_SUB:
-                intakeSlideBtn.upToggle(gamepad2.left_bumper);
-                intakeSlideBtn.downToggle(gamepad2.right_bumper, 1);
-                if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleClose;
-                if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
+                // changes done here also have to be done in spec_deposit
+                intakeSlideSubBtn.upToggle(gamepad2.left_bumper);
+                intakeSlideSubBtn.downToggle(gamepad2.right_bumper, 1);
+                if (toggleRisingEdge.mode(gamepad2.left_bumper || gamepad2.right_bumper))
+                {
+                    intakeSlideTarget = intakeSLideIncrement * intakeSlideSubBtn.OffsetTargetPosition;
+                }
+                else
+                {
+                    intakeSlideTarget += -gamepad2.left_stick_y * 0.8; // 0.8 in (20 in per second)
+                }
+
                 colorValue = intakeSubsystem.getColorValue();
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                 if (delay(40))
                 {
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
-                    if (intakeSubsystem.slideReached(intakeSlideTarget)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-                    if (gamepad1LeftTrigger() || gamepad2LeftTrigger())
+                    intakeArmHeight();
+                    if (gamepad2LeftTrigger())
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                     else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
@@ -468,24 +481,28 @@ public class PrometheusDrive extends LinearOpMode
                 }
 
                 // the intake part
-                intakeSlideBtn.upToggle(gamepad2.left_bumper);
-                intakeSlideBtn.downToggle(gamepad2.right_bumper, 1);
-                if (intakeSlideBtn.OffsetTargetPosition == 0) intakeSlideTarget = slideTeleBase;
-                if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleFar;
-                if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
-
+                intakeSlideSubBtn.upToggle(gamepad2.left_bumper);
+                intakeSlideSubBtn.downToggle(gamepad2.right_bumper, 1);
+                if (toggleRisingEdge.mode(gamepad2.left_bumper || gamepad2.right_bumper))
+                {
+                    intakeSlideTarget = intakeSLideIncrement * intakeSlideSubBtn.OffsetTargetPosition;
+                }
+                else
+                {
+                    intakeSlideTarget += -gamepad2.left_stick_y * 0.8; // 0.8 in (20 in per second)
+                }
                 colorValue = intakeSubsystem.getColorValue();
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                if (delay(40))
+                if (delay(80))
                 {
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
-                    if (intakeSubsystem.slideReached(intakeSlideTarget)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+                    intakeArmHeight();
                     if (gamepad1LeftTrigger() || gamepad2LeftTrigger())
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                     else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                     if (
-                            (delay(700) && colorValue > 500) ||
+                            (delay(300) && colorValue > 500) ||
                             (gamepad1RightTrigger() || gamepad2RightTrigger()) &&
                                     dropped)
                     {
@@ -676,11 +693,6 @@ public class PrometheusDrive extends LinearOpMode
     {
         if (low)  isLow = true;
         else if (high) isLow = false;
-    }
-    public void armPositionLogic(boolean isBucket)
-    {
-        if (isBucket) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
-        else outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
     }
 
     public void updateGamepadLED(IntakeSubsystem.IntakeFilter newState)
