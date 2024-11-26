@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
+import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
+import org.firstinspires.ftc.teamcode.gvf.trajectories.TrajectoryBuilder;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.opmode.teleop.PrometheusDrive;
@@ -45,6 +47,8 @@ public class SampleAuto extends LinearOpMode
     double yPosition, xPosition;
     boolean dropped = false;
     double intakeSubTarget = 8;
+    Trajectory depositTrajectory;
+    Trajectory reverseTrajectory = null;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -277,6 +281,10 @@ public class SampleAuto extends LinearOpMode
                     {
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER_FINISH);
                     }
+                    if (delay(230))
+                    {
+                        intakeClipHoldLogic(IntakeSubsystem.slideTransfer, 5); // here we can cut down the power as transfer has already happened
+                    }
                     else outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
                     if (delay(290))
                     {
@@ -300,21 +308,28 @@ public class SampleAuto extends LinearOpMode
                     resetTimer();
                     break;
                 }
+                depositTrajectory = null;
                 switch (cycle)
                 {
                     case 1:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstDeposit);
+                        depositTrajectory = trajectories.firstDeposit;
+//                        hardware.drive.followTrajectorySplineHeading(trajectories.firstDeposit);
                         break;
                     case 2:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.secondDeposit);
+//                        hardware.drive.followTrajectorySplineHeading(trajectories.secondDeposit);
+                        depositTrajectory = trajectories.secondDeposit;
                         break;
                     case 3:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdDeposit);
+                        depositTrajectory = trajectories.thirdDeposit;
+//                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdDeposit);
                         break;
                     case 4:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
+                        depositTrajectory = trajectories.forthDeposit;
+//                        hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
                         break;
                 }
+                if (depositTrajectory != null)
+                    hardware.drive.followTrajectorySplineHeading(depositTrajectory);
                 if (delay(150))
                 {
                     if (yPosition > -30)
@@ -335,12 +350,30 @@ public class SampleAuto extends LinearOpMode
                 {
                     state = cycle == 3 ? autoState.PARK : autoState.INTAKE; // add the sub cycle here
                     cycle++;
+                    reverseTrajectory = null;
                     resetTimer();
                     break;
                 }
+                // if this get caught might have to dynamically generate a trajectory we go back
+                if (reverseTrajectory == null) // this should make it so it only runs once
+                {
+                    Pose reversedPose = depositTrajectory.getFinalPose();
+                    reversedPose = new Pose(reversedPose.getX() + 3, reversedPose.getY() + 3, reversedPose.getHeading());
+                    reverseTrajectory = new TrajectoryBuilder()
+                            .addBezierSegment(
+                                    depositTrajectory.getFinalPose().toPoint(),
+                                    reversedPose.toPoint()
+                            )
+                            .addFinalPose(reversedPose)
+                            .build();
+                }
+                //hardware.drive.followTrajectorySplineHeading(reverseTrajectory);
+
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 if (delay(120))
                 {
+                    // we might need to turn the wrist before the arm goes back as the clearance is
+                    //outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
                 }
                 if (delay(200))

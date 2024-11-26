@@ -32,7 +32,7 @@ public class GeneralHardware
     public Encoder perpendicularOdo, parallelOdo;
     public ServoPika chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
     public ServoPika clawS, wristS, flapS, seh3, seh4, seh5;
-    public RevColorSensorV3 cs0;
+    public RevColorSensorV3 colourSensor;
     public GoBildaPinpointDriver pinpoint;
     public LocalizerPinpoint localizerPinpoint;
 
@@ -95,7 +95,7 @@ public class GeneralHardware
         //seh4 = hm.get(ServoImplEx.class, "seh4");
         //seh5 = hm.get(ServoImplEx.class, "seh5");
 
-        cs0 = hm.get(RevColorSensorV3.class, "colorSensor");
+        colourSensor = hm.get(RevColorSensorV3.class, "colorSensor");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltageSupplier = new TimedSupplier<>(voltageSensor::getVoltage, 40);

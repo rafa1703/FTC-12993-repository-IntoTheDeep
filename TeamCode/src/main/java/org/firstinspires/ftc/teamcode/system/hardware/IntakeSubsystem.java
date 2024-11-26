@@ -103,7 +103,7 @@ public class IntakeSubsystem
         leftArmS = hardware.intakeLeftArmS;
         rightArmS = hardware.intakeRightArmS;
         clipS = hardware.clipS;
-        colorSensor = hardware.cs0; // no supplier as i want this to pool immediately and synchronously
+        colorSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
 
         intakeMotor = hardware.intakeM;
         intakeSlideMotor = hardware.intakeSlidesM;

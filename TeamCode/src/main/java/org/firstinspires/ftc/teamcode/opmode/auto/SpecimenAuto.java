@@ -42,6 +42,7 @@ public class SpecimenAuto extends LinearOpMode
     int cycle = 0;
     int pushCycle = 0;
     boolean intaked = false;
+    double yPosition;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -82,6 +83,7 @@ public class SpecimenAuto extends LinearOpMode
             autoSequence();
             hardware.update();
             Pose poseEstimate = hardware.drive.getPoseEstimate();
+            yPosition = poseEstimate.getY();
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true, "red");
             DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPredictedPoseEstimate().toPose2d(), true);
             DashboardUtil.drawCurve(fieldOverlay, hardware.drive.trajectoryFollowing);
@@ -219,8 +221,7 @@ public class SpecimenAuto extends LinearOpMode
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                         else
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.PERPENDICULAR);
-
-                        if (delay(550))
+                        if (yPosition > -36) // enough time to clear the submersible after depositing
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
                     }
                 }
