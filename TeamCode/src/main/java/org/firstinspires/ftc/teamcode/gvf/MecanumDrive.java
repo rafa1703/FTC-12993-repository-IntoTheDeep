@@ -294,8 +294,9 @@ public class MecanumDrive
     {
         runMode = RunMode.Vector;
         trajectoryFollowing = trajectory;
-        Pose currentPose = localizer.getPredictedPoseEstimate();
-        setTargetVector(trajectory.getPowerVector(currentPose));
+        Pose predictedPoseEstimate = localizer.getPredictedPoseEstimate();
+        Pose currentPoseEstimate = localizer.getPoseEstimate();
+        setTargetVector(trajectory.getPowerVector(predictedPoseEstimate, currentPoseEstimate));
         if (trajectory.usePid())
         {
             runMode = RunMode.P2P;
@@ -306,8 +307,9 @@ public class MecanumDrive
     {
         runMode = RunMode.Vector;
         trajectoryFollowing = trajectory;
-        Pose currentPose = localizer.getPredictedPoseEstimate();
-        setTargetVector(trajectory.getTangentPowerVector(currentPose, reverse));
+        Pose predictedPoseEstimate = localizer.getPredictedPoseEstimate();
+        Pose currentPoseEstimate = localizer.getPoseEstimate();
+        setTargetVector(trajectory.getTangentPowerVector(predictedPoseEstimate, currentPoseEstimate, reverse));
         if (trajectory.usePid())
         {
             runMode = RunMode.P2P;
@@ -321,8 +323,9 @@ public class MecanumDrive
     {
         runMode = RunMode.Vector;
         trajectoryFollowing = trajectory;
-        Pose currentPose = localizer.getPredictedPoseEstimate();
-        setTargetVector(trajectory.getPowerVectorSplineHeading(currentPose));
+        Pose predictedPoseEstimate = localizer.getPredictedPoseEstimate();
+        Pose currentPoseEstimate = localizer.getPoseEstimate();
+        setTargetVector(trajectory.getPowerVectorSplineHeading(predictedPoseEstimate, currentPoseEstimate));
         if (trajectory.usePid())
         {
             runMode = RunMode.P2P;

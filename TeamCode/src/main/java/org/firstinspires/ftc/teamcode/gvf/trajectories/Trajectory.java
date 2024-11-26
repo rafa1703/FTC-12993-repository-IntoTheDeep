@@ -40,7 +40,7 @@ public class Trajectory
 
     public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers)
     {
-        this(segments, startPose, finalPose, spatialMarkers, 500.0); // 500ms is the default
+        this(segments, startPose, finalPose, spatialMarkers, 1000.0); // 500ms is the default
     }
     public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers, double timerThreshold)
     {
@@ -73,7 +73,7 @@ public class Trajectory
         }
     }
 
-    public Vector getPowerVector(Pose pose) // this should work lol, idk fucking know tho
+    public Vector getPowerVector(Pose predictedPose, Pose currentPose) // this should work lol, idk fucking know tho
     {
         gvfLogic.setReverse(false);
         gvfLogic.setFollowTangentially(false);
@@ -99,7 +99,7 @@ public class Trajectory
         {
             for (TrajectorySegment segment : segments)
             {
-                Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
+                Point distAndT = segment.getClosestDistanceAndT(predictedPose.toPoint());
                 if (distAndT.y < closestDistance)
                 {
                     closestDistance = distAndT.y;
@@ -113,7 +113,7 @@ public class Trajectory
         boolean lastCurve = u == numberOfSegments;
 
         // passing t here removes another full iteration of the curve
-        Vector powerVector = gvfLogic.calculate(curve, t, pose, lastCurve, segments.get(u).getMaxSpeed());
+        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, segments.get(u).getMaxSpeed());
 
         if(!spatialMarkers.isEmpty()) // hope this doesn't break shit
         {
@@ -127,8 +127,8 @@ public class Trajectory
             }
         }
 
-        // if we less then the threshold we can say we are finished
-        if (segments.get(numberOfSegments).getEndPoint().subtract(pose.toPoint()).getMagnitude() < threshold)
+        // if we less then the threshold we can say we are finished, we ran this on the actual pose
+        if (segments.get(numberOfSegments).getEndPoint().subtract(currentPose.toPoint()).getMagnitude() < threshold)
         {
             isFinished = true;
         }
@@ -139,7 +139,7 @@ public class Trajectory
 
         return powerVector;
     }
-    public Vector getTangentPowerVector(Pose pose, boolean reverse) // this should work lol, idk fucking know tho
+    public Vector getTangentPowerVector(Pose predictedPose, Pose currentPose, boolean reverse) // this should work lol, idk fucking know tho
     {
         gvfLogic.setReverse(reverse);
         gvfLogic.setFollowTangentially(true);
@@ -165,7 +165,7 @@ public class Trajectory
         {
             for (TrajectorySegment segment : segments)
             {
-                Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
+                Point distAndT = segment.getClosestDistanceAndT(predictedPose.toPoint());
                 if (distAndT.y <= closestDistance)
                 {
                     closestDistance = distAndT.y;
@@ -178,9 +178,9 @@ public class Trajectory
         boolean lastCurve = u == numberOfSegments;
         curve = segments.get(u).returnCurve();
 
-        Vector powerVector = gvfLogic.calculate(curve, t, pose, lastCurve, segments.get(u).getMaxSpeed());
+        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, segments.get(u).getMaxSpeed());
         // if we less then the threshold we can say we are finished
-        if (segments.get(numberOfSegments).getEndPoint().subtract(pose.toPoint()).getMagnitude() < threshold)
+        if (segments.get(numberOfSegments).getEndPoint().subtract(currentPose.toPoint()).getMagnitude() < threshold)
         {
             isFinished = true;
         }
@@ -201,7 +201,7 @@ public class Trajectory
 
         return powerVector;
     }
-    public Vector getPowerVectorSplineHeading(Pose pose) // this should work lol, idk fucking know tho
+    public Vector getPowerVectorSplineHeading(Pose predictedPose, Pose currentPose) // this should work lol, idk fucking know tho
     {
         gvfLogic.setReverse(false);
         gvfLogic.setFollowTangentially(false);
@@ -227,7 +227,7 @@ public class Trajectory
         {
             for (TrajectorySegment segment : segments)
             {
-                Point distAndT = segment.getClosestDistanceAndT(pose.toPoint());
+                Point distAndT = segment.getClosestDistanceAndT(predictedPose.toPoint());
                 if (distAndT.y < closestDistance)
                 {
                     closestDistance = distAndT.y;
@@ -240,16 +240,16 @@ public class Trajectory
         boolean lastCurve = u == numberOfSegments;
 
 
-        Vector powerVector = gvfLogic.calculate(curve, t, pose, lastCurve, segments.get(u).getMaxSpeed());
+        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, segments.get(u).getMaxSpeed());
         // we need to change the z component of the power vector, yes this being done here is dodgy as fuck but i don't care
         // (it needs to be here because i want to interpolate using the u value of the trajectory and not the t value
         double finalHeading = finalPose.getHeading();
-        double headingDiff = gvfLogic.headingInterpolation(pose.getHeading(), finalHeading, (u + t) / (numberOfSegments + 1)) - pose.getHeading(); // remove heading because we want the diff
+        double headingDiff = gvfLogic.headingInterpolation(predictedPose.getHeading(), finalHeading, (u + t) / (numberOfSegments + 1)) - predictedPose.getHeading(); // remove heading because we want the diff
         //headingDiff = normalizeRadians(headingDiff - pose.getHeading());
         powerVector = new Vector(powerVector.getX(), powerVector.getY(), headingDiff);
 
         // if we less then the threshold we can say we are finished
-        if (segments.get(numberOfSegments).getEndPoint().subtract(pose.toPoint()).getMagnitude() < threshold)
+        if (segments.get(numberOfSegments).getEndPoint().subtract(currentPose.toPoint()).getMagnitude() < threshold)
         {
             isFinished = true;
         }
