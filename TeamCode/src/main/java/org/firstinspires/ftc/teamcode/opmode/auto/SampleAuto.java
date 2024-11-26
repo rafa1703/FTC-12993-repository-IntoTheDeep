@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.opmode.teleop.PrometheusDrive;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -23,6 +24,7 @@ public class SampleAuto extends LinearOpMode
         PRELOAD_DEPOSIT,
         INTAKE,
         INTAKE_SUB,
+        INTAKE_DROP,
         TRANSFER_START,
         TRANSFER_END,
         DEPOSIT,
@@ -40,8 +42,9 @@ public class SampleAuto extends LinearOpMode
     double globalTimer, sequenceTimer, intakeClipTimer;
     int cycle = 0;
     boolean intaked = false;
-    double yPosition;
+    double yPosition, xPosition;
     boolean dropped = false;
+    double intakeSubTarget = 8;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -57,6 +60,7 @@ public class SampleAuto extends LinearOpMode
 
         while (!isStarted())
         {
+            intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.NEUTRAL;
             if (delay(1500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
 
@@ -87,6 +91,7 @@ public class SampleAuto extends LinearOpMode
             hardware.update();
             Pose poseEstimate = hardware.drive.getPoseEstimate();
             yPosition = poseEstimate.getY();
+            xPosition = poseEstimate.getX();
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true, "red");
             DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPredictedPoseEstimate().toPose2d(), true);
             DashboardUtil.drawCurve(fieldOverlay, hardware.drive.trajectoryFollowing);
@@ -174,6 +179,62 @@ public class SampleAuto extends LinearOpMode
                 }
                 break;
             case INTAKE_SUB:
+                hardware.drive.followTrajectorySplineHeading(trajectories.submersibleIntake);
+                if (delay(140))
+                {
+                    if (xPosition > -25) // this should be the actual trigger condition
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(intakeSubTarget);
+                        if (intakeSubsystem.slideReached(intakeSubTarget))
+                        {
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+                        }
+                        if (delay(200))
+                        {
+                            if (intakeSubsystem.getColorValue() > 500)
+                            {
+                                if (intakeSubsystem.colorLogic())
+                                {
+                                    state = autoState.TRANSFER_START;
+                                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                                    resetTimer();
+                                    break;
+                                } else
+                                {
+                                    state = autoState.INTAKE_DROP;
+                                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                                    resetTimer();
+                                    break;
+                                }
+                            }
+
+                        } else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    }
+                }
+                break;
+            case INTAKE_DROP:
+                if (intakeSubsystem.getColorValue() < 600 && delay(2000))
+                {
+                    intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
+                    intakeSubTarget += 4;
+                    state = autoState.INTAKE_SUB;
+                    resetTimer();
+                    break;
+                }
+                if (delay(400))
+                    intakeSubsystem.intakeSlideInternalPID(intakeSubTarget + 5);
+                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+
+                if (delay(50))
+                {
+                    intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
+                    if (delay(500))
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    else if (delay(350)) // this assumes that the sample is stuck in the chute so we spin the intake
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    else
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.DROP); // this stop the motor until it drop
+                }
                 break;
             case TRANSFER_START:
                 if (delay(1000))
@@ -254,8 +315,12 @@ public class SampleAuto extends LinearOpMode
                         hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
                         break;
                 }
-                if (delay(200))
+                if (delay(150))
                 {
+                    if (yPosition > -30)
+                    {
+                        outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
+                    }
                     if (delay(290))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
@@ -263,10 +328,6 @@ public class SampleAuto extends LinearOpMode
                     }
                     if (delay(400)) outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SAMPLE);
                     else outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
-                    if (yPosition > -30)
-                    {
-                        outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
-                    }
                 }
                 break;
             case DROP:

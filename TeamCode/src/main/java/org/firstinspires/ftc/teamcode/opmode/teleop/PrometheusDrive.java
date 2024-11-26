@@ -141,7 +141,7 @@ public class PrometheusDrive extends LinearOpMode
                         resetTimer();
                         break;
                     }
-                    if (gamepad2LeftTrigger() && gamepad1.dpad_up)
+                    if (gamepad1LeftTrigger() && gamepad1.dpad_up)
                     {
                         state = OuttakeState.HANG_START;
                         resetTimer();
@@ -198,7 +198,7 @@ public class PrometheusDrive extends LinearOpMode
                 // changes done here also have to be done in spec_deposit
                 intakeSlideSubBtn.upToggle(gamepad2.left_bumper);
                 intakeSlideSubBtn.downToggle(gamepad2.right_bumper, 1);
-                if (toggleRisingEdge.mode(gamepad2.left_bumper || gamepad2.right_bumper))
+                if (toggleRisingEdge.mode(gamepad2.left_bumper || gamepad2.right_bumper)) // if we use bumpers we can go to predetermined positions
                 {
                     intakeSlideTarget = intakeSLideIncrement * intakeSlideSubBtn.OffsetTargetPosition;
                 }
@@ -489,7 +489,10 @@ public class PrometheusDrive extends LinearOpMode
                     {
                         outtakeArmAndRailSpecimenPresets();
                         if (gamepad1.right_bumper)
+                        {
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                            dropped = true;
+                        }
                     }
                 }
                 else
@@ -517,7 +520,8 @@ public class PrometheusDrive extends LinearOpMode
                     intakeArmHeight();
                     if (gamepad1LeftTrigger() || gamepad2LeftTrigger())
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                    else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    else if (dropped) // this makes so the brushes only run after we have dropped
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                     if (
                             (delay(300) && colorValue > 500) ||
@@ -553,6 +557,7 @@ public class PrometheusDrive extends LinearOpMode
                 break;
             case HANG_END:
                 driveBase.HangState(DriveBaseSubsystem.HangState.UP);
+                // we might have to make the intake slides go out
                 break;
             case RETURN:
                 if (outtakeSubsystem.liftAtBase() && delay(450))
@@ -603,7 +608,7 @@ public class PrometheusDrive extends LinearOpMode
                 outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
                 if (delay(100))
                 {
-                    outtakeSubsystem.liftMotorRawControl(gamepad2.right_stick_y);
+                    outtakeSubsystem.liftMotorRawControl(-gamepad2.right_stick_y);
                     intakeSubsystem.intakeSlideMotorRawControl(gamepad2.right_trigger - gamepad2.left_trigger);
                 }
                 if (gamepad2.a) intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
@@ -634,7 +639,7 @@ public class PrometheusDrive extends LinearOpMode
         {
             if (gamepad2.dpad_up)
             {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.YELLOW_ONLY; // toggles it off
+                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.YELLOW_ONLY; // yellow only
             }
             if (gamepad2.dpad_right)
             {
@@ -646,7 +651,7 @@ public class PrometheusDrive extends LinearOpMode
             }
             if (gamepad2.dpad_left)
             {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF;
+                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // toggles it off
             }
             updateGamepadLED(intakeSubsystem.intakeFilter); // this just make sure we are not queuing up infinite LED calls
         }

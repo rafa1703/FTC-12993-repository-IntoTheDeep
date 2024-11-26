@@ -36,15 +36,15 @@ public class PathsFarExtra
                 .addBezierSegment(
                         new Point(7.2, -30),
                         new Point(7.2, -48),
-                        new Point(18, -39)
+                        new Point(26, -51)
 
                 )
-                .addFinalPose(18, -39, Math.toRadians(-30))
+                .addFinalPose(18, -39, Math.toRadians(-20))
                 .build();
 
         firstSamplePickup = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(18, -39),
+                        new Point(26, -51),
                         new Point(30, -41)
                 )
                 .addFinalPose(18, -39, Math.toRadians(30))

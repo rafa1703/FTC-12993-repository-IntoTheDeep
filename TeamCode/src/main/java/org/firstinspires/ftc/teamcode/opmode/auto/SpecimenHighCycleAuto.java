@@ -204,7 +204,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     if (delay(40))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-                        if (headingPosition > Math.toRadians(25))
+                        if (headingPosition > (pickupCycle == 0 ? Math.toRadians(25) : Math.toRadians(15)))
                         {
                             if (pickupCycle == 2) intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoFar);
                             else intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoClose);
