@@ -58,7 +58,7 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
-        hangMotor = hardware.hangM;
+        hangMotor = hardware.climbM;
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     // this could be run in robothardware

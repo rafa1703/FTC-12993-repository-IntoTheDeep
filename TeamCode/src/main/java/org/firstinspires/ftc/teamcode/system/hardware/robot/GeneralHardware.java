@@ -27,7 +27,7 @@ public class GeneralHardware
     public HardwareMap hardwareMap;
 
     public MotorPika intakeM, FR, intakeSlidesM, BR;
-    public MotorPika FL, BL, outtakeLiftM, hangM;
+    public MotorPika FL, BL, outtakeLiftM, climbM;
 
     public Encoder perpendicularOdo, parallelOdo;
     public ServoPika chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
@@ -76,7 +76,7 @@ public class GeneralHardware
         FL = new MotorPika(hm.get(DcMotorEx.class, "FL"));
         BL = new MotorPika(hm.get(DcMotorEx.class, "BL"));
         outtakeLiftM = new MotorPika(hm.get(DcMotorEx.class, "OuttakeSlides"));
-        hangM = new MotorPika(hm.get(DcMotorEx.class, "Hang"));
+        climbM = new MotorPika(hm.get(DcMotorEx.class, "Climb"));
 
        /* perpendicularOdo = new Encoder(intakeM.getMotor());
         parallelOdo = new Encoder(BR.getMotor());*/
