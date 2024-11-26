@@ -295,6 +295,21 @@ public class Trajectory
     {
         this.threshold = threshold;
     }
+    public void addSpatialMarker(SpatialMarker marker) // this should work lmao
+    {
+        double closestDistance = Double.POSITIVE_INFINITY;
+        for (TrajectorySegment segment : segments)
+        {
+            Point distAndT = segment.getClosestDistanceAndT(marker.spatialPoint.toPoint());
+            if (distAndT.y < closestDistance)
+            {
+                closestDistance = distAndT.y;
+                marker.t = distAndT.x;
+                marker.u = segments.indexOf(segment);
+            }
+        }
+        spatialMarkers.add(marker);
+    }
 
     public boolean usePid()
     {
