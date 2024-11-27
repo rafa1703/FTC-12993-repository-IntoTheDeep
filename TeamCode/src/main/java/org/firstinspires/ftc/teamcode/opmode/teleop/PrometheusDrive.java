@@ -119,6 +119,7 @@ public class PrometheusDrive extends LinearOpMode
             loopTime.updateLoopTime(telemetry);
             telemetry.update();
         }
+        driveBase.setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
     }
     // i will like properly tune delays for nats
     public void outtakeSequence()
@@ -163,7 +164,8 @@ public class PrometheusDrive extends LinearOpMode
                         break;
                     }
                 }
-                intakeClipHoldLogic(slideTeleBase, 8);
+                intakeClipHoldLogic(slideTeleBase, 10);
+                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
                 if (gamepad1.b || gamepad2.b)
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
@@ -298,7 +300,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(120) && outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase())
+                if (delay(450) && outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase())
                 {
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
@@ -307,16 +309,22 @@ public class PrometheusDrive extends LinearOpMode
 
                 intakeClipHoldLogicWithoutPowerCutout(slideTransfer, 10); // this controls the intake slides and the clip
                 outtakeSubsystem.liftMotorRawControl(-0.085);
-                if (delay(40))
+                if (delay(90))
                 {
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                    if (delay(90))
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
+                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
+                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
+                    if (delay(240))
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    }
+                    if (delay(360))
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                 }
                 break;
             case TRANSFER_END:
                 // so this is when the claw will grip and we are assuming that the slides are at transfer position
-                if (delay(200))
+                if (delay(410))
                 {
                     // we want to remember if we went low
                     isSample = true;
@@ -334,12 +342,13 @@ public class PrometheusDrive extends LinearOpMode
                     {
                         intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                     }
-                    if (delay(140))
+                    if (delay(200))
                     {
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH); // we might have to wait to go up
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER_FINISH);
                         outtakeSubsystem.liftMotorRawControl(0);
                     }
+                    if (delay(300))
+                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER_FINISH);
                 }
                 break;
             case SPECIMEN_INTAKE:
@@ -576,10 +585,10 @@ public class PrometheusDrive extends LinearOpMode
                     driveBase.HangState(DriveBaseSubsystem.HangState.READY); // this will effectively only run once
                     if (outtakeSubsystem.isArmOver())
                     {
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
+                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
                     }
                     else
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.READY);
+                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
                     if (delay(100))
                     {
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);

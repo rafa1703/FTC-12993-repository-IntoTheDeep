@@ -17,7 +17,7 @@ public class IntakeSubsystem
     ServoPika chuteS, flapS, leftArmS, rightArmS, clipS;
 
     MotorPika intakeMotor, intakeSlideMotor;
-    RevColorSensorV3 colorSensor;
+    RevColorSensorV3 colourSensor;
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
@@ -26,21 +26,21 @@ public class IntakeSubsystem
     GeneralHardware.Side side;
 
     public static final double
-        leftArmHighPos = 0.1,
+        leftArmHighPos = 0,
         leftArmDropHighPos = 0,
-        leftArmLowPos = 0.23;
+        leftArmLowPos = 0.5;
     public static final double
-        rightArmHighPos = 0.1,
+        rightArmHighPos = 0,
         rightArmDropHighPos = 0,
-        rightArmLowPos = 0.2;
+        rightArmLowPos = 0.5;
 
     public static final double
-        chuteUpPos = 0.05,
-        chuteDropPos = 0.6;
+        chuteUpPos = 1,
+        chuteDropPos = 0.25;
     public static final double
         flapTransferPos = 0,
-        flapDownPos = 1,
-        flapReadyPos = 1;
+        flapDownPos = 0.5,
+        flapReadyPos = 0.5;
 
     public static final int // in inches
         slideTeleClose = 14,
@@ -103,7 +103,7 @@ public class IntakeSubsystem
         leftArmS = hardware.intakeLeftArmS;
         rightArmS = hardware.intakeRightArmS;
         clipS = hardware.clipS;
-        colorSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
+        colourSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
 
         intakeMotor = hardware.intakeM;
         intakeSlideMotor = hardware.intakeSlidesM;
@@ -124,13 +124,12 @@ public class IntakeSubsystem
     public void intakeReads(boolean i2c)
     {
         slidePosition = intakeSlideMotor.getCurrentPosition();
-        //if (i2c) colorValue = colorSensor.alpha();
         if (i2c)
         {
-            double redValue = colorSensor.getNormalizedColors().red;
-            double blueValue = colorSensor.getNormalizedColors().blue;
+            double redValue = colourSensor.getNormalizedColors().red;
+            double blueValue = colourSensor.getNormalizedColors().blue;
             isRed = !(blueValue > redValue);
-            colorValue = colorSensor.alpha();
+            colorValue = colourSensor.alpha();
         }
     }
 
@@ -176,8 +175,8 @@ public class IntakeSubsystem
     }
     public void armSetPos(double rPos, double lPos)
     {
-        rightArmS.setPosition(rPos);
         leftArmS.setPosition(lPos);
+        rightArmS.setPosition(rPos);
     }
     public void intakeChute(IntakeChuteServoState state)
     {

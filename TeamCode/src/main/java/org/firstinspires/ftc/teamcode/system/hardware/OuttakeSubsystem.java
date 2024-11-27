@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -20,39 +22,38 @@ public class OuttakeSubsystem
     GeneralHardware.Side side;
     private final double TICKS_PER_BARE_MOTOR = 28;
 
-    public static final double // make sure straight is zero, so over the top is 180º
-            armStraightPos = 0.5,
-            armReadyPos = 0.9,
-            armTransferPos = 0.885,
-            armTransferFinishPos = 0.8,
-            armSamplePos = 0.4,
+    public static final double
+            armStraightPos = 0.55,
+            armReadyPos = 0.2,
+            armTransferPos = 0.14,
+            armTransferFinishPos = 0.1,
+            armSamplePos = 0.7,
             armSpecimenPos = 0.72,
-            armIntakePos = 0.775;
+            armIntakePos = 0.95;
     public static final double
-            clawOpenPos = 0.3,
+            clawOpenPos = 0.13,
             clawIntakePos = 0.1,
-            clawClosePos = 0.665;
+            clawClosePos = 0.23;
     public static final double
-            wristReadyPos = 0.68,
-            wristTransferPos = 0.53,
-            wristTransferFinishPos = 0.65,
-            wristPerpendicularPos = 0.5,
-            wristSamplePos = 0.585,
-            wristSpecimenPos = 0.31,
-            wristSpecimenDropPos = 0.5,
+            wristReadyPos = 0.455,
+            wristTransferPos = 0.425,
+            wristTransferFinishPos = 0.2,
+            wristPerpendicularPos = 0.34,
+            wristSamplePos = 0.7,
+            wristSpecimenPos = 0.7,
             wristIntakePos = 0.55;
     public static final double
-            railReadyPos = 0,
-            railHighPos = 0,
-            railMiddlePos = 0,
-            railOverTheTopPos = 0,
-            railTransferPos = 1,
-            railTransferFinishPos = 1,
-            railSpecimenLowPos = 0,
-            railSpecimenHighPos = 0,
-            railSamplePos = 0,
+            railReadyPos = 0.45,
+            railHighPos = 0.17,
+            railMiddlePos = 0.75,
+            railOverTheTopPos = 0.4,
+            railTransferPos = 0.75,
+            railTransferFinishPos = 0.3,
+            railSpecimenLowPos = 0.85,
+            railSpecimenHighPos = 0.17,
+            railSamplePos = 0.17,
             railIntakePos = 0,
-            railLowPos = 1;
+            railLowPos = 0.99;
 
     public static final double
             liftMaxExtension = 27, // 680 ticks
@@ -90,7 +91,6 @@ public class OuttakeSubsystem
         PERPENDICULAR,
         SAMPLE,
         SPECIMEN,
-        SPECIMEN_DROP,
         INTAKE
     }
     public enum OuttakeRailServoState
@@ -114,8 +114,8 @@ public class OuttakeSubsystem
 
         wristS = hardware.wristS;
         clawS = hardware.clawS;
-        railS = hardware.outtakeLeftArmS;
-        armS = hardware.outtakeRightArmS;
+        railS = hardware.railS;
+        armS = hardware.armS;
 
         liftMotor = hardware.outtakeLiftM;
         outtakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
@@ -124,6 +124,7 @@ public class OuttakeSubsystem
     {
         // if we need to reverse anything
         // i want this to be done inside the hardware class
+        //clawS.setDirection(Servo.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -207,9 +208,6 @@ public class OuttakeSubsystem
                 break;
             case SPECIMEN:
                 wristS.setPosition(wristSpecimenPos);
-                break;
-            case SPECIMEN_DROP:
-                wristS.setPosition(wristSpecimenDropPos);
                 break;
             case INTAKE:
                 wristS.setPosition(wristIntakePos);
@@ -332,7 +330,7 @@ public class OuttakeSubsystem
 
     public boolean isArmOver()
     {
-        return armS.getPosition() < 0.5; //TODO: tune this
+        return armS.getPosition() < armStraightPos;
     }
     public boolean isRailUnderTheTop()
     {

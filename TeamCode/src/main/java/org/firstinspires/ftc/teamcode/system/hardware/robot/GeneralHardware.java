@@ -30,8 +30,8 @@ public class GeneralHardware
     public MotorPika FL, BL, outtakeLiftM, climbM;
 
     public Encoder perpendicularOdo, parallelOdo;
-    public ServoPika chuteS, clipS, intakeLeftArmS, intakeRightArmS, outtakeLeftArmS, outtakeRightArmS;
-    public ServoPika clawS, wristS, flapS, seh3, seh4, seh5;
+    public ServoPika chuteS, clipS, intakeLeftArmS, intakeRightArmS, flapS;
+    public ServoPika clawS, wristS, railS, armS, seh3, seh4, seh5;
     public RevColorSensorV3 colourSensor;
     public GoBildaPinpointDriver pinpoint;
     public LocalizerPinpoint localizerPinpoint;
@@ -83,13 +83,13 @@ public class GeneralHardware
 
         chuteS = new ServoPika(hm.get(ServoImplEx.class, "chuteS"));
         clipS = new ServoPika(hm.get(ServoImplEx.class, "clipS"));
-        intakeLeftArmS = new ServoPika(hm.get(ServoImplEx.class, "intakeLeftArmS"));
-        intakeRightArmS = new ServoPika(hm.get(ServoImplEx.class, "intakeRightArmS"));
-        outtakeLeftArmS = new ServoPika(hm.get(ServoImplEx.class, "outtakeLeftArmS"));
-        outtakeRightArmS = new ServoPika(hm.get(ServoImplEx.class, "outtakeRightArmS"));
+        intakeLeftArmS = new ServoPika(hm.get(ServoImplEx.class, "leftIntakeArmS"));
+        intakeRightArmS = new ServoPika(hm.get(ServoImplEx.class, "rightIntakeArmS"));
+        railS = new ServoPika(hm.get(ServoImplEx.class, "railS"));
+        armS = new ServoPika(hm.get(ServoImplEx.class, "armS"));
 
         clawS = new ServoPika(hm.get(ServoImplEx.class, "clawS"));
-        wristS = new ServoPika(hm.get(ServoImplEx.class, "pivotS"));
+        wristS = new ServoPika(hm.get(ServoImplEx.class, "wristS"));
         flapS = new ServoPika(hm.get(ServoImplEx.class, "flapS"));
         //seh3 = hm.get(ServoImplEx.class, "seh3");
         //seh4 = hm.get(ServoImplEx.class, "seh4");
@@ -108,6 +108,7 @@ public class GeneralHardware
         FL.setDirection(DcMotorSimple.Direction.REVERSE);
         //BL.setDirection(DcMotorSimple.Direction.REVERSE);
         BR.setDirection(DcMotorSimple.Direction.REVERSE);
+        BL.setDirection(DcMotorSimple.Direction.REVERSE);
         FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
