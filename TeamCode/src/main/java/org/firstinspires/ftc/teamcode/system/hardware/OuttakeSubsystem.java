@@ -33,10 +33,10 @@ public class OuttakeSubsystem
     public static final double
             clawOpenPos = 0.13,
             clawIntakePos = 0.1,
-            clawClosePos = 0.23;
+            clawClosePos = 0.25;
     public static final double
             wristReadyPos = 0.455,
-            wristTransferPos = 0.425,
+            wristTransferPos = 0.4,
             wristTransferFinishPos = 0.2,
             wristPerpendicularPos = 0.34,
             wristSamplePos = 0.7,
@@ -47,12 +47,12 @@ public class OuttakeSubsystem
             railHighPos = 0.17,
             railMiddlePos = 0.75,
             railOverTheTopPos = 0.4,
-            railTransferPos = 0.75,
+            railTransferPos = 0.82,
             railTransferFinishPos = 0.3,
             railSpecimenLowPos = 0.85,
             railSpecimenHighPos = 0.17,
             railSamplePos = 0.17,
-            railIntakePos = 0,
+            railIntakePos = 0.17,
             railLowPos = 0.99;
 
     public static final double
@@ -63,7 +63,7 @@ public class OuttakeSubsystem
             liftLowBarPos = 4,
             liftSpecimenIntake = 1,
             liftBasePos = 0; // maybe make this -5 because of shit intake clip
-    private final double liftThreshold = 10;
+    private final double liftThreshold = 5;
     private final double maxAngleAxon = 255;
     private final double armFFCoeff = 0.1;
 
@@ -330,7 +330,7 @@ public class OuttakeSubsystem
 
     public boolean isArmOver()
     {
-        return armS.getPosition() < armStraightPos;
+        return armS.getPosition() > armStraightPos;
     }
     public boolean isRailUnderTheTop()
     {
