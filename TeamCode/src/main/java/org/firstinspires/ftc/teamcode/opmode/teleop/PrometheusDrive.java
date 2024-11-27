@@ -122,6 +122,8 @@ public class PrometheusDrive extends LinearOpMode
             telemetry.addData("Side", hardware.side);
             telemetry.addData("FilterState", intakeSubsystem.intakeFilter);
             telemetry.addData("Color logic", intakeSubsystem.colorLogic());
+            telemetry.addData("OuttakePos", outtakeSubsystem.liftPosition);
+            telemetry.addData("IntakePos", intakeSubsystem.slidePosition);
             loopTime.updateLoopTime(telemetry);
             telemetry.update();
         }
@@ -361,6 +363,7 @@ public class PrometheusDrive extends LinearOpMode
                 if (gamepad1.right_bumper || gamepad2.right_bumper)
                 {
                     state = OuttakeState.AFTER_SPECIMEN_INTAKE;
+                    toggleRisingEdge.mode(gamepad1.right_bumper);
                     resetTimer();
                     break;
                 }
@@ -385,26 +388,24 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 if (gamepad1LeftTrigger() || gamepad2LeftTrigger()) // this just exists in case the claw comes in closed
                 {
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                 }
                 break;
             case AFTER_SPECIMEN_INTAKE: // AUTO state no driver controls here
                 if (delay(400))
                 {
                     isSample = false;
+                    dropped = false;
                     state = OuttakeState.SPECIMEN_DEPOSIT;
+                    toggleRisingEdge.mode(gamepad1.right_bumper);
                     intakeSlideBtn.OffsetTargetPosition = 0; // this makes sure the extendo doesn't go out when we go into the deposit state
                     resetTimer();
                     break;
                 }
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                if (delay(150))
+                if (delay(300))
                 {
-                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
-                    if (delay(300))
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
-                    }
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
                 }
                 break;
             case OUTTAKE_ADJUST: // this allows for the drivers to pre adjust heights
@@ -492,7 +493,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case SPECIMEN_DEPOSIT: // we want to deposit and intake
-                if (delay(200) && gamepad1.right_bumper && dropped)
+                if (delay(200) && toggleRisingEdge.mode(gamepad1.right_bumper) && dropped)
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
@@ -501,15 +502,17 @@ public class PrometheusDrive extends LinearOpMode
                 liftHeightLogic(gamepad2.x, gamepad2.a);
                 if (delay(40))
                 {
-                    outtakeLiftPresets(); // this just runs the correct height for the lift
+                    //outtakeLiftPresets(); // this just runs the correct height for the lift
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH); // so we clear the submersible
                 }
                 if (!dropped)
                 {
                     if (delay(40))
                     {
-                        outtakeArmAndRailSpecimenPresets();
-                        if (gamepad1.right_bumper)
+                        outtakeRailSpecimenPresets();
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
+                        if (toggleRisingEdge.mode(gamepad1.right_bumper))
                         {
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                             dropped = true;
@@ -517,9 +520,7 @@ public class PrometheusDrive extends LinearOpMode
                     }
                 }
                 else
-                {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-                }
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
 
                 // the intake part
                 intakeSlideSubBtn.upToggle(gamepad2.left_bumper);
@@ -731,7 +732,7 @@ public class PrometheusDrive extends LinearOpMode
             else outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
         }
     }
-    public void outtakeArmAndRailSpecimenPresets() // am gonna assume we only need a single arm position
+    public void outtakeRailSpecimenPresets() // am gonna assume we only need a single arm position
     {
         if (isSpecimenLow)
         {
@@ -741,7 +742,6 @@ public class PrometheusDrive extends LinearOpMode
         {
             outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
         }
-        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
     }
     public void liftHeightLogic(boolean high, boolean low)
     {

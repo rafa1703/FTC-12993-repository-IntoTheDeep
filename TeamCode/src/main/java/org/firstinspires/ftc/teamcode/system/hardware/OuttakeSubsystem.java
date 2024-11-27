@@ -27,20 +27,20 @@ public class OuttakeSubsystem
             armReadyPos = 0.2,
             armTransferPos = 0.14,
             armTransferFinishPos = 0.1,
-            armSamplePos = 0.7,
-            armSpecimenPos = 0.72,
+            armSamplePos = 0.57,
+            armSpecimenPos = 0.38,
             armIntakePos = 0.95;
     public static final double
             clawOpenPos = 0.13,
-            clawIntakePos = 0.1,
+            clawIntakePos = 0.05,
             clawClosePos = 0.25;
     public static final double
             wristReadyPos = 0.455,
             wristTransferPos = 0.4,
             wristTransferFinishPos = 0.2,
             wristPerpendicularPos = 0.34,
-            wristSamplePos = 0.7,
-            wristSpecimenPos = 0.7,
+            wristSamplePos = 0.73,
+            wristSpecimenPos = 0.275,
             wristIntakePos = 0.55;
     public static final double
             railReadyPos = 0.45,
@@ -50,16 +50,16 @@ public class OuttakeSubsystem
             railTransferPos = 0.82,
             railTransferFinishPos = 0.3,
             railSpecimenLowPos = 0.85,
-            railSpecimenHighPos = 0.17,
+            railSpecimenHighPos = 0.255,
             railSamplePos = 0.17,
-            railIntakePos = 0.17,
+            railIntakePos = 0.375 ,
             railLowPos = 0.99;
 
     public static final double
             liftMaxExtension = 27, // 680 ticks
             liftHighBucketPos= 24,
             liftLowBucketPos = 1,
-            liftHighBarPos = 19,
+            liftHighBarPos = 4,
             liftLowBarPos = 4,
             liftSpecimenIntake = 1,
             liftBasePos = 0; // maybe make this -5 because of shit intake clip
