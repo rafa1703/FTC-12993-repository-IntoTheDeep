@@ -58,6 +58,7 @@ public class PrometheusDrive extends LinearOpMode
     ToggleUpOrDown intakeSlideBtn = new ToggleUpOrDown(1, 1, 0);
     ToggleUpOrDownWithLimit intakeSlideSubBtn = new ToggleUpOrDownWithLimit(1, 1, 0, 4); // this instance will control
     ToggleRisingEdge toggleRisingEdge = new ToggleRisingEdge();
+    ToggleRisingEdge toggleRisingEdgeD2Intake = new ToggleRisingEdge();
     ToggleFallingEdge toggleDropFallingEdge = new ToggleFallingEdge();
     ToggleUpOrDown intakeArmToggle = new ToggleUpOrDown(1, 1,0);
     int intakeSLideIncrement = 5; // in
@@ -378,7 +379,7 @@ public class PrometheusDrive extends LinearOpMode
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE); // this makes the arm go over
                     if (delay(700)) // tune this so it only runs when the arm has reached intake pos
                     {
-                        if (gamepad2.left_trigger - gamepad2.right_trigger > 0)
+                        if (Math.abs(gamepad2.left_trigger - gamepad2.right_trigger) > 0)
                         {
                             fineAdjustingRail = true;
                             outtakeSubsystem.fineAdjustRail(gamepad2.left_trigger - gamepad2.right_trigger, globalTimer);
@@ -416,6 +417,8 @@ public class PrometheusDrive extends LinearOpMode
                     break;
                 }
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                if (delay(130))
+                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
                 if (delay(300))
                 {
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
@@ -506,7 +509,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case SPECIMEN_DEPOSIT: // we want to deposit and intake
-                if (delay(200) && gamepad1.right_bumper && dropped)
+                if (delay(200) && toggleRisingEdge.mode(gamepad1.right_bumper) && dropped)
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
@@ -528,7 +531,7 @@ public class PrometheusDrive extends LinearOpMode
                     {
                         outtakeRailSpecimenPresets();
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
-                        if (gamepad1.left_bumper)
+                        if (toggleRisingEdge.mode(gamepad1.right_bumper))
                         {
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                             dropped = true;
@@ -541,7 +544,7 @@ public class PrometheusDrive extends LinearOpMode
                 // the intake part
                 intakeSlideSubBtn.upToggle(gamepad2.right_bumper);
                 intakeSlideSubBtn.downToggle(gamepad2.left_bumper, 1);
-                if (toggleRisingEdge.mode(gamepad2.left_bumper || gamepad2.right_bumper))
+                if (toggleRisingEdgeD2Intake.mode(gamepad2.left_bumper || gamepad2.right_bumper))
                 {
                     intakeSlideTarget = intakeSLideIncrement * intakeSlideSubBtn.OffsetTargetPosition;
                 }
@@ -559,6 +562,7 @@ public class PrometheusDrive extends LinearOpMode
                         intakeSubArmHeight();
                     else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
+
                     if (gamepad1LeftTrigger() || gamepad2LeftTrigger())
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                     else if (dropped) // this makes so the brushes only run after we have dropped

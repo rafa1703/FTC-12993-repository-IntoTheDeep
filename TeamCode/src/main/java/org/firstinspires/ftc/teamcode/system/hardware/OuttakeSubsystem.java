@@ -31,9 +31,9 @@ public class OuttakeSubsystem
             armSpecimenPos = 0.35,
             armIntakePos = 0.95;
     public static final double
-            clawOpenPos = 0.9,
-            clawIntakePos = 0.93,
-            clawClosePos = 0.79;
+            clawOpenPos = 0.93,
+            clawIntakePos = 0.9,
+            clawClosePos = 0.65;
     public static final double
             wristReadyPos = 0.455,
             wristTransferPos = 0.4,
@@ -271,9 +271,9 @@ public class OuttakeSubsystem
         double currentRailPos = railS.getPosition();
         if (timer - outtakeRailAdjustTimer > 15){ // only set the position every 15 ms, once achieved cache the timer value
             currentRailPos += fineAdjust * 0.03; // changes global variale at .05 per 15ms
-            if (currentRailPos > railLowPos){
+            if (currentRailPos > railLowPos){ // rail low is 0.95
                 currentRailPos = railLowPos;
-            } else if (currentRailPos < railHighPos){ // as the rail doesnt go from 0 to 1
+            } else if (currentRailPos < railHighPos){ // rail high is 0.17
                 currentRailPos = railHighPos;
             }
             railS.setPosition(currentRailPos);
