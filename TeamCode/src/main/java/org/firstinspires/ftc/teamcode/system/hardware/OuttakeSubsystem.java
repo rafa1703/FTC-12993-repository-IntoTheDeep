@@ -28,19 +28,19 @@ public class OuttakeSubsystem
             armTransferPos = 0.14,
             armTransferFinishPos = 0.1,
             armSamplePos = 0.57,
-            armSpecimenPos = 0.38,
+            armSpecimenPos = 0.35,
             armIntakePos = 0.95;
     public static final double
-            clawOpenPos = 0.13,
-            clawIntakePos = 0.05,
-            clawClosePos = 0.25;
+            clawOpenPos = 0.9,
+            clawIntakePos = 0.93,
+            clawClosePos = 0.79;
     public static final double
             wristReadyPos = 0.455,
             wristTransferPos = 0.4,
             wristTransferFinishPos = 0.2,
             wristPerpendicularPos = 0.34,
             wristSamplePos = 0.73,
-            wristSpecimenPos = 0.275,
+            wristSpecimenPos = 0.4,
             wristIntakePos = 0.55;
     public static final double
             railReadyPos = 0.45,
@@ -49,23 +49,24 @@ public class OuttakeSubsystem
             railOverTheTopPos = 0.4,
             railTransferPos = 0.82,
             railTransferFinishPos = 0.3,
-            railSpecimenLowPos = 0.85,
+            railSpecimenLowPos = 0.6,
             railSpecimenHighPos = 0.255,
             railSamplePos = 0.17,
             railIntakePos = 0.375 ,
             railLowPos = 0.99;
 
     public static final double
-            liftMaxExtension = 27, // 680 ticks
-            liftHighBucketPos= 24,
-            liftLowBucketPos = 1,
-            liftHighBarPos = 4,
-            liftLowBarPos = 4,
-            liftSpecimenIntake = 1,
+            liftMaxExtension = 14, // 1555ticks
+            liftHighBucketPos= 14,
+            liftLowBucketPos = 2,
+            liftHighBarPos = 6,
+            liftLowBarPos = 0,
+            liftSpecimenIntake = 0,
             liftBasePos = 0; // maybe make this -5 because of shit intake clip
     private final double liftThreshold = 5;
     private final double maxAngleAxon = 255;
     private final double armFFCoeff = 0.1;
+    private double outtakeRailAdjustTimer;
 
     public enum OuttakeClawServoState
     {
@@ -262,6 +263,24 @@ public class OuttakeSubsystem
     {
         railS.setPosition(railPos);
     }
+    public double railGetPos()
+    {
+        return railS.getPosition();
+    }
+    public void fineAdjustRail(double fineAdjust, double timer){ // this is for tinkos controls only
+        double currentRailPos = railS.getPosition();
+        if (timer - outtakeRailAdjustTimer > 15){ // only set the position every 15 ms, once achieved cache the timer value
+            currentRailPos += fineAdjust * 0.03; // changes global variale at .05 per 15ms
+            if (currentRailPos > railLowPos){
+                currentRailPos = railLowPos;
+            } else if (currentRailPos < railHighPos){ // as the rail doesnt go from 0 to 1
+                currentRailPos = railHighPos;
+            }
+            railS.setPosition(currentRailPos);
+            outtakeRailAdjustTimer = timer; // cache the value of the outtakerailadjust
+        }
+        // this should make the fine adjust not looptime dependent. can tune by adjusting iteration & move amount
+    }
 
     public void liftTo(int rotations)
     {
@@ -317,15 +336,15 @@ public class OuttakeSubsystem
     {
         return liftPosition < liftThreshold;
     }
-
+    //TODO add new measurements, and remember this is not a bare motor anymore
     public double ticksToInchesSlidesMotor(double ticks){
-        return ((0.95485 * 2 * Math.PI) / (TICKS_PER_BARE_MOTOR * 5.3571428571)) * ticks;
-        // 0.9 is the radius of the pulley
-        // and 5.35 is the ratios of teeth
+        return ((0.578937 * 2 * Math.PI) / (384.5 * 1.2)) * ticks;
+        // 0.58 is the radius of the pulley
+        // and 1.2 is the ratios of teeth
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return ((TICKS_PER_BARE_MOTOR * 5.3571428571) / (0.95485 * 2 * Math.PI)) * inches;
+        return ((384.5 * 1.2) / (0.578937 * 2 * Math.PI)) * inches;
     }
 
     public boolean isArmOver()

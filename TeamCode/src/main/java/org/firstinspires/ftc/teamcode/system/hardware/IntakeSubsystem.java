@@ -27,12 +27,12 @@ public class IntakeSubsystem
 
     public static final double
         leftArmHighPos = 0,
-        leftArmDropHighPos = 0,
-        leftArmLowPos = 0.5;
+        leftArmHalfDownPos = 0.2,
+        leftArmLowPos = 0.3;
     public static final double
         rightArmHighPos = 0,
-        rightArmDropHighPos = 0,
-        rightArmLowPos = 0.5;
+        rightArmHalfDownPos = 0.2,
+        rightArmLowPos = 0.3;
 
     public static final double
         chuteUpPos = 1,
@@ -63,7 +63,7 @@ public class IntakeSubsystem
     public enum IntakeArmServoState
     {
         HIGH,
-        DROP_HIGH,
+        HALF_DOWN,
         LOW
     }
     public enum IntakeChuteServoState
@@ -163,9 +163,9 @@ public class IntakeSubsystem
                 leftArmS.setPosition(leftArmHighPos);
                 rightArmS.setPosition(rightArmHighPos);
                 break;
-            case DROP_HIGH:
-                leftArmS.setPosition(leftArmDropHighPos);
-                rightArmS.setPosition(rightArmDropHighPos);
+            case HALF_DOWN:
+                leftArmS.setPosition(leftArmHalfDownPos);
+                rightArmS.setPosition(rightArmHalfDownPos);
                 break;
             case LOW:
                 leftArmS.setPosition(leftArmLowPos);

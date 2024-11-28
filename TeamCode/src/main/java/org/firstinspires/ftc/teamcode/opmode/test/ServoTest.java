@@ -33,9 +33,9 @@ public class ServoTest extends LinearOpMode
             outtakeSubsystem.clawSetPos(clawPos);
 
             intakeSubsystem.armSetPos(intakeRightArmPos, intakeLefArmPos);
-//            intakeSubsystem.flapSetPos(flapPos);
-//            intakeSubsystem.clipSetPos(clipPos);
-//            intakeSubsystem.chuteSetPos(chutePos);
+            intakeSubsystem.flapSetPos(flapPos);
+            intakeSubsystem.clipSetPos(clipPos);
+            intakeSubsystem.chuteSetPos(chutePos);
         }
     }
 }

@@ -13,9 +13,10 @@ import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 @Config
-@TeleOp(name = "NewPidMotorTest", group = "Test")
+@TeleOp(name = "PidMotorTest", group = "Test")
 public class PidMotorTest extends LinearOpMode
 {
+    public static int outtakeSlidesTarget = 0;
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     DriveBaseSubsystem driveBase;
@@ -53,7 +54,7 @@ public class PidMotorTest extends LinearOpMode
             if (gamepad1.dpad_left) outtakeTarget = 18;
             if (gamepad1.dpad_down) outtakeTarget = 0;
             if (gamepad1.dpad_up) outtakeTarget = 27;
-            outtakeSubsystem.liftToInternalPID(outtakeTarget);
+            //outtakeSubsystem.liftToInternalPIDTicks(outtakeSlidesTarget);
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             //outtakeSubsystem.intakeSlideMotorRawControl(0.7);
