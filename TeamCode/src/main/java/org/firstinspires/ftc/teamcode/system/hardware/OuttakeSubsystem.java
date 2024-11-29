@@ -27,31 +27,32 @@ public class OuttakeSubsystem
             armReadyPos = 0.2,
             armTransferPos = 0.14,
             armTransferFinishPos = 0.1,
-            armSamplePos = 0.57,
+            armSamplePos = 0.58,
             armSpecimenPos = 0.35,
             armIntakePos = 0.95;
     public static final double
-            clawOpenPos = 0.93,
-            clawIntakePos = 0.9,
-            clawClosePos = 0.65;
+            clawOpenPos = 0.879,
+            clawIntakePos = 0.92,
+            clawClosePos = 0.7;
     public static final double
             wristReadyPos = 0.455,
             wristTransferPos = 0.4,
             wristTransferFinishPos = 0.2,
             wristPerpendicularPos = 0.34,
-            wristSamplePos = 0.73,
+            wristSamplePos = 0.67,
+            wristSampleDropPos = 0.76,
             wristSpecimenPos = 0.4,
             wristIntakePos = 0.55;
     public static final double
             railReadyPos = 0.45,
-            railHighPos = 0.17,
+            railHighPos = 0.03,
             railMiddlePos = 0.75,
             railOverTheTopPos = 0.4,
             railTransferPos = 0.82,
             railTransferFinishPos = 0.3,
             railSpecimenLowPos = 0.6,
-            railSpecimenHighPos = 0.255,
-            railSamplePos = 0.17,
+            railSpecimenHighPos = 0.17,
+            railSamplePos = 0.03,
             railIntakePos = 0.375 ,
             railLowPos = 0.99;
 
@@ -91,6 +92,7 @@ public class OuttakeSubsystem
         TRANSFER_FINISH,
         PERPENDICULAR,
         SAMPLE,
+        SAMPLE_DROP,
         SPECIMEN,
         INTAKE
     }
@@ -378,5 +380,4 @@ public class OuttakeSubsystem
         double a = (liftPosition / inchesToTicksSlidesMotor(liftMaxExtension)) * Math.PI;
         return Math.pow(Math.cos(a), 8);
     }
-
 }

@@ -27,20 +27,20 @@ public class IntakeSubsystem
 
     public static final double
         leftArmHighPos = 0,
-        leftArmHalfDownPos = 0.2,
-        leftArmLowPos = 0.3;
+        leftArmHalfDownPos = 0.3,
+        leftArmLowPos = 0.37;
     public static final double
         rightArmHighPos = 0,
-        rightArmHalfDownPos = 0.2,
-        rightArmLowPos = 0.3;
+        rightArmHalfDownPos = 0.3,
+        rightArmLowPos = 0.37;
 
     public static final double
-        chuteUpPos = 1,
-        chuteDropPos = 0.25;
+        chuteUpPos = 0.46,
+        chuteDropPos = 0;
     public static final double
         flapTransferPos = 0,
-        flapDownPos = 0.5,
-        flapReadyPos = 0.5;
+        flapDownPos = 0.387,
+        flapReadyPos = 0.387;
 
     public static final int // in inches
         slideTeleClose = 14,
@@ -53,6 +53,16 @@ public class IntakeSubsystem
         clipHoldPos = 0.7,
         clipOpenPos = 1;
     private final double slideThreshold = 8;
+    public enum Servos
+    {
+        CHUTE,
+        FLAP,
+        ARMS,
+        CLIP,
+        R_ARM,
+        L_ARM,
+        ALL
+    }
     public enum IntakeSpinState
     {
         INTAKE,
@@ -92,7 +102,7 @@ public class IntakeSubsystem
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
     private final double TICKS_PER_BAREMOTOR = 28;
-    private boolean isRed = false;
+    public boolean isRed = false;
 
     public IntakeSubsystem(GeneralHardware hardware)
     {
@@ -299,7 +309,7 @@ public class IntakeSubsystem
     }
     public boolean isSlidesAtBase()
     {
-        return slidePosition < slideThreshold; // this works as slide base is 0
+        return slidePosition < 6; // this works as slide base is 0
     }
 
     public double ticksToInchesSlidesMotor(double ticks){
@@ -311,5 +321,93 @@ public class IntakeSubsystem
         // ratio is 70/12 = 5
     }
 
+//    public void disablePWM(Servos servos)
+//    {
+//        switch (servos)
+//        {
+//            case CHUTE:
+//                chuteS.setPwmDisable();
+//                break;
+//            case FLAP:
+//                flapS.setPwmDisable();
+//                break;
+//            case ARMS:
+//                leftArmS.setPwmDisable();
+//                rightArmS.setPwmDisable();
+//                break;
+//            case CLIP:
+//                clipS.setPwmDisable();
+//                break;
+//            case R_ARM:
+//                rightArmS.setPwmDisable();
+//                break;
+//            case L_ARM:
+//                leftArmS.setPwmDisable();
+//                break;
+//            case ALL:
+//                chuteS.setPwmDisable();
+//                flapS.setPwmDisable();
+//                leftArmS.setPwmDisable();
+//                rightArmS.setPwmDisable();
+//                clipS.setPwmDisable();
+//                rightArmS.setPwmDisable();
+//                leftArmS.setPwmDisable();
+//                break;
+//        }
+//    }
+//    public void enablePWM(Servos servos)
+//    {
+//        switch (servos)
+//        {
+//            case CHUTE:
+//                chuteS.setPwmEnable();
+//                break;
+//            case FLAP:
+//                flapS.setPwmEnable();
+//                break;
+//            case ARMS:
+//                leftArmS.setPwmEnable();
+//                rightArmS.setPwmEnable();
+//                break;
+//            case CLIP:
+//                clipS.setPwmEnable();
+//                break;
+//            case R_ARM:
+//                rightArmS.setPwmEnable();
+//                break;
+//            case L_ARM:
+//                leftArmS.setPwmEnable();
+//                break;
+//            case ALL:
+//                chuteS.setPwmEnable();
+//                flapS.setPwmEnable();
+//                leftArmS.setPwmEnable();
+//                rightArmS.setPwmEnable();
+//                clipS.setPwmEnable();
+//                rightArmS.setPwmEnable();
+//                leftArmS.setPwmEnable();
+//                break;
+//        }
+//    }
+//    public boolean isPWMEnabled(Servos servos)
+//    {
+//        switch (servos)
+//        {
+//            case CHUTE:
+//                return chuteS.isPwmEnabled();
+//            case FLAP:
+//                return flapS.isPwmEnabled();
+//            case ARMS:
+//                return leftArmS.isPwmEnabled() && rightArmS.isPwmEnabled();
+//            case CLIP:
+//                return clipS.isPwmEnabled();
+//            case R_ARM:
+//                return rightArmS.isPwmEnabled();
+//            case L_ARM:
+//                return leftArmS.isPwmEnabled();
+//            default:
+//                return false;
+//        }
+//    }
 
 }

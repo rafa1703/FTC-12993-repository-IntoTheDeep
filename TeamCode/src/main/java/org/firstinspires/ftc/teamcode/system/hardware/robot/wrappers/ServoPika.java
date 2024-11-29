@@ -38,4 +38,16 @@ public class ServoPika
     {
         servo.setDirection(direction);
     }
+    public void setPwmDisable()
+    {
+        servo.setPwmDisable();;
+    }
+    public void setPwmEnable()
+    {
+        servo.setPwmEnable();
+    }
+    public boolean isPwmEnabled()
+    {
+       return servo.isPwmEnabled();
+    }
 }
