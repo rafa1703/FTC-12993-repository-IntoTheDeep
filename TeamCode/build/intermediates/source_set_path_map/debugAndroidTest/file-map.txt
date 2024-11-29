@@ -1,7 +1,0 @@
-org.firstinspires.ftc.teamcode.test.TeamCode-androidTest-0 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/build/generated/res/resValues/androidTest/debug
-org.firstinspires.ftc.teamcode.test.TeamCode-androidTest-1 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/build/generated/res/rs/androidTest/debug
-org.firstinspires.ftc.teamcode.test.TeamCode-mergeDebugAndroidTestResources-2 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
-org.firstinspires.ftc.teamcode.test.TeamCode-mergeDebugAndroidTestResources-3 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
-org.firstinspires.ftc.teamcode.test.TeamCode-merged_res-4 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/build/intermediates/merged_res/debugAndroidTest
-org.firstinspires.ftc.teamcode.test.TeamCode-androidTest-5 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/src/androidTest/res
-org.firstinspires.ftc.teamcode.test.TeamCode-androidTestDebug-6 /Users/rafaelfiorelli/Downloads/FTC-12993-repository-IntoTheDeep/TeamCode/src/androidTestDebug/res
