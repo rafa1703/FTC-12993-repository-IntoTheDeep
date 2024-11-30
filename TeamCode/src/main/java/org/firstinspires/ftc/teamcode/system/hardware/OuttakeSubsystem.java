@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
@@ -35,7 +36,7 @@ public class OuttakeSubsystem
             clawIntakePos = 0.92,
             clawClosePos = 0.7;
     public static final double
-            wristReadyPos = 0.455,
+            wristReadyPos = 0.35,
             wristTransferPos = 0.4,
             wristTransferFinishPos = 0.2,
             wristPerpendicularPos = 0.34,
@@ -45,19 +46,19 @@ public class OuttakeSubsystem
             wristIntakePos = 0.55;
     public static final double
             railReadyPos = 0.45,
-            railHighPos = 0.03,
-            railMiddlePos = 0.75,
+            railHighPos = 0.135,
+            railMiddlePos = 0.65,
             railOverTheTopPos = 0.4,
-            railTransferPos = 0.82,
-            railTransferFinishPos = 0.3,
-            railSpecimenLowPos = 0.6,
-            railSpecimenHighPos = 0.17,
-            railSamplePos = 0.03,
-            railIntakePos = 0.375 ,
-            railLowPos = 0.99;
+            railTransferPos = 0.95,
+            railTransferFinishPos = 0.75,
+            railSpecimenLowPos = 0.68,
+            railSpecimenHighPos = railHighPos,
+            railSamplePos = railHighPos,
+            railIntakePos = 0.49,
+            railLowPos = 0.95;
 
     public static final double
-            liftMaxExtension = 14, // 1555ticks
+            liftMaxExtension = 14, // 1655ticks
             liftHighBucketPos= 14,
             liftLowBucketPos = 2,
             liftHighBarPos = 6,
@@ -128,6 +129,7 @@ public class OuttakeSubsystem
         // if we need to reverse anything
         // i want this to be done inside the hardware class
         //clawS.setDirection(Servo.Direction.REVERSE);
+        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -208,6 +210,9 @@ public class OuttakeSubsystem
                 break;
             case SAMPLE:
                 wristS.setPosition(wristSamplePos);
+                break;
+            case SAMPLE_DROP:
+                wristS.setPosition(wristSampleDropPos);
                 break;
             case SPECIMEN:
                 wristS.setPosition(wristSpecimenPos);
@@ -340,13 +345,13 @@ public class OuttakeSubsystem
     }
     //TODO add new measurements, and remember this is not a bare motor anymore
     public double ticksToInchesSlidesMotor(double ticks){
-        return ((0.578937 * 2 * Math.PI) / (384.5 * 1.2)) * ticks;
+        return 0.01276363636 * ticks;
         // 0.58 is the radius of the pulley
         // and 1.2 is the ratios of teeth
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return ((384.5 * 1.2) / (0.578937 * 2 * Math.PI)) * inches;
+        return 78.3475783476 * inches;
     }
 
     public boolean isArmOver()
