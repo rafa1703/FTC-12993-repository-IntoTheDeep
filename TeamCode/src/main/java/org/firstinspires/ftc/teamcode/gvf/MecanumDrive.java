@@ -31,8 +31,8 @@ public class MecanumDrive
         GVF
     }
 
-    public static PIDController TRANSLATIONAL_PID = new PIDController(0.07, 0.0008, 0.0045);
-    public static PIDController HEADING_PID = new PIDController(0.55, 0, 0.00034);
+    public static PIDController TRANSLATIONAL_PID = new PIDController(0.12, 0.0008, 0.008);
+    public static PIDController HEADING_PID = new PIDController(1.1, 0.0008, 0.0034);
     private MotorPika FL, FR, BL, BR;
     private RunMode runMode;
     private LocalizerPinpoint localizer;

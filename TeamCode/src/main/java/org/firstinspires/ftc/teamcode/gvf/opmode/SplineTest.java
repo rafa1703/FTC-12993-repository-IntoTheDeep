@@ -24,21 +24,16 @@ public class SplineTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
-        hardware.startThreads(this);
-        hardware.drive.getLocalizer().setPose(new Pose(-3.5, -62.3, Math.toRadians(90)));
+        hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
         waitForStart();
 
-        Trajectory spline = new TrajectoryBuilder(new Pose(-3.5, -62.3, Math.toRadians(90)))
-                .addSegment(new BezierCurveTrajectorySegment(
-                        new Point[]{
-                                new Point(-3.5, -62.3),
-                                new Point(-39, -55),
-                                new Point(-44, -50),
-                                new Point(-44, -45),
-                                new Point(-44, -33.8)
-                        }
-                ))
-                .addFinalPose(new Pose(-44, -33.8, Math.toRadians(90)))
+        Trajectory spline = new TrajectoryBuilder()
+                .addBezierSegment(
+                        new Point(0, 0),
+                        new Point(24, 0),
+                        new Point(24, 24)
+                )
+                .addFinalPose(new Pose(24, 24, Math.toRadians(90)))
                 .build();
         while(opModeIsActive())
         {

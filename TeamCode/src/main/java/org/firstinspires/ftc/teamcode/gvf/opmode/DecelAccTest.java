@@ -2,22 +2,23 @@ package org.firstinspires.ftc.teamcode.gvf.opmode;
 
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 
 @Config
-@TeleOp(name = "Deceleration Tuner", group="Test")
-public class DecelTest extends LinearOpMode
+@TeleOp(name = "Deceleration Accuracy Tuner", group="Test")
+public class DecelAccTest extends LinearOpMode
 {
 
     FtcDashboard dash;
@@ -32,6 +33,10 @@ public class DecelTest extends LinearOpMode
 
     private double deceleration;
     private double deltaTime;
+    private Pose predictedPose;
+    private Pose endPose;
+    private double errorDistance;
+    FtcDashboard dashboard = FtcDashboard.getInstance();
 
     int step = 0;
 
@@ -58,12 +63,12 @@ public class DecelTest extends LinearOpMode
                 case 0:
                     if (timer.seconds() <= accelerationTime)
                     {
-                        hardware.drive.setTargetVector(new Vector(0, 1));
+                        hardware.drive.setTargetVector(new Vector(1, 0));
                     } else
                     {
                         step++;
                         timer.reset();
-                        velocityAtStop = hardware.drive.getLocalizer().getVelocity().getY();
+                        predictedPose = hardware.drive.getPredictedPoseEstimate();
                         hardware.drive.setTargetVector(new Vector());
                     }
                     break;
@@ -72,15 +77,23 @@ public class DecelTest extends LinearOpMode
                     {
                         step++;
                         deltaTime = timer.seconds();
-                        deceleration = velocityAtStop / deltaTime;
+                        endPose = hardware.drive.getPoseEstimate();
                         stopped = hardware.drive.stopped();
+                        Vector end = new Vector(endPose.toPoint());
+                        Vector predicted = new Vector(predictedPose.toPoint());
+                        errorDistance = predicted.subtract(end).getMagnitude();
+
                     }
                     break;
             }
             // 2.62 y decel, 87.68 x decel
+            TelemetryPacket packet = new TelemetryPacket();
+            Canvas fieldOverlay = packet.fieldOverlay();
 
             hardware.drive.update();
             telemetry.addData("pose", hardware.drive.getPoseEstimate());
+            telemetry.addData("Predicted pose", predictedPose);
+            telemetry.addData("Error magnitude", errorDistance);
             telemetry.addData("Step", step);
             telemetry.addData("Timer", timer.seconds());
             telemetry.addData("Deceleration", deceleration);
@@ -91,6 +104,10 @@ public class DecelTest extends LinearOpMode
             telemetry.addData("Velocity x", hardware.drive.getLocalizer().getVelocity().getX());
             telemetry.addData("Velocity y", hardware.drive.getLocalizer().getVelocity().getY());
             telemetry.addData("Imu angle", hardware.drive.getLocalizer().getHeading());
+
+            if (predictedPose != null) DashboardUtil.drawRobot(fieldOverlay, predictedPose.toPose2d(), true, "red");
+            DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPoseEstimate().toPose2d(), true, "black");
+            dashboard.sendTelemetryPacket(packet);
 
             telemetry.update();
         }

@@ -34,7 +34,7 @@ public class OuttakeSubsystem
     public static final double
             clawOpenPos = 0.879,
             clawIntakePos = 0.92,
-            clawClosePos = 0.7;
+            clawClosePos = 0.4;
     public static final double
             wristReadyPos = 0.35,
             wristTransferPos = 0.4,

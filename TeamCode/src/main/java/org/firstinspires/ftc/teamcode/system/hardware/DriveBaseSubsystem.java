@@ -16,7 +16,7 @@ public class DriveBaseSubsystem
             FR,
             BL,
             BR,
-            hangMotor;
+            climbMotor;
 
     // higher values of k means more adjustment.
     // c centers the adjustment
@@ -45,7 +45,15 @@ public class DriveBaseSubsystem
     double PowerBaseTurn = 0.88;
     double PowerStrafe = 1.1;
     int hangUpPos, hangDownPos;
-    public enum HangState
+
+    public void runClimbToTarget(int climbTarget)
+    {
+        climbMotor.setTargetPosition(climbTarget);
+        climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        climbMotor.setPower(1);
+    }
+
+    public enum ClimbState
     {
         READY,
         OUT,
@@ -58,7 +66,7 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
-        hangMotor = hardware.climbM;
+        climbMotor = hardware.climbM;
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     // this could be run in robothardware
@@ -67,9 +75,9 @@ public class DriveBaseSubsystem
         // zero brake behavior means when motors aren't powered, they will auto brake
         if (Float) setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
         else setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
-        hangMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        hangMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+        climbMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior zeroPowerBehaviour)
     {
@@ -78,35 +86,42 @@ public class DriveBaseSubsystem
         BL.setZeroPowerBehavior(zeroPowerBehaviour);
         FL.setZeroPowerBehavior(zeroPowerBehaviour);
     }
-    public void HangState(HangState state)
+    public void climbHang(ClimbState state)
     {
         switch (state)
         {
             case READY:
-                if (Math.abs(hangMotor.getCurrentPosition() - hangDownPos) < 5)
-                {
-                    hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    hangMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
-                    hangMotor.setPower(0); // cut power
-                }
-                else
-                {
-                    hangMotor.setTargetPosition(hangDownPos);
-                    hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    hangMotor.setPower(1);
-                }
+                climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
+                climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                climbMotor.setPower(0);
+//                if (Math.abs(climbMotor.getCurrentPosition() - hangDownPos) < 5)
+//                {
+//                    climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//                    climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+//                    climbMotor.setPower(0); // cut power
+//                }
+//                else
+//                {
+//                    climbMotor.setTargetPosition(-400);
+//                    climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//                    climbMotor.setPower(1);
+//                }
                 break;
             case OUT:
-                hangMotor.setTargetPosition(hangDownPos);
-                hangMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                hangMotor.setPower(1);
+                climbMotor.setTargetPosition(-150);
+                climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                climbMotor.setPower(1);
                 break;
             case UP:
-                hangMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
-                hangMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                hangMotor.setPower(-1);
+                climbMotor.setTargetPosition(-900);
+                climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                climbMotor.setPower(1);
                 break;
         }
+    }
+    public int getClimbPosition()
+    {
+        return climbMotor.getCurrentPosition();
     }
     public static double adjustedJoystick(double x) {
         double y = Math.pow(c-x,m);

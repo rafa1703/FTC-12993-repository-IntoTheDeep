@@ -22,7 +22,6 @@ public class LocalizationTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
-        hardware.startThreads(this);
         drive = new DriveBaseSubsystem(hardware);
 
         waitForStart();

@@ -36,7 +36,6 @@ public class VelocityTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
-        hardware.startThreads(this);
         hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
 
         waitForStart();

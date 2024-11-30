@@ -117,7 +117,11 @@ public class GeneralHardware
         {
             pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
             //TODO: here we change the wheels offsets
-            pinpoint.setOffsets(0, 0);
+            // length 13.8 (0.5 = 6.9)
+            // y pod 6.9 - 3.5 = 3.4
+            // width 14.5 (0.5 = 7.25)
+            // x pod 7.25 - 3.35 = 3.9
+            pinpoint.setOffsets(-100.33, 89);
             pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
             pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
             pinpoint.resetPosAndIMU();
