@@ -25,7 +25,7 @@ public class LocalizationTest extends LinearOpMode
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         drive = new DriveBaseSubsystem(hardware);
-
+        hardware.drive.getLocalizer().setOffSet(new Pose(7.2, -62.5, Math.toRadians(90)));
         waitForStart();
         while (opModeIsActive())
         {
@@ -36,11 +36,11 @@ public class LocalizationTest extends LinearOpMode
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose pose = hardware.drive.getPoseEstimate();
             Pose predictedPose = hardware.drive.getPredictedPoseEstimate();
-            Vector vector = new Vector(pose.getX() , pose.getY(), pose.getHeading());
-            double h = vector.getZ();
-            vector = Vector.rotateBy(vector, -Math.PI / 2); // zed dissapears here i pretty sure
-            vector = new Vector(vector.getX(), vector.getY(), h + (Math.PI /2));
-            pose = new Pose(vector.getX() + 7.2, vector.getY()  - 62.5, vector.getZ());
+//            Vector vector = new Vector(pose.getX() , pose.getY(), pose.getHeading());
+//            double h = vector.getZ();
+//            vector = Vector.rotateBy(vector, -Math.PI / 2); // zed dissapears here i pretty sure
+//            vector = new Vector(vector.getX(), vector.getY(), h + (Math.PI /2));
+//            pose = new Pose(vector.getX() + 7.2, vector.getY()  - 62.5, vector.getZ());
 
             packet.put("x", pose.getX());
             packet.put("y", pose.getY());

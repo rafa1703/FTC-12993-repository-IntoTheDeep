@@ -4,6 +4,8 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.gvf.odo.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.gvf.odo.TwoTrackingWheelLocalizer;
@@ -21,6 +23,7 @@ public class LocalizerPinpoint
     private Vector velocity = new Vector();
     public Vector driveBaseVelocity = new Vector();
     public Vector driveBaseSVector = new Vector();
+    public double xOffset, yOffset, headingOffset;
 
     public static double filterParameter = 0.8;
     public LocalizerPinpoint(GeneralHardware hardware, Pose startPose)
@@ -39,16 +42,25 @@ public class LocalizerPinpoint
         this.localizer = driver;
         localizer.setPosition(pose.toPose2D());
     }
-    @Deprecated
-    public Pose getPredictedPose()
-    {
-        return new Pose();
-    }
 
+    @Deprecated
     public void setPose(Pose pose) {
-        localizer.setPosition(pose.toPose2D());
+        Pose2D pose2D = pose.toPose2D();
+        localizer.setPosition(pose2D);
         this.pose = pose;
     }
+
+    public void setOffSet(double xOffset, double yOffset, double headingOffset)
+    {
+        this.xOffset = xOffset;
+        this.yOffset = yOffset;
+        this.headingOffset = headingOffset;
+    }
+    public void setOffSet(Pose pose)
+    {
+        this.setOffSet(pose.getX(), pose.getY(), pose.getHeading());
+    }
+
 
     public Pose getPoseEstimate() {
         return pose;
@@ -79,12 +91,20 @@ public class LocalizerPinpoint
     public void update() {
         if(!ENABLED) return;
         localizer.update();
+
+        // This fixes the pose
         Pose2D pose2d = localizer.getPosition();
-        pose = new Pose(pose2d);
+        pose = new Pose(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS));
+        Vector vector = new Vector(pose.getX() , pose.getY(), pose.getHeading());
+        double h = vector.getZ();
+        vector = Vector.rotateBy(vector, -headingOffset); // zed dissapears here i pretty sure
+        vector = new Vector(vector.getX(), vector.getY(), h + headingOffset);
+        pose = new Pose(vector.getX() + xOffset, vector.getY()  + yOffset, vector.getZ());
+
         velocity = new Vector(
                 xVelFilter.getValue(mmPerSecondToInPerSecond(localizer.getVelX())),
                 yVelFilter.getValue(mmPerSecondToInPerSecond(localizer.getVelY())));
-        driveBaseVelocity = Vector.rotateBy(velocity, 0);
+        driveBaseVelocity = Vector.rotateBy(velocity, -headingOffset);
         Vector sVector = new Vector(
                 Math.signum(driveBaseVelocity.getX()) * Math.pow(driveBaseVelocity.getX(), 2) / (2.0 * xDeceleration),
                 Math.signum(driveBaseVelocity.getY()) * Math.pow(driveBaseVelocity.getY(), 2) / (2.0 * yDeceleration));
@@ -96,5 +116,13 @@ public class LocalizerPinpoint
     public double mmPerSecondToInPerSecond(double mm)
     {
         return mm / 25.4;
+    }
+    private double mmToIn(double mm)
+    {
+        return mm / 25.4;
+    }
+    private double inTomm(double in)
+    {
+        return in * 25.4;
     }
 }
