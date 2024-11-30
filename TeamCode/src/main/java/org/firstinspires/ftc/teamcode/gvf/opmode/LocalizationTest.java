@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
+import org.firstinspires.ftc.teamcode.system.accessory.math.Angles;
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
@@ -34,6 +36,11 @@ public class LocalizationTest extends LinearOpMode
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose pose = hardware.drive.getPoseEstimate();
             Pose predictedPose = hardware.drive.getPredictedPoseEstimate();
+            Vector vector = new Vector(pose.getX() , pose.getY(), pose.getHeading());
+            double h = vector.getZ();
+            vector = Vector.rotateBy(vector, -Math.PI / 2); // zed dissapears here i pretty sure
+            vector = new Vector(vector.getX(), vector.getY(), h + (Math.PI /2));
+            pose = new Pose(vector.getX() + 7.2, vector.getY()  - 62.5, vector.getZ());
 
             packet.put("x", pose.getX());
             packet.put("y", pose.getY());
