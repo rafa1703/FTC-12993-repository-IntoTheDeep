@@ -21,15 +21,15 @@ public class PathsFarExtra
             forthIntake, forthDeposit, // cycle 4
             fifthIntake, fifthDeposit, // cycle 5
             parkTrajectory;
-    public Pose farStartPose = new Pose(7.2, -62.5, Math.toRadians(90));;
+    public Pose farStartPose = new Pose(7.2, -62.5, Math.toRadians(90));
     public PathsFarExtra()
     {
-        preloadTrajectory = new TrajectoryBuilder() // spline heading
+        preloadTrajectory = new TrajectoryBuilder() // spline heading, this was tuned in field
                 .addBezierSegment(
                         new Point(7.2, -62.5),
-                        new Point(7.2, -25)
+                        new Point(7.2, -27.8)
                 )
-                .addFinalPose(7.2, -25, Math.toRadians(90))
+                .addFinalPose(7.2, -27.8, Math.toRadians(90))
                 .build();
 
         submersibleToFirstEjection = new TrajectoryBuilder() // spline heading

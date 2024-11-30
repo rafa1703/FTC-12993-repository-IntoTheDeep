@@ -105,7 +105,10 @@ public class Vector {
     public String toString(){
         return String.valueOf(x) + " " + String.valueOf(y) + " " + String.valueOf(z);
     }
-
+    public Pose toPose()
+    {
+        return new Pose(x, y, z);
+    }
     public double getMagSqr()
     {
         return x * x + y * y + z * z;

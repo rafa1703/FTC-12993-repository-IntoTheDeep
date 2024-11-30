@@ -72,6 +72,7 @@ public class PrometheusDrive extends LinearOpMode
     boolean fineAdjustingRailIntake = false;
     double railFineAdjustIntakeCache;
     boolean fineAdjustingRailDeposit = false;
+    boolean fineAdjustingRailManualReset = false;
     double railFineAdjustDepositHighCache;
     double railFineAdjustDepositLowCache;
 
@@ -441,6 +442,7 @@ public class PrometheusDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
+                outtakeSubsystem.liftToInternalPIDTicks(0);
                 liftHeightLogic(gamepad2.x, gamepad2.a);
                 // Optimize this later, as
                 if (delay(500))
@@ -480,6 +482,7 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     isSample = false;
                     dropped = false;
+                    goToIntake = false;
                     state = OuttakeState.SPECIMEN_DEPOSIT;
                     intakeSlideBtn.OffsetTargetPosition = 0; // this makes sure the extendo doesn't go out when we go into the deposit state
                     resetTimer();
@@ -593,7 +596,7 @@ public class PrometheusDrive extends LinearOpMode
             case SPECIMEN_DEPOSIT: // we want to deposit and intake
                 if (delay(200) && secondToggleForTheDrop.mode(gamepad1.right_bumper) && dropped)
                 {
-                    state = OuttakeState.RETURN;
+                    state = goToIntake ? OuttakeState.SPECIMEN_INTAKE : OuttakeState.RETURN;
                     resetTimer();
                     break;
                 }
@@ -601,6 +604,10 @@ public class PrometheusDrive extends LinearOpMode
                     liftHeightLogic(gamepad1.x, gamepad1.a);
                 if (delay(40))
                 {
+                    if (gamepad2LeftTrigger())
+                    {
+                        goToIntake = true;
+                    }
                     outtakeLiftPresets(); // this just runs the correct height for the lift
                     if (!dropped)
                     {
@@ -611,10 +618,10 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     if (delay(40))
                     {
-                        if (Math.abs(gamepad2.left_trigger - gamepad2.right_trigger) > 0)
+                        if (Math.abs(gamepad1.left_trigger - gamepad1.right_trigger) > 0)
                         {
                             fineAdjustingRailDeposit = true;
-                            outtakeSubsystem.fineAdjustRail(gamepad2.left_trigger - gamepad2.right_trigger, globalTimer);
+                            outtakeSubsystem.fineAdjustRail(gamepad1.left_trigger - gamepad1.right_trigger, globalTimer);
                             if (isSpecimenLow) railFineAdjustDepositLowCache = outtakeSubsystem.railGetPos();
                             else railFineAdjustDepositHighCache = outtakeSubsystem.railGetPos();
                         }
@@ -761,8 +768,10 @@ public class PrometheusDrive extends LinearOpMode
             case MANUAL_ENCODER_RESET:
                 if (delay(200) && gamepad2.right_bumper)
                 {
+                    gamepad1.rumbleBlips(2);
                     outtakeSubsystem.liftMotorEncoderReset();
                     intakeSubsystem.intakeSlideMotorEncoderReset();
+                    fineAdjustingRailManualReset = false;
                     state = OuttakeState.RETURN;
                     resetTimer();
                     break;
@@ -776,11 +785,11 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 if (Math.abs(gamepad2.left_trigger - gamepad2.right_trigger) > 0)
                 {
-                    fineAdjustingRailIntake = true;
+                    fineAdjustingRailManualReset = true;
                     outtakeSubsystem.fineAdjustRail(gamepad2.left_trigger - gamepad2.right_trigger, globalTimer);
                     railFineAdjustIntakeCache = outtakeSubsystem.railGetPos();
                 }
-                else if (!fineAdjustingRailIntake)
+                else if (!fineAdjustingRailManualReset)
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
 
                 if (gamepad2.left_bumper)
@@ -798,7 +807,12 @@ public class PrometheusDrive extends LinearOpMode
         }
         // we run everything here that isn't state specific
         if ((
-                (gamepad1.b || gamepad2.b) &&
+                (gamepad1.b) &&
+                (state != OuttakeState.READY) &&
+                (state != OuttakeState.MANUAL_ENCODER_RESET) &&
+                (state != OuttakeState.RETURN) &&
+                (state != OuttakeState.SPECIMEN_DEPOSIT)) ||
+                ((gamepad2.b) &&
                 (state != OuttakeState.READY) &&
                 (state != OuttakeState.MANUAL_ENCODER_RESET) &&
                 (state != OuttakeState.RETURN) &&
