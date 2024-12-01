@@ -43,14 +43,16 @@ public class SpecimenHighCycleAuto extends LinearOpMode
     int pickupCycle = 0;
     boolean intakedSpec = false;
     boolean attemptedIntake = false;
+    boolean preloadDrop = false;
     double xPosition, yPosition, headingPosition;
+    double headingErrorToEndPose;
 
     @Override
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.Vector);
-        hardware.drive.getLocalizer().setPose(trajectories.farStartPose);
+        hardware.drive.getLocalizer().setOffSet(trajectories.farStartPose);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         GlobalTimer = new ElapsedTime(System.nanoTime());
@@ -62,13 +64,19 @@ public class SpecimenHighCycleAuto extends LinearOpMode
         while (!isStarted())
         {
             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-            if (delay(1500)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-            else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-
+            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
-            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
-            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
+            if (delay(1000))
+            {
+                outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
+            }
+            if (delay(1500))
+            {
+                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
+            }
+
             globalTimer = GlobalTimer.milliseconds();
         }
         waitForStart();
@@ -78,7 +86,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
         while (opModeIsActive())
         {
             globalTimer = GlobalTimer.milliseconds();
-            intakeSubsystem.intakeReads(state == autoState.PRELOAD_DEPOSIT); // we dont need the color sensor in this auto
+            intakeSubsystem.intakeReads(state == autoState.PRELOAD_DEPOSIT || state == autoState.EJECTION_TO_HP || state == autoState.SAMPLE_PICKUP); // we dont need the color sensor in this auto
             outtakeSubsystem.outtakeReads();
 
             TelemetryPacket packet = new TelemetryPacket();
@@ -92,11 +100,15 @@ public class SpecimenHighCycleAuto extends LinearOpMode
             headingPosition = poseEstimate.getHeading();
 
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true, "red");
-            DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPredictedPoseEstimate().toPose2d(), true);
+            //DashboardUtil.drawRobot(fieldOverlay, hardware.drive.getPredictedPoseEstimate().toPose2d(), true);
             DashboardUtil.drawCurve(fieldOverlay, hardware.drive.trajectoryFollowing);
             dashboard.sendTelemetryPacket(packet);
 
             telemetry.addData("State", state);
+            telemetry.addData("Cycle", cycle);
+            telemetry.addData("Pickup cycle", pickupCycle);
+            telemetry.addData("HeadingPosition", headingPosition);
+            telemetry.addData("Heading Error To End Of Trajectory", headingErrorToEndPose);
             telemetry.addData("Pose", hardware.drive.getPoseEstimate());
             telemetry.update();
         }
@@ -109,22 +121,28 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 if (trajectories.preloadTrajectory.isFinished() && attemptedIntake)
                 {
                     state = autoState.DROP;
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                     cycle ++;
                     attemptedIntake = false;
                     resetTimer();
                     break;
                 }
                 hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
-                if (delay(40))
+                if (delay(0))
                 {
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
+                    outtakeSubsystem.liftToInternalPIDTicks(630);
+                    //outtakeLiftPresets(false, false);
                 }
-
+                if (delay(50))
+                {
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                }
                 if (delay(140))
                 {
-                    if (yPosition > -30) // this should be the actual trigger condition
+                    if (yPosition > -28) // this should be the actual trigger condition
                     {
                         intakeSubsystem.intakeSlideInternalPID(8);
                         if (intakeSubsystem.slideReached(8))
@@ -166,18 +184,24 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     hardware.drive.followTrajectorySplineHeading(ejectionTrajectory);
                     if (delay(40))
                     {
-                        if (headingPosition > Math.toRadians(30) && ejectionTrajectory.isFinished())
+                        headingErrorToEndPose = Math.toDegrees(Math.abs(headingPosition - ejectionTrajectory.getFinalPose().getHeading()));
+                        boolean reachedFinalHeading =  headingErrorToEndPose < 2;
+                        if (ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) > 16)
                         {
+                            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                             intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                         }
-                        if (pickupCycle == 0 ? headingPosition > Math.toRadians(40) : delay(400))
+                        if (headingErrorToEndPose < 15)
                         {
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoFar);
                         }
                         else intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideTeleBase);
-                        if (delay(800))
+                        if (delay(600) && ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.getColorValue() < 100)
                         {
                             state = pickupCycle == 3 ? autoState.INTAKE : autoState.SAMPLE_PICKUP;
+                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
+                            intakeSubsystem.intakeSlideInternalPID(0);
                             resetTimer();
                             break;
                         }
@@ -203,16 +227,29 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     hardware.drive.followTrajectorySplineHeading(pickupTrajectory);
                     if (delay(40))
                     {
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-                        if (headingPosition > (pickupCycle == 0 ? Math.toRadians(25) : Math.toRadians(15)))
+                        if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) > 8)
                         {
-                            if (pickupCycle == 2) intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoFar);
-                            else intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoClose);
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
                         }
+                        if (delay(140))
+                        {
+                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                        }
+                        headingErrorToEndPose = Math.toDegrees(Math.abs(headingPosition - pickupTrajectory.getFinalPose().getHeading()));
+                        boolean reachedFinalHeading =  headingErrorToEndPose < 2;
 
-                        if (delay(300) && intakeSubsystem.getColorValue() > 500)
+                        if (reachedFinalHeading)//(headingPosition > (pickupCycle == 0 ? Math.toRadians(25) : Math.toRadians(15)))
+                        {
+                            if (pickupCycle == 2) intakeSubsystem.intakeSlideInternalPID(18.5); // this is for the third sample
+                            else if (pickupCycle == 1) intakeSubsystem.intakeSlideInternalPID(16.3);
+                            else intakeSubsystem.intakeSlideInternalPID(14);
+                        }
+                        else intakeSubsystem.intakeSlideInternalPID(0);
+
+                        if (delay(300) && intakeSubsystem.getColorValue() > 500 && pickupTrajectory.isFinished())
                         {
                             state = autoState.EJECTION_TO_HP;
+                            pickupCycle++;
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
                             resetTimer();
                             break;
@@ -230,7 +267,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 }
                 switch (cycle)
                 {
-                    case 1:
+                    case 2:
                         hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
                         if (trajectories.firstIntake.isFinished() && hardware.drive.stopped())
                         {
@@ -239,7 +276,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                             resetTimer();
                         }
                         break;
-                    case 2:
+                    case 3:
                         hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
                         if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
                         {
@@ -248,8 +285,26 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                             resetTimer();
                         }
                         break;
-                    case 3:
+                    case 4:
                         hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
+                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
+                        {
+                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                            intakedSpec = true;
+                            resetTimer();
+                        }
+                        break;
+                    case 5:
+                        hardware.drive.followTrajectorySplineHeading(trajectories.forthIntake);
+                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
+                        {
+                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                            intakedSpec = true;
+                            resetTimer();
+                        }
+                        break;
+                    case 6:
+                        hardware.drive.followTrajectorySplineHeading(trajectories.fifthIntake);
                         if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
                         {
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
@@ -264,8 +319,9 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     {
                         if (delay(140))
                         {
+                            outtakeSubsystem.liftToInternalPIDTicks(0);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                            outtakeSubsystem.clawSetPos(1);
                         }
                         if (delay(240))
                             outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.INTAKE);
@@ -283,15 +339,16 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 else
                 {
                     if (delay(90))
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
+                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
                 }
                 break;
             case DEPOSIT_DRIVE:
                 if (( // THIS ONLY RUNS ON CYCLE 1 ONWARDS
-                        (cycle == 1 && trajectories.firstDeposit.isFinished()) ||
-                        (cycle == 2 && trajectories.secondDeposit.isFinished()) ||
-                        (cycle == 3 && trajectories.thirdDeposit.isFinished()) ||
-                        (cycle == 4 && trajectories.forthDeposit.isFinished()))
+                        (cycle == 2 && trajectories.firstDeposit.isFinished()) ||
+                        (cycle == 3 && trajectories.secondDeposit.isFinished()) ||
+                        (cycle == 4 && trajectories.thirdDeposit.isFinished()) ||
+                        (cycle == 5 && trajectories.forthDeposit.isFinished()) ||
+                        (cycle == 6 && trajectories.forthDeposit.isFinished()))
                         && delay(400) && hardware.drive.stopped())
                 {
                     state = autoState.INTAKE;
@@ -300,22 +357,26 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 }
                 switch (cycle)
                 {
-                    case 1:
+                    case 2:
                         hardware.drive.followTrajectorySplineHeading(trajectories.firstDeposit);
                         break;
-                    case 2:
+                    case 3:
                         hardware.drive.followTrajectorySplineHeading(trajectories.secondDeposit);
                         break;
-                    case 3:
+                    case 4:
                         hardware.drive.followTrajectorySplineHeading(trajectories.thirdDeposit);
                         break;
-                    case 4:
+                    case 5:
                         hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
+                        break;
+                    case 6:
+                        hardware.drive.followTrajectorySplineHeading(trajectories.fifthDeposit);
                         break;
                 }
                 if (delay(100))
                 {
                     //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
+                    outtakeLiftPresets(false, false);
                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
                     if (delay(200))
@@ -329,26 +390,21 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 }
                 break;
             case DROP:
-                if (delay(230))
+                if (cycle == 0 ? delay(400) : delay(230))
                 {
-                    state = cycle == 0 ? autoState.EJECTION_TO_HP : cycle == 4 ? autoState.PARK : autoState.INTAKE;
+                    state = cycle == 1 ? autoState.EJECTION_TO_HP : cycle == 5 ? autoState.PARK : autoState.INTAKE;
                     cycle++;
                     resetTimer();
                     break;
                 }
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                if (cycle == 0 && delay(90))
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(0);
+                    }
                 if (delay(120))
                 {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-                }
-
-                if (cycle == 0)
-                {
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                    if (delay(120))
-                    {
-                        intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideTeleBase);
-                    }
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
                 }
                 break;
             case PARK:
@@ -362,6 +418,23 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 break;
             case IDLE: // we idle here duuhhh
                 break;
+        }
+    }
+    public void outtakeLiftPresets(boolean isSample, boolean low)
+    {
+        if (isSample)
+        {
+            if (low) outtakeSubsystem.liftToInternalPIDTicks(350);
+                //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBucketPos);
+            else  outtakeSubsystem.liftToInternalPIDTicks(1655);
+            //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
+        }
+        else
+        {
+            if (low)  outtakeSubsystem.liftToInternalPIDTicks(0);
+                //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBarPos);
+            else  outtakeSubsystem.liftToInternalPIDTicks(700);
+            //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
         }
     }
     public void intakeClipHoldLogic(double slideToPosition, int closeThreshold)
@@ -388,6 +461,10 @@ public class SpecimenHighCycleAuto extends LinearOpMode
     public boolean delay(double delayTime)
     {
         return (globalTimer - sequenceTimer) > delayTime;
+    }
+    public boolean before(double delayTime)
+    {
+        return (globalTimer - sequenceTimer) < delayTime;
     }
 
     public void resetTimer()

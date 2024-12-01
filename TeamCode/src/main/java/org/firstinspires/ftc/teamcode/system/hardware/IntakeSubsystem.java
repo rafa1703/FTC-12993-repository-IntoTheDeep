@@ -42,12 +42,13 @@ public class IntakeSubsystem
         flapDownPos = 0.387,
         flapReadyPos = 0.387;
 
-    public static final int // in inches
+    public static final double // in inches
+        slideExtensionLimit = 18.5,
         slideTeleClose = 14,
         slideTeleFar = 20, // max extension is 27 under the extension limit
         slideTeleBase = 0,
         slideTransfer = -2,
-        slideAutoFar = 20,
+        slideAutoFar = 18.5,
         slideAutoClose = 14;
     public final double
         clipHoldPos = 0.7,

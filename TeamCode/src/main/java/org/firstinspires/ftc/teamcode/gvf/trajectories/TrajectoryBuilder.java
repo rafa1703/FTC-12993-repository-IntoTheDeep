@@ -34,6 +34,10 @@ public class TrajectoryBuilder
         segments.add(new BezierCurveTrajectorySegment(points));
         return this;
     }
+    public TrajectoryBuilder addBezierSegment(double maxSpeed, Point... points){
+        segments.add(new BezierCurveTrajectorySegment(maxSpeed, points));
+        return this;
+    }
     public TrajectoryBuilder addFinalPose(Pose pose)
     {
         finalPose = pose;

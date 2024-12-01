@@ -30,8 +30,10 @@ public class extensionLimitShowcase extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(false);
             outtakeSubsystem.outtakeReads();
-            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
-            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideTeleFar + 5);
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.INTAKE);
+            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+            intakeSubsystem.intakeSlideInternalPID(18.5);
         }
 
     }

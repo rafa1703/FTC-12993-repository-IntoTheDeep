@@ -21,7 +21,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@TeleOp(name = "PrometheusDrive", group = "A Drive")
+@TeleOp(name = "PrometheusDrive", group = "A")
 public class PrometheusDrive extends LinearOpMode
 {
     ElapsedTime GlobalTimer;
@@ -59,7 +59,7 @@ public class PrometheusDrive extends LinearOpMode
     ToggleUpOrDownWithLimit intakeSlideSubBtn = new ToggleUpOrDownWithLimit(1, 1, 0, 4); // this instance will control
     ToggleRisingEdge toggleRisingEdge = new ToggleRisingEdge();
     ToggleRisingEdge toggleRisingEdgeD2Intake = new ToggleRisingEdge();
-    ToggleFallingEdge toggleDropFallingEdge = new ToggleFallingEdge();
+    //ToggleFallingEdge toggleDropFallingEdge = new ToggleFallingEdge();
     ToggleRisingEdge secondToggleForTheDrop = new ToggleRisingEdge();
     ToggleUpOrDown intakeArmToggle = new ToggleUpOrDown(1, 1,0);
     int intakeSLideIncrement = 5; // in
@@ -201,8 +201,15 @@ public class PrometheusDrive extends LinearOpMode
                 }
 
                 if (gamepad1.b || gamepad2.b)
+                {
+                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                }
+                else
+                {
+                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                }
                 break;
             case INTAKE_EXTENDO: // this state is just for using the extendo outside of the submersible
                 intakeSlideBtn.upToggle(gamepad1.left_bumper);
@@ -211,6 +218,7 @@ public class PrometheusDrive extends LinearOpMode
                 if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
                 colorValue = intakeSubsystem.getColorValue();
                 outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
+                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 if (delay(170))
                 {
