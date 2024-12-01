@@ -265,56 +265,58 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                switch (cycle)
-                {
-                    case 2:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
-                        if (trajectories.firstIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intakedSpec = true;
-                            resetTimer();
-                        }
-                        break;
-                    case 3:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
-                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intakedSpec = true;
-                            resetTimer();
-                        }
-                        break;
-                    case 4:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
-                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intakedSpec = true;
-                            resetTimer();
-                        }
-                        break;
-                    case 5:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.forthIntake);
-                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intakedSpec = true;
-                            resetTimer();
-                        }
-                        break;
-                    case 6:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.fifthIntake);
-                        if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intakedSpec = true;
-                            resetTimer();
-                        }
-                        break;
-                }
                 if (!intakedSpec)
                 {
+
+                    switch (cycle)
+                    {
+                        case 2:
+                            hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
+                            if (trajectories.firstIntake.isFinished() && hardware.drive.stopped())
+                            {
+                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                intakedSpec = true;
+                                resetTimer();
+                            }
+                            break;
+                        case 3:
+                            hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
+                            if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
+                            {
+                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                intakedSpec = true;
+                                resetTimer();
+                            }
+                            break;
+                        case 4:
+                            hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
+                            if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
+                            {
+                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                intakedSpec = true;
+                                resetTimer();
+                            }
+                            break;
+                        case 5:
+                            hardware.drive.followTrajectorySplineHeading(trajectories.forthIntake);
+                            if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
+                            {
+                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                intakedSpec = true;
+                                resetTimer();
+                            }
+                            break;
+                        case 6:
+                            hardware.drive.followTrajectorySplineHeading(trajectories.fifthIntake);
+                            if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
+                            {
+                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                intakedSpec = true;
+                                resetTimer();
+                            }
+                            break;
+                    }
+
                     if (delay(40))
                     {
                         if (delay(140))
@@ -376,7 +378,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 if (delay(100))
                 {
                     //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
-                    outtakeLiftPresets(false, false);
+                    outtakeSubsystem.liftToInternalPIDTicks(630);
                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
                     if (delay(200))

@@ -105,13 +105,13 @@ public class PathsFarExtra
                 .build();
 
         firstDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.7,
                         new Point(36, -55),
                         new Point(1, -54),
                         new Point(1.5, -35)
 
                 )
-                .addBezierSegment( 0.3,
+                .addBezierSegment( 0.25,
                         new Point(1.5, -35),
                         new Point(1.5, -26.8)
 
@@ -124,9 +124,9 @@ public class PathsFarExtra
                         new Point(1.5, -30),
                         new Point(1, -54),
                         new Point(34, -37),
-                        new Point(36, -55)
+                        new Point(37.3, -57.5)
                 )
-                .addFinalPose(36, -55, Math.toRadians(90))
+                .addFinalPose(37.3, -57.5, Math.toRadians(90))
                 .build();
 
         secondDeposit = new TrajectoryBuilder() // spline heading
@@ -144,9 +144,9 @@ public class PathsFarExtra
                         new Point(2.5, -30),
                         new Point(2, -54),
                         new Point(34, -37),
-                        new Point(36, -55)
+                        new Point(37.3, -57.5)
                 )
-                .addFinalPose(36, -55, Math.toRadians(90))
+                .addFinalPose(37.3, -57.5, Math.toRadians(90))
                 .build();
 
         thirdDeposit = new TrajectoryBuilder() // spline heading
@@ -164,9 +164,9 @@ public class PathsFarExtra
                         new Point(0.5, -30),
                         new Point(0, -54),
                         new Point(34, -37),
-                        new Point(36, -55)
+                        new Point(37.3, -57.5)
                 )
-                .addFinalPose(36, -55, Math.toRadians(90))
+                .addFinalPose(37.3, -57.5, Math.toRadians(90))
                 .build();
 
         forthDeposit = new TrajectoryBuilder() // spline heading
@@ -184,9 +184,9 @@ public class PathsFarExtra
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(34, -37),
-                        new Point(36, -55)
+                        new Point(37.3, -57.5)
                 )
-                .addFinalPose(36, -55, Math.toRadians(90))
+                .addFinalPose(37.3, -57.5, Math.toRadians(90))
                 .build();
 
         fifthDeposit = new TrajectoryBuilder() // spline heading

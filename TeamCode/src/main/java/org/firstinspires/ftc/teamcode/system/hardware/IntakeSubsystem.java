@@ -44,8 +44,8 @@ public class IntakeSubsystem
 
     public static final double // in inches
         slideExtensionLimit = 18.5,
-        slideTeleClose = 14,
-        slideTeleFar = 20, // max extension is 27 under the extension limit
+        slideTeleClose = 12,
+        slideTeleFar = 18.5, // max extension is 27 under the extension limit
         slideTeleBase = 0,
         slideTransfer = -2,
         slideAutoFar = 18.5,
