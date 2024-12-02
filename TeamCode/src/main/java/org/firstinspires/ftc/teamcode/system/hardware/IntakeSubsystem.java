@@ -35,8 +35,8 @@ public class IntakeSubsystem
         rightArmLowPos = 0.37;
 
     public static final double
-        chuteUpPos = 0.46,
-        chuteDropPos = 0;
+        chuteUpPos = 0.68,
+        chuteDropPos = 0.165;
     public static final double
         flapTransferPos = 0,
         flapDownPos = 0.387,
@@ -281,12 +281,13 @@ public class IntakeSubsystem
         switch (intakeFilter)
         {
             case SIDE_ONLY:
-                if (colorValue > 1500) return false;
+                if (colorValue > 2500) return false;
                 else return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
             case NEUTRAL:
-                return (colorValue > 1500) || isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+                return (colorValue > 2500) ||
+                        isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
             case YELLOW_ONLY:
-                return (colorValue > 1500);
+                return (colorValue > 2500);
             default:
                 return true;
         }
@@ -304,9 +305,13 @@ public class IntakeSubsystem
     {
         return side;
     }
-    public boolean slideReached(double slideTarget)
+    public boolean slideReached(double slideTargetIn)
     {
-        return Math.abs(inchesToTicksSlidesMotor(slideTarget) - slidePosition) < slideThreshold;
+        return Math.abs(inchesToTicksSlidesMotor(slideTargetIn) - slidePosition) < slideThreshold;
+    }
+    public boolean slideOverPosition(double slideTargetIn)
+    {
+        return inchesToTicksSlidesMotor(slideTargetIn) > slidePosition;
     }
     public boolean isSlidesAtBase()
     {

@@ -1,6 +1,9 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideAutoFar;
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -176,7 +179,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                         ejectionTrajectory = trajectories.thirdEjection;
                         break;
                     case 3:
-                        ejectionTrajectory = trajectories.forthEjection;
+                        ejectionTrajectory = trajectories.forthEjection; // this path is horrible
                         break;
                 }
                 if (ejectionTrajectory != null)
@@ -184,19 +187,51 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     hardware.drive.followTrajectorySplineHeading(ejectionTrajectory);
                     if (delay(40))
                     {
+                        if (cycle == 1) // this makes sure we reset after the preload
+                        {
+                            outtakeSubsystem.liftToInternalPIDTicks(0);
+                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.INTAKE);
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                        }
                         headingErrorToEndPose = Math.toDegrees(Math.abs(headingPosition - ejectionTrajectory.getFinalPose().getHeading()));
                         boolean reachedFinalHeading =  headingErrorToEndPose < 2;
-                        if (ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) > 16)
+                        if (
+                                (cycle == 1 && intakeSubsystem.slideReached(slideAutoFar)) ||
+                                (cycle == 2 && intakeSubsystem.slideOverPosition(14)) ||
+                                (cycle == 3 && intakeSubsystem.slideOverPosition(14)) ||
+                                (cycle == 4 && intakeSubsystem.slideOverPosition(14)) // should probably add reachedFinalHeadingHere
+                        )
                         {
                             intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                             intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                         }
+//                        else if (ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) > 16)
+//                        {
+//                            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+//                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+//                        }
+
                         if (headingErrorToEndPose < 15)
                         {
-                            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideAutoFar);
+                            switch (pickupCycle) // leave as a switch until i know everything works
+                            {
+                                case 0:
+                                    intakeSubsystem.intakeSlideInternalPID(slideAutoFar);
+                                    break;
+                                case 1:
+                                    intakeSubsystem.intakeSlideInternalPID(15);
+                                    break;
+                                case 2:
+                                    intakeSubsystem.intakeSlideInternalPID(15);
+                                    break;
+                                case 3:
+                                    intakeSubsystem.intakeSlideInternalPID(15);
+                                    break;
+                            }
                         }
-                        else intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideTeleBase);
-                        if (delay(600) && ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.getColorValue() < 100)
+                        else intakeSubsystem.intakeSlideInternalPID(slideTeleBase);
+                        //if (delay(600) && ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.getColorValue() < 100)
+                        if (delay(600) && intakeSubsystem.getColorValue() < 100)
                         {
                             state = pickupCycle == 3 ? autoState.INTAKE : autoState.SAMPLE_PICKUP;
                             intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
@@ -270,7 +305,7 @@ public class SpecimenHighCycleAuto extends LinearOpMode
 
                     switch (cycle)
                     {
-                        case 2:
+                        case 2: // this case has to be a little different
                             hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
                             if (trajectories.firstIntake.isFinished() && hardware.drive.stopped())
                             {

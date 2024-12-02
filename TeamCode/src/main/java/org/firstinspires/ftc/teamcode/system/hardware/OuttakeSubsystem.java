@@ -65,7 +65,7 @@ public class OuttakeSubsystem
             liftLowBarPos = 0,
             liftSpecimenIntake = 0,
             liftBasePos = 0; // maybe make this -5 because of shit intake clip
-    private final double liftThreshold = 5;
+    private final double liftThreshold = 8;
     private final double maxAngleAxon = 255;
     private final double armFFCoeff = 0.1;
     private double outtakeRailAdjustTimer;

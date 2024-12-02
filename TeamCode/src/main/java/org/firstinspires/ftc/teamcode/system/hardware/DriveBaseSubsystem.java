@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -44,7 +45,7 @@ public class DriveBaseSubsystem
     double PowerBase = 1;
     double PowerBaseTurn = 0.88;
     double PowerStrafe = 1.1;
-    int hangUpPos, hangDownPos;
+    int hangHalfUpPos = 1600, hangUpPos = 2450, hangDownPos = 0, hangClimbPos = -2000;
 
     public void runClimbToTarget(int climbTarget)
     {
@@ -56,6 +57,7 @@ public class DriveBaseSubsystem
     public enum ClimbState
     {
         READY,
+        HALF_OUT,
         OUT,
         UP
     }
@@ -91,29 +93,33 @@ public class DriveBaseSubsystem
         switch (state)
         {
             case READY:
+                if (Math.abs(climbMotor.getCurrentPosition() - hangDownPos) < 5)
+                {
+                    climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+                    climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+                    climbMotor.setPower(0); // cut power
+                }
+                else
+                {
+                    climbMotor.setTargetPosition(hangDownPos);
+                    climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    climbMotor.setPower(1);
+                }
+                break;
+            case HALF_OUT:
                 climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
-                climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                climbMotor.setPower(0);
-//                if (Math.abs(climbMotor.getCurrentPosition() - hangDownPos) < 5)
-//                {
-//                    climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-//                    climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
-//                    climbMotor.setPower(0); // cut power
-//                }
-//                else
-//                {
-//                    climbMotor.setTargetPosition(-400);
-//                    climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//                    climbMotor.setPower(1);
-//                }
+                climbMotor.setTargetPosition(hangHalfUpPos);
+                climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                climbMotor.setPower(1);
                 break;
             case OUT:
-                climbMotor.setTargetPosition(-150);
+                climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
+                climbMotor.setTargetPosition(hangUpPos);
                 climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 climbMotor.setPower(1);
                 break;
             case UP:
-                climbMotor.setTargetPosition(-900);
+                climbMotor.setTargetPosition(hangClimbPos);
                 climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                 climbMotor.setPower(1);
                 break;
