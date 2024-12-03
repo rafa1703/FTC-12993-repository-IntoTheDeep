@@ -78,7 +78,7 @@ public class LocalizerPinpoint
     private final LowPassFilter xVelFilter = new LowPassFilter(filterParameter, 0),
             yVelFilter = new LowPassFilter(filterParameter, 0);
 
-    public static double xDeceleration = 30.88, yDeceleration = 57.17;
+    public static double xDeceleration = 100, yDeceleration = 150;
     // x 30.88
     // y 57.17
 

@@ -39,8 +39,8 @@ public class IntakeSubsystem
         chuteDropPos = 0.165;
     public static final double
         flapTransferPos = 0,
-        flapDownPos = 0.387,
-        flapReadyPos = 0.387;
+        flapDownPos = 0.429,
+        flapReadyPos = 0.429;
 
     public static final double // in inches
         slideExtensionLimit = 18.5,
