@@ -9,7 +9,8 @@ import org.opencv.core.Point;
 public class PathsFarExtra
 {
 
-    public Trajectory subToFirstE, firstSP, secondE, secondSP, thirdE, thirdSP, forthE;
+    public Trajectory subToFirstE, firstSP, secondE, secondSP, thirdE, thirdSP, forthE, SPFromSub;
+
     public Trajectory
             preloadTrajectory, // preload deposit
             submersibleToFirstEjection,
@@ -66,6 +67,14 @@ public class PathsFarExtra
         firstSP = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(31, -42),
+                        new Point(31.1, -42.1)
+                )
+                .addFinalPose(31.1, -42.1, Math.toRadians(43))
+                .build();
+        SPFromSub = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(3, -30),
+                        new Point(3, -48),
                         new Point(31.1, -42.1)
                 )
                 .addFinalPose(31.1, -42.1, Math.toRadians(43))
@@ -188,7 +197,7 @@ public class PathsFarExtra
                         new Point(2.5, -35)
 
                 )
-                .addBezierSegment( 0.65,
+                .addBezierSegment( 0.7,
                         new Point(2.5, -35),
                         new Point(2.5, -27.1)
 
@@ -218,7 +227,7 @@ public class PathsFarExtra
 
         secondIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        0.8,
+                        1,
                         new Point(0.5, -30),
                         new Point(0, -54),
                         new Point(39.9, -37),
@@ -234,7 +243,7 @@ public class PathsFarExtra
                         new Point(-1.5, -35)
 
                 )
-                .addBezierSegment( 0.65,
+                .addBezierSegment( 0.7,
                         new Point(-1.5, -35),
                         new Point(-1.5, -27.1)
 
@@ -244,7 +253,7 @@ public class PathsFarExtra
 
         thirdIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        0.8,
+                        1,
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(39.9, -37),
@@ -260,7 +269,7 @@ public class PathsFarExtra
                         new Point(-4.5, -35)
 
                 )
-                .addBezierSegment( 0.65,
+                .addBezierSegment( 0.7,
                         new Point(-4.5, -35),
                         new Point(-4.5, -27.1)
 
@@ -270,7 +279,7 @@ public class PathsFarExtra
 
         forthIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        0.8,
+                        1,
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(39.9, -37),
@@ -282,21 +291,21 @@ public class PathsFarExtra
         forthDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(36.7, -57.5),
-                        new Point(-6.5, -59),
-                        new Point(-7, -35)
+                        new Point(-6, -59),
+                        new Point(-6.5, -35)
 
                 )
-                .addBezierSegment( 0.65,
-                        new Point(-7, -35),
-                        new Point(-7, -27.1)
+                .addBezierSegment( 0.7,
+                        new Point(-6.5, -35),
+                        new Point(-6.5, -27.1)
 
                 )
-                .addFinalPose(-7, -27.1, Math.toRadians(90))
+                .addFinalPose(-6.5, -27.1, Math.toRadians(90))
                 .build();
 
         fifthIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        0.8,
+                        1,
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(39.9, -37),

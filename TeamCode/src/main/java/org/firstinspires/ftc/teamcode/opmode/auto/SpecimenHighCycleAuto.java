@@ -329,6 +329,11 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 if (!intakedSpec)
                 {
 
+                    if (cycle == 2)
+                    {
+                        intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    }
                     switch (cycle)
                     {
                         case 2: // this case has to be a little different
@@ -407,6 +412,10 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                     {
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
                         outtakeSubsystem.liftToInternalPIDTicks(500);
+                        if (cycle == 2)
+                        {
+                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                        }
                     }
                 }
                 break;
