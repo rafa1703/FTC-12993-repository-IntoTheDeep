@@ -129,7 +129,7 @@ public class OuttakeSubsystem
         // if we need to reverse anything
         // i want this to be done inside the hardware class
         //clawS.setDirection(Servo.Direction.REVERSE);
-        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -341,7 +341,7 @@ public class OuttakeSubsystem
 
     public boolean liftAtBase() // as base is 0
     {
-        return liftPosition < liftThreshold;
+        return liftPosition < 20;
     }
     //TODO add new measurements, and remember this is not a bare motor anymore
     public double ticksToInchesSlidesMotor(double ticks){

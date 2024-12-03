@@ -311,7 +311,7 @@ public class IntakeSubsystem
     }
     public boolean slideOverPosition(double slideTargetIn)
     {
-        return inchesToTicksSlidesMotor(slideTargetIn) > slidePosition;
+        return slidePosition > inchesToTicksSlidesMotor(slideTargetIn) ;
     }
     public boolean isSlidesAtBase()
     {
