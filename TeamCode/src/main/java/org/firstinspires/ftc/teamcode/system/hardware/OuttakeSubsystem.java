@@ -32,13 +32,13 @@ public class OuttakeSubsystem
             armSpecimenPos = 0.35,
             armIntakePos = 0.95;
     public static final double
-            clawOpenPos = 0.82,
+            clawOpenPos = 0.8,
             clawIntakePos = 0.92,
             clawClosePos = 0.4;
     public static final double
             wristReadyPos = 0.35,
-            wristTransferPos = 0.4,
-            wristTransferFinishPos = 0.2,
+            wristTransferPos = 0.415,
+            wristTransferFinishPos = 0.24,
             wristPerpendicularPos = 0.34,
             wristSamplePos = 0.67,
             wristSampleDropPos = 0.76,
@@ -47,9 +47,9 @@ public class OuttakeSubsystem
     public static final double
             railReadyPos = 0.45,
             railHighPos = 0.135,
-            railMiddlePos = 0.65,
-            railOverTheTopPos = 0.4,
-            railTransferPos = 0.95,
+            railMiddlePos = 0.55,
+            railOverTheTopPos = 0.35,
+            railTransferPos = 0.889,
             railTransferFinishPos = 0.75,
             railSpecimenLowPos = 0.68,
             railSpecimenHighPos = railHighPos,

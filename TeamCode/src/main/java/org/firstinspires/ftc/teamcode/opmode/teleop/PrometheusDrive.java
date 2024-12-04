@@ -600,12 +600,12 @@ public class PrometheusDrive extends LinearOpMode
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                         }
                     }
-                    if (delay(320))
+                    if (delay(410))
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.LOW);
                     else if (!outtakeSubsystem.isArmOver())
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
                 }
-                if (delay(400) && toggleRisingEdge.mode(gamepad1.right_bumper))
+                if (delay(420) && toggleRisingEdge.mode(gamepad1.right_bumper))
                 {
                     dropped = true;
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
