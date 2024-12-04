@@ -298,7 +298,7 @@ public class SampleAuto extends LinearOpMode
                         (cycle == 1 && trajectories.firstDeposit.isFinished()) ||
                         (cycle == 2 && trajectories.secondDeposit.isFinished()) ||
                         (cycle == 3 && trajectories.thirdDeposit.isFinished() &&
-                                Math.toDegrees(Math.abs(headingPosition - trajectories.thirdDeposit.getFinalPose().getHeading())) < 2) ||
+                                Math.toDegrees(Math.abs(headingPosition - trajectories.thirdDeposit.getFinalPose().getHeading())) < 3) ||
                         (cycle == 4 && trajectories.forthDeposit.isFinished()))
                         && delay(600) && hardware.drive.stopped())
                 {
@@ -341,7 +341,7 @@ public class SampleAuto extends LinearOpMode
                 }
                 break;
             case DROP:
-                if ( cycle == 0 ? delay(250)  : delay(400))
+                if ( delay(500))
                 {
                     state = cycle == 3 ? autoState.PARK : autoState.INTAKE; // add the sub cycle here
                     cycle++;
@@ -364,14 +364,17 @@ public class SampleAuto extends LinearOpMode
 //                }
                 //hardware.drive.followTrajectorySplineHeading(reverseTrajectory);
 
-                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-//                if (delay(180))
-//                {
-//                    // we might need to turn the wrist before the arm goes back as the clearance is
-//                    //outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
-//                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
-//                }
-                if (delay(200))
+                if (delay(300))
+                {
+                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
+                }
+                else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE_DROP);
+                if (delay(100))
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
+                }
+
+                if (delay(410))
                 {
                     outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.READY);
@@ -388,7 +391,7 @@ public class SampleAuto extends LinearOpMode
                 hardware.drive.followTrajectorySplineHeading(trajectories.parkTrajectory);
                 if (delay(200))
                 {
-                    outtakeSubsystem.armSetPos(0.43);
+                    outtakeSubsystem.armSetPos(0.455);
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                     outtakeSubsystem.liftToInternalPIDTicks(100);

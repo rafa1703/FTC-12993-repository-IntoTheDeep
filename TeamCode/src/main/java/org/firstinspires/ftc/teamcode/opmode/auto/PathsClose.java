@@ -70,9 +70,9 @@ public class PathsClose
         thirdDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(-60, -50),
-                        new Point(-62, -57.5)
+                        new Point(-62.5, -58.5)
                 )
-                .addFinalPose(-62, -57.5, Math.toRadians(45))
+                .addFinalPose(-62.5, -58.5, Math.toRadians(45))
                 .build();
         // idk if we will use this
         submersibleIntake = new TrajectoryBuilder() // spline heading
