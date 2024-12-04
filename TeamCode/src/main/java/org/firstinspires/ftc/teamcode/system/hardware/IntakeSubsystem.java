@@ -139,7 +139,7 @@ public class IntakeSubsystem
         {
             double redValue = colourSensor.getNormalizedColors().red;
             double blueValue = colourSensor.getNormalizedColors().blue;
-            isRed = !(blueValue > redValue);
+            isRed = redValue > blueValue;
             colorValue = colourSensor.alpha();
         }
     }

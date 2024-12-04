@@ -32,7 +32,7 @@ public class OuttakeSubsystem
             armSpecimenPos = 0.35,
             armIntakePos = 0.95;
     public static final double
-            clawOpenPos = 0.879,
+            clawOpenPos = 0.82,
             clawIntakePos = 0.92,
             clawClosePos = 0.4;
     public static final double

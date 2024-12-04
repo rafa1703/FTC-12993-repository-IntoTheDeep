@@ -15,6 +15,7 @@ import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.system.accessory.SideAfterAuto;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -41,6 +42,7 @@ public class SpecimenAuto extends LinearOpMode
     PathsFarExtra trajectories = new PathsFarExtra();
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
+    GeneralHardware.Side side = GeneralHardware.Side.Red;
     double globalTimer, sequenceTimer, intakeClipTimer;
     int cycle = 0;
     int pickupCycle = 0;
@@ -80,7 +82,15 @@ public class SpecimenAuto extends LinearOpMode
             {
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
             }
+            if (gamepad2.dpad_up || gamepad1.dpad_up) side = GeneralHardware.Side.Red;
+            else if (gamepad2.dpad_down || gamepad1.dpad_down) side = GeneralHardware.Side.Blue;
 
+            if (side == GeneralHardware.Side.Blue) gamepad2.setLedColor(0, 0, 255, 1000);
+            else gamepad2.setLedColor(255, 0, 0, 1000);
+
+            SideAfterAuto.side = side;
+            telemetry.addData("Side", side);
+            telemetry.update();
             globalTimer = GlobalTimer.milliseconds();
         }
         waitForStart();
@@ -112,6 +122,7 @@ public class SpecimenAuto extends LinearOpMode
             telemetry.addData("Cycle", cycle);
             telemetry.addData("Reached third intake", trajectories.thirdIntake.isFinished());
             telemetry.addData("Pickup cycle", pickupCycle);
+            telemetry.addData("Is red", intakeSubsystem.isRed);
             telemetry.addData("Is slide over 14in", intakeSubsystem.slideOverPosition(14));
             telemetry.addData("HeadingPosition", headingPosition);
             telemetry.addData("Heading Error To End Of Trajectory", headingErrorToEndPose);

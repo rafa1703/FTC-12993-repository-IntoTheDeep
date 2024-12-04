@@ -14,6 +14,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.system.accessory.SideAfterAuto;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleFallingEdge;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleRisingEdge;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDownWithLimit;
@@ -33,7 +34,7 @@ public class PrometheusDrive extends LinearOpMode
     OuttakeSubsystem outtakeSubsystem;
     DriveBaseSubsystem driveBase;
     GeneralHardware hardware;
-    GeneralHardware.Side side = GeneralHardware.Side.Red;
+    GeneralHardware.Side side = SideAfterAuto.side;
     // this matches the initial value in the intakeSubsystem
     IntakeSubsystem.IntakeFilter prevIntakeFilterState;
     LoopTime loopTime = new LoopTime();
@@ -63,7 +64,6 @@ public class PrometheusDrive extends LinearOpMode
     ToggleUpOrDownWithLimit intakeSlideSubBtn = new ToggleUpOrDownWithLimit(1, 1, 0, 4); // this instance will control
     ToggleRisingEdge toggleRisingEdge = new ToggleRisingEdge();
     ToggleRisingEdge toggleRisingEdgeD2Intake = new ToggleRisingEdge();
-    //ToggleFallingEdge toggleDropFallingEdge = new ToggleFallingEdge();
     ToggleRisingEdge secondToggleForTheDrop = new ToggleRisingEdge();
     ToggleUpOrDown intakeArmToggle = new ToggleUpOrDown(1, 1,0);
     int intakeSLideIncrement = 5; // in
@@ -145,6 +145,7 @@ public class PrometheusDrive extends LinearOpMode
 
             telemetry.addData("State", state);
             telemetry.addData("Side", hardware.side);
+            telemetry.addData("Side after auto", SideAfterAuto.side);
             telemetry.addData("Go to intake", goToIntake);
             telemetry.addData("Go to Deposit", goToDeposit);
             telemetry.addData("Go to HpDeposit", goToHPDeposit);
@@ -214,11 +215,13 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 }
                 else
                 {
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 }
                 break;
             case INTAKE_EXTENDO: // this state is just for using the extendo outside of the submersible
@@ -239,7 +242,7 @@ public class PrometheusDrive extends LinearOpMode
                     if ((delay(700) && colorValue > 500) ||
                             gamepad1.y)
                     {
-                        if (intakeSubsystem.colorLogic())
+                        if (true)
                         {
                             state = OuttakeState.AFTER_EXTENDO;
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
@@ -534,6 +537,7 @@ public class PrometheusDrive extends LinearOpMode
                     dropped = false;
                     goToIntake = false;
                     state = OuttakeState.SPECIMEN_DEPOSIT;
+                    intakeSlideTarget = 0;
                     intakeSlideBtn.OffsetTargetPosition = 0; // this makes sure the extendo doesn't go out when we go into the deposit state
                     resetTimer();
                     break;
@@ -604,7 +608,7 @@ public class PrometheusDrive extends LinearOpMode
                 if (delay(400) && toggleRisingEdge.mode(gamepad1.right_bumper))
                 {
                     dropped = true;
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                     resetTimer();
                 }
                 break;
@@ -645,7 +649,7 @@ public class PrometheusDrive extends LinearOpMode
                     else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE_DROP);
                     if (delay(100))
                     {
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                     }
                 }
                 break;
@@ -802,10 +806,10 @@ public class PrometheusDrive extends LinearOpMode
                     goToDeposit = false;
                     goToHPDeposit = false;
                     dropped = false;
+                    outtakeSubsystem.liftMotorRawControl(0);
                     intakeSlideBtn.OffsetTargetPosition = 0;
                     intakeSlideTarget = 0;
                     intakeArmToggle.OffsetTargetPosition = 0;
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
@@ -830,10 +834,11 @@ public class PrometheusDrive extends LinearOpMode
                     {
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
                     }
-                    if (delay(130))
+                    if (delay(300))
                     {
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                     }
+                    else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     if (delay(190))
                     {
                         intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
@@ -858,7 +863,7 @@ public class PrometheusDrive extends LinearOpMode
                     break;
                 }
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY); // holds the
+                outtakeSubsystem.armSetPos(0.4); //so we don't like get stuck in the bars
                 if (delay(100))
                 {
                     outtakeSubsystem.liftMotorRawControl(-gamepad2.left_stick_y);
