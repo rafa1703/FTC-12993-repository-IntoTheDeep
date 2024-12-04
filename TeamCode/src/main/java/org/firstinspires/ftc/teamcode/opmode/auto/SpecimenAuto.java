@@ -51,6 +51,7 @@ public class SpecimenAuto extends LinearOpMode
     boolean startedExtending = false;
     double xPosition, yPosition, headingPosition;
     double headingErrorToEndPose;
+    boolean didWeOpenedTheStupidFuckingClaw = false;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -120,6 +121,7 @@ public class SpecimenAuto extends LinearOpMode
 
             telemetry.addData("State", state);
             telemetry.addData("Cycle", cycle);
+            telemetry.addData("Intaked spec", intakedSpec);
             telemetry.addData("Reached third intake", trajectories.thirdIntake.isFinished());
             telemetry.addData("Pickup cycle", pickupCycle);
             telemetry.addData("Is red", intakeSubsystem.isRed);
@@ -131,6 +133,7 @@ public class SpecimenAuto extends LinearOpMode
         }
         intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
     }
     public void autoSequence()
     {
@@ -213,7 +216,7 @@ public class SpecimenAuto extends LinearOpMode
                                     intakeSubsystem.intakeSlideInternalPID(16);
                                     break;
                                 case 2:
-                                    intakeSubsystem.intakeSlideInternalPID(18.5);
+                                    intakeSubsystem.intakeSlideInternalPID(20.5);
                                     break;
                                 case 3:
                                     intakeSubsystem.intakeSlideInternalPID(18.5);
@@ -283,7 +286,7 @@ public class SpecimenAuto extends LinearOpMode
                                     intakeSubsystem.intakeSlideInternalPID(13);
                                     break;
                                 case 1:
-                                    intakeSubsystem.intakeSlideInternalPID(8);
+                                    intakeSubsystem.intakeSlideInternalPID(10);
                                     break;
                                 case 2:
                                     intakeSubsystem.intakeSlideInternalPID(16.5);
@@ -294,7 +297,7 @@ public class SpecimenAuto extends LinearOpMode
                         else intakeSubsystem.intakeSlideInternalPID(0);
 
                         if ((delay(300) && intakeSubsystem.getColorValue() > 500 && pickupTrajectory.isFinished())
-                                || delay(3000)
+                                || delay(2300)
                         )
                         {
                             state = autoState.EJECTION_TO_HP;
@@ -312,7 +315,6 @@ public class SpecimenAuto extends LinearOpMode
                 {
                     state =  autoState.DEPOSIT_DRIVE;
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-                    intakedSpec = false;
                     resetTimer();
                     break;
                 }
@@ -334,7 +336,8 @@ public class SpecimenAuto extends LinearOpMode
                                 hardware.drive.followTrajectorySplineHeading(trajectories.firstIntakePart1);
                             if (trajectories.firstIntakePart2.isFinished() && hardware.drive.stopped())
                             {
-                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                //outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                outtakeSubsystem.clawSetPos(0.36);
                                 intakedSpec = true;
                                 resetTimer();
                             }
@@ -343,7 +346,8 @@ public class SpecimenAuto extends LinearOpMode
                             hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
                             if (trajectories.secondIntake.isFinished() && hardware.drive.stopped())
                             {
-                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                //outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                outtakeSubsystem.clawSetPos(0.35);
                                 intakedSpec = true;
                                 resetTimer();
                             }
@@ -352,7 +356,8 @@ public class SpecimenAuto extends LinearOpMode
                             hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
                             if (trajectories.thirdIntake.isFinished() && hardware.drive.stopped())
                             {
-                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                //outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                outtakeSubsystem.clawSetPos(0.34);
                                 intakedSpec = true;
                                 resetTimer();
                             }
@@ -361,7 +366,8 @@ public class SpecimenAuto extends LinearOpMode
                             hardware.drive.followTrajectorySplineHeading(trajectories.forthIntake);
                             if (trajectories.forthIntake.isFinished() && hardware.drive.stopped())
                             {
-                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                //outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                outtakeSubsystem.clawSetPos(0.33);
                                 intakedSpec = true;
                                 resetTimer();
                             }
@@ -370,7 +376,8 @@ public class SpecimenAuto extends LinearOpMode
                             hardware.drive.followTrajectorySplineHeading(trajectories.fifthIntake);
                             if (trajectories.fifthIntake.isFinished() && hardware.drive.stopped())
                             {
-                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+//                                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                                outtakeSubsystem.clawSetPos(0.32);
                                 intakedSpec = true;
                                 resetTimer();
                             }
@@ -383,7 +390,10 @@ public class SpecimenAuto extends LinearOpMode
                         {
                             outtakeSubsystem.liftToInternalPIDTicks(0);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.clawSetPos(1);
+                            if (!intakedSpec)
+                            {
+                                outtakeSubsystem.clawSetPos(0.85); // open
+                            }
                         }
                         if (delay(300))
                         {
@@ -398,6 +408,7 @@ public class SpecimenAuto extends LinearOpMode
                 }
                 else
                 {
+                    outtakeSubsystem.clawSetPos(0.3);
                     if (delay(90))
                     {
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
@@ -412,11 +423,11 @@ public class SpecimenAuto extends LinearOpMode
             case DEPOSIT_DRIVE:
                 if (( // THIS ONLY RUNS ON CYCLE 1 ONWARDS
                         (cycle == 2 && trajectories.firstDeposit.isFinished()) ||
-                                (cycle == 3 && trajectories.secondDeposit.isFinished()) ||
-                                (cycle == 4 && trajectories.thirdDeposit.isFinished()) ||
-                                (cycle == 5 && trajectories.forthDeposit.isFinished()) ||
-                                (cycle == 6 && trajectories.fifthDeposit.isFinished()))
-                        && delay(400))
+                        (cycle == 3 && trajectories.secondDeposit.isFinished()) ||
+                        (cycle == 4 && trajectories.thirdDeposit.isFinished()) ||
+                        (cycle == 5 && trajectories.forthDeposit.isFinished()) ||
+                        (cycle == 6 && trajectories.fifthDeposit.isFinished()))
+                )
                 {
                     state = autoState.DROP;
                     resetTimer();
@@ -465,6 +476,7 @@ public class SpecimenAuto extends LinearOpMode
                 {
                     state = cycle == 1 ? autoState.SAMPLE_PICKUP : cycle == 5 ? autoState.PARK : autoState.INTAKE;
                     cycle++;
+                    intakedSpec = false;
                     resetTimer();
                     break;
                 }
@@ -540,11 +552,6 @@ public class SpecimenAuto extends LinearOpMode
     {
         return (globalTimer - sequenceTimer) > delayTime;
     }
-    public boolean before(double delayTime)
-    {
-        return (globalTimer - sequenceTimer) < delayTime;
-    }
-
     public void resetTimer()
     {
         sequenceTimer = globalTimer;

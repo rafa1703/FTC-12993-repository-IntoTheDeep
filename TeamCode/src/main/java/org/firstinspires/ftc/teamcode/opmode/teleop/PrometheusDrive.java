@@ -896,7 +896,10 @@ public class PrometheusDrive extends LinearOpMode
                 (gamepad1.b) &&
                 (state != OuttakeState.READY) &&
                 (state != OuttakeState.MANUAL_ENCODER_RESET) &&
-                (state != OuttakeState.RETURN)) || (
+                (state != OuttakeState.RETURN) &&
+                (state != OuttakeState.INTAKE_EXTENDO_DROP) &&
+                (state != OuttakeState.INTAKE_EXTENDO_SUB)
+                ) || (
 
                 (gamepad2.b) &&
                 (state != OuttakeState.READY) &&

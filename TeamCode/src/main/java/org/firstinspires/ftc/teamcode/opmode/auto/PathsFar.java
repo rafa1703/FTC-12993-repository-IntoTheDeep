@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 import org.firstinspires.ftc.teamcode.gvf.trajectories.BezierCurveTrajectorySegment;
@@ -192,3 +193,4 @@ public class PathsFar
                 .build();
     }
 }
+*/

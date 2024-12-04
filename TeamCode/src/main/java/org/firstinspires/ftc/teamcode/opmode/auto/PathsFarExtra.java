@@ -9,6 +9,9 @@ import org.opencv.core.Point;
 public class PathsFarExtra
 {
 
+    public Trajectory firstOldPlusDragDLine;
+    public Trajectory firstDLine;
+    public Trajectory firstDLineInterpolation;
     public Trajectory subToFirstE, firstSP, secondE, secondSP, thirdE, thirdSP, forthE, SPFromSub;
 
     public Trajectory
@@ -31,10 +34,10 @@ public class PathsFarExtra
         preloadTrajectory = new TrajectoryBuilder() // spline heading, this was tuned in field
                 .addBezierSegment(
                         new Point(7.2, -62.5),
-                        new Point(4.5, -30),
-                        new Point(4.5, -26.8)
+                        new Point(4, -30),
+                        new Point(4, -26.8)
                 )
-                .addFinalPose(4.5, -26.8, Math.toRadians(90))
+                .addFinalPose(4, -26.8, Math.toRadians(90))
                 .build();
 
         submersibleToFirstEjection = new TrajectoryBuilder() // spline heading
@@ -101,7 +104,7 @@ public class PathsFarExtra
                         new Point(30.1, -41.1),
                         new Point(36.5, -36)
                 )
-                .addFinalPose(36.5, -36, Math.toRadians(25))
+                .addFinalPose(36.5, -36, Math.toRadians(26.5))
                 .build();
 
         secondSP = new TrajectoryBuilder() // spline heading
@@ -149,7 +152,7 @@ public class PathsFarExtra
                         new Point(35.2, -36.2),
                         new Point(36, -39)
                 )
-                .addFinalPose(36, -39, Math.toRadians(-45))
+                .addFinalPose(36, -39, Math.toRadians(-50))
                 .build();
 
         forthE = new TrajectoryBuilder() // spline heading
@@ -168,9 +171,9 @@ public class PathsFarExtra
                 )
                 .addBezierSegment(0.5, // keep in mind here that the x pos should be the same so it is a line
                         new Point(37.8, -50),
-                        new Point(37.8, -57.5)
+                        new Point(37.8, -57.1)
                 )
-                .addFinalPose(37.8, -57.5, Math.toRadians(90))
+                .addFinalPose(37.8, -57.1, Math.toRadians(90))
                 .build();
 
         firstIntakePart1 =
@@ -183,7 +186,7 @@ public class PathsFarExtra
                         .addFinalPose(36.7, -50, Math.toRadians(90))
                         .build();
         firstIntakePart2 = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(1, // keep in mind here that the x pos should be the same so it is a line
+                .addBezierSegment(0.9, // keep in mind here that the x pos should be the same so it is a line
                         new Point(37.3, -50),
                         new Point(36.7, -57.5)
                 )
@@ -197,33 +200,56 @@ public class PathsFarExtra
                         new Point(2.5, -35)
 
                 )
-                .addBezierSegment( 0.7,
+                .addBezierSegment( 0.85,
                         new Point(2.5, -35),
                         new Point(2.5, -27.1)
 
                 )
                 .addFinalPose(2.5, -27.1, Math.toRadians(90))
                 .build();
+        /*firstOldPlusDragDLine = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(1,
+                        new Point(36.7, -57.5),
+                        new Point(2, -59),
+                        new Point(2.5, -35)
 
-        Trajectory firstDLine = new TrajectoryBuilder() // spline heading, straight lines
+                )
+                .addBezierSegment( 0.85,
+                        new Point(2.5, -35),
+                        new Point(2.5, -27.1)
+
+                )
+                .addBezierSegment( 0.85,
+                        new Point(2.5, -27.1),
+                        new Point(-4, -27.1)
+
+                )
+                .addFinalPose(-4, -27.1, Math.toRadians(90))
+                .build();
+
+        firstDLine = new TrajectoryBuilder() // spline heading, straight lines
                 .addBezierSegment(
                         new Point(37.3, -57.5),
-                        new Point(3, -37)
+                        new Point(0, -37)
                 )
                 .addBezierSegment(
-                        new Point(3, -37),
-                        new Point(0.5, -27.1)
+                        new Point(0, -37),
+                        new Point(-1.5, -27.1)
                 )
-                .addFinalPose(37.3, -57.5, Math.toRadians(90))
+                .addFinalPose(-1.5, -28, Math.toRadians(90))
                 .build();
-        Trajectory firstDLineInterpolation = new TrajectoryBuilder() // spline heading
+        firstDLineInterpolation = new TrajectoryBuilder() // spline heading, straight lines
                 .addBezierSegment(
                         new Point(37.3, -57.5),
-                        new Point(3, -42),
-                        new Point(0.5, -27.1)
+                        new Point(8, -45),
+                        new Point(2, -30)
                 )
-                .addFinalPose(37.3, -57.5, Math.toRadians(90))
-                .build();
+                .addBezierSegment(0.8,
+                        new Point(2, -30),
+                        new Point(-0.5, -27.1)
+                )
+                .addFinalPose(-0.5, -27.1, Math.toRadians(90))
+                .build();*/
 
         secondIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
@@ -231,24 +257,24 @@ public class PathsFarExtra
                         new Point(0.5, -30),
                         new Point(0, -54),
                         new Point(39.9, -37),
-                        new Point(39.9, -58)
+                        new Point(39.9, -57.1)
                 )
-                .addFinalPose(39.9, -58, Math.toRadians(90))
+                .addFinalPose(39.9, -57.1, Math.toRadians(90))
                 .build();
 
         secondDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(36.7, -57.5),
-                        new Point(-1, -59),
-                        new Point(-1.5, -35)
+                        new Point(-0, -59),
+                        new Point(-0.5, -35)
 
                 )
-                .addBezierSegment( 0.7,
-                        new Point(-1.5, -35),
-                        new Point(-1.5, -27.1)
+                .addBezierSegment( 0.85,
+                        new Point(-0.5, -35),
+                        new Point(-0.5, -27.1)
 
                 )
-                .addFinalPose(-1.5, -27.1, Math.toRadians(90))
+                .addFinalPose(-0.5, -27.1, Math.toRadians(90))
                 .build();
 
         thirdIntake = new TrajectoryBuilder() // spline heading
@@ -257,24 +283,24 @@ public class PathsFarExtra
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(39.9, -37),
-                        new Point(39.9, -58)
+                        new Point(39.9, -57.1)
                 )
-                .addFinalPose(39.9, -58, Math.toRadians(90))
+                .addFinalPose(39.9, -57.1, Math.toRadians(90))
                 .build();
 
         thirdDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(36.7, -57.5),
-                        new Point(-4, -59),
-                        new Point(-4.5, -35)
+                        new Point(-1, -59),
+                        new Point(-1.5, -35)
 
                 )
-                .addBezierSegment( 0.7,
-                        new Point(-4.5, -35),
-                        new Point(-4.5, -27.1)
+                .addBezierSegment( 0.85,
+                        new Point(-1.5, -35),
+                        new Point(-1.5, -27.1)
 
                 )
-                .addFinalPose(-4.5, -27.1, Math.toRadians(90))
+                .addFinalPose(-1.5, -27.1, Math.toRadians(90))
                 .build();
 
         forthIntake = new TrajectoryBuilder() // spline heading
@@ -283,24 +309,24 @@ public class PathsFarExtra
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(39.9, -37),
-                        new Point(39.9, -58)
+                        new Point(39.9, -57.1)
                 )
-                .addFinalPose(39.9, -58, Math.toRadians(90))
+                .addFinalPose(39.9, -57.1, Math.toRadians(90))
                 .build();
 
         forthDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(36.7, -57.5),
-                        new Point(-6, -59),
-                        new Point(-6.5, -35)
+                        new Point(-4, -59),
+                        new Point(-4.5, -35)
 
                 )
-                .addBezierSegment( 0.7,
-                        new Point(-6.5, -35),
-                        new Point(-6.5, -27.1)
+                .addBezierSegment( 0.85,
+                        new Point(-4.5, -35),
+                        new Point(-4.5, -27.1)
 
                 )
-                .addFinalPose(-6.5, -27.1, Math.toRadians(90))
+                .addFinalPose(-4.5, -27.1, Math.toRadians(90))
                 .build();
 
         fifthIntake = new TrajectoryBuilder() // spline heading
@@ -309,24 +335,24 @@ public class PathsFarExtra
                         new Point(-2.5, -30),
                         new Point(-2, -54),
                         new Point(39.9, -37),
-                        new Point(39.9, -58)
+                        new Point(39.9, -57.1)
                 )
-                .addFinalPose(39.9, -58, Math.toRadians(90))
+                .addFinalPose(39.9, -57.1, Math.toRadians(90))
                 .build();
 
         fifthDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(36.7, -57.5),
-                        new Point(-9, -59),
-                        new Point(-9.5, -35)
+                        new Point(-6, -59),
+                        new Point(-6.5, -35)
 
                 )
-                .addBezierSegment( 0.7,
-                        new Point(-9.5, -35),
-                        new Point(-9.5, -27.1)
+                .addBezierSegment( 0.85,
+                        new Point(-6.5, -35),
+                        new Point(-6.5, -27.1)
 
                 )
-                .addFinalPose(-9.5, -27.1, Math.toRadians(90))
+                .addFinalPose(-6.5, -27.1, Math.toRadians(90))
                 .build();
 
         parkTrajectory = new TrajectoryBuilder() // tangent reversed should be faster or we can spline heading (so we are looking at other alliance samples)
