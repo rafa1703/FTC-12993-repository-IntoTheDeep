@@ -20,7 +20,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
-@Autonomous(name = "1+3 Close", group = "Close")
+@Autonomous(name = "0+4 Close", group = "Close")
 public class SampleAuto extends LinearOpMode
 {
 

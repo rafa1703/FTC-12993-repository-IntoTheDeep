@@ -46,7 +46,7 @@ public class ServoTest extends LinearOpMode
             intakeSubsystem.flapSetPos(flapPos);
             intakeSubsystem.clipSetPos(clipPos);
             intakeSubsystem.chuteSetPos(chutePos);
-            //intakeSubsystem.flapSetPos(flapPos);
+            intakeSubsystem.flapSetPos(flapPos);
 //            if (gamepad1.a)
 //            {
 //                intakeSubsystem.disablePWM(IntakeSubsystem.Servos.FLAP);

@@ -186,7 +186,7 @@ public class PrometheusDrive extends LinearOpMode
                         resetTimer();
                         break;
                     }
-                    if (gamepad1.dpad_up)
+                    if (gamepad1.options)
                     {
                         state = OuttakeState.HANG_START;
                         resetTimer();
@@ -203,7 +203,8 @@ public class PrometheusDrive extends LinearOpMode
                         state = OuttakeState.INTAKE_EXTENDO_SUB;
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                        intakeSlideTarget = intakeSLideIncrement;
+                        intakeSlideTarget = 5;
+                        intakeSlideBtn.OffsetTargetPosition = 0;
                         intakeSlideSubBtn.upToggle(gamepad2.right_bumper);
                         intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                         resetTimer();
@@ -327,17 +328,22 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
-                    if (delay(550))
+                    intakeSlideTarget += -gamepad2.right_stick_y * 0.8; // 0.8 in (20 in per second)
+                    if (intakeSlideTarget > slideExtensionLimit)
+                        intakeSlideTarget = slideExtensionLimit; // caps for extension limit
+
+                    intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
+                    if (gamepad1.right_bumper)
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    else
                     {
-                        if (intakeSlideTarget + 2 > slideExtensionLimit)
-                            intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit);
-                        else intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget + 2);
+                        if (delay(950))
+                            intakeSubsystem.intakeSpin(0);
+                        else if (delay(600) && colorValue < 100)
+                            intakeSubsystem.intakeSpin(-0.3);
+                        else if (delay(500)) intakeSubsystem.intakeSpin(0.4);
+                        else intakeSubsystem.intakeSpin(0);
                     }
-                    else intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
-                    if (delay(600) && colorValue < 100)
-                        intakeSubsystem.intakeSpin(-0.3);
-                    else if (delay(500)) intakeSubsystem.intakeSpin(0.4);
-                    else intakeSubsystem.intakeSpin(0);
                 }
                 break;
             case AFTER_EXTENDO: // this state only exist to introduce the behaviour that at transfer_start the slides are already in
@@ -781,7 +787,7 @@ public class PrometheusDrive extends LinearOpMode
                 intakeSlideTargetClimb += -gamepad1.right_stick_y * 0.8; // 0.8 in (20 in per second)
                 if (intakeSlideTargetClimb > slideTeleFar)
                     intakeSlideTargetClimb = slideTeleFar; // caps for extension limit
-                intakeSubsystem.intakeSlideInternalPID(intakeSlideTargetClimb);
+                intakeSubsystem.intakeSlideInternalPID(0);
 
                 driveBase.climbHang(DriveBaseSubsystem.ClimbState.OUT);
                 break;
@@ -793,7 +799,7 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     intakeSubsystem.intakeSlideInternalPID(5);
                 }
-                else intakeSubsystem.intakeSlideInternalPID(intakeSlideTargetClimb);
+                else intakeSubsystem.intakeSlideInternalPID(0);
 
                 driveBase.climbHang(DriveBaseSubsystem.ClimbState.UP);
 
@@ -898,7 +904,8 @@ public class PrometheusDrive extends LinearOpMode
                 (state != OuttakeState.MANUAL_ENCODER_RESET) &&
                 (state != OuttakeState.RETURN) &&
                 (state != OuttakeState.INTAKE_EXTENDO_DROP) &&
-                (state != OuttakeState.INTAKE_EXTENDO_SUB)
+                (state != OuttakeState.INTAKE_EXTENDO_SUB) &&
+                (state != OuttakeState.SPECIMEN_DEPOSIT)
                 ) || (
 
                 (gamepad2.b) &&
@@ -918,7 +925,7 @@ public class PrometheusDrive extends LinearOpMode
         if (gamepad2.share)
         {
             state = OuttakeState.MANUAL_ENCODER_RESET;
-            intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
+            //intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
             intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
             resetTimer();
         }
@@ -1005,7 +1012,7 @@ public class PrometheusDrive extends LinearOpMode
         {
             if (isSpecimenLow)  outtakeSubsystem.liftToInternalPIDTicks(0);
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBarPos);
-            else  outtakeSubsystem.liftToInternalPIDTicks(700);
+            else  outtakeSubsystem.liftToInternalPIDTicks(900);
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
         }
     }

@@ -39,8 +39,8 @@ public class IntakeSubsystem
         chuteDropPos = 0.165;
     public static final double
         flapTransferPos = 0,
-        flapDownPos = 0.429,
-        flapReadyPos = 0.429;
+        flapDownPos = 0.5,
+        flapReadyPos = 0.5;
 
     public static final double // in inches
         slideExtensionLimit = 18.5,
@@ -51,7 +51,7 @@ public class IntakeSubsystem
         slideAutoFar = 18.5,
         slideAutoClose = 14;
     public final double
-        clipHoldPos = 0.7,
+        clipHoldPos = 0.72,
         clipOpenPos = 1;
     private final double slideThreshold = 8;
     public enum Servos

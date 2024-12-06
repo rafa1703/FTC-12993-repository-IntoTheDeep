@@ -51,8 +51,8 @@ public class OuttakeSubsystem
             railOverTheTopPos = 0.35,
             railTransferPos = 0.889,
             railTransferFinishPos = 0.75,
-            railSpecimenLowPos = 0.68,
-            railSpecimenHighPos = railHighPos,
+            railSpecimenLowPos = 0.83,
+            railSpecimenHighPos = 0.3,
             railSamplePos = railHighPos,
             railIntakePos = 0.49,
             railLowPos = 0.95;
