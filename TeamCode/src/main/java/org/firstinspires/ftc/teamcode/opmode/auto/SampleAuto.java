@@ -391,7 +391,7 @@ public class SampleAuto extends LinearOpMode
                 hardware.drive.followTrajectorySplineHeading(trajectories.parkTrajectory);
                 if (delay(200))
                 {
-                    outtakeSubsystem.armSetPos(0.455);
+                    outtakeSubsystem.armSetPos(0.448);
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                     outtakeSubsystem.liftToInternalPIDTicks(100);

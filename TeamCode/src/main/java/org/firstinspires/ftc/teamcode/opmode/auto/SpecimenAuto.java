@@ -163,7 +163,7 @@ public class SpecimenAuto extends LinearOpMode
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
-                    outtakeSubsystem.liftToInternalPIDTicks(800);
+                    outtakeSubsystem.liftToInternalPIDTicks(730);
                     //outtakeLiftPresets(false, false);
                 }
                 break;
@@ -468,7 +468,7 @@ public class SpecimenAuto extends LinearOpMode
                 }
                 if (delay(20))
                 {
-                    outtakeSubsystem.liftToInternalPIDTicks(845);
+                    outtakeSubsystem.liftToInternalPIDTicks(800);
                     outtakeSubsystem.wristSetPos(0.42);
 
                 }

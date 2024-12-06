@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 public class PrometheusDrive extends LinearOpMode
 {
     ElapsedTime GlobalTimer;
-    double globalTimer, sequenceTimer, intakeClipTimer;
+    double globalTimer, sequenceTimer, intakeClipTimer, colourTimer;
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     DriveBaseSubsystem driveBase;
@@ -82,6 +82,8 @@ public class PrometheusDrive extends LinearOpMode
     boolean fineAdjustingRailManualReset = false;
     double railFineAdjustDepositHighCache;
     double railFineAdjustDepositLowCache;
+    boolean prevIsYellow, prevIsRed;
+    boolean comingFromTheSub;
 
 
 
@@ -104,7 +106,7 @@ public class PrometheusDrive extends LinearOpMode
             GlobalTimer = new ElapsedTime(System.nanoTime());
             sequenceTimer = globalTimer;
             intakeSubsystem = new IntakeSubsystem(hardware);
-            intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.NEUTRAL;
+            intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF;
             outtakeSubsystem = new OuttakeSubsystem(hardware);
             driveBase = new DriveBaseSubsystem(hardware);
             prevIntakeFilterState = intakeSubsystem.intakeFilter;
@@ -145,19 +147,20 @@ public class PrometheusDrive extends LinearOpMode
 
             telemetry.addData("State", state);
             telemetry.addData("Side", hardware.side);
-            telemetry.addData("Side after auto", SideAfterAuto.side);
-            telemetry.addData("Go to intake", goToIntake);
-            telemetry.addData("Go to Deposit", goToDeposit);
-            telemetry.addData("Go to HpDeposit", goToHPDeposit);
-            telemetry.addData("IsArmOver", outtakeSubsystem.isArmOver());
+//            telemetry.addData("Side after auto", SideAfterAuto.side);
+//            telemetry.addData("Go to intake", goToIntake);
+//            telemetry.addData("Go to Deposit", goToDeposit);
+//            telemetry.addData("Go to HpDeposit", goToHPDeposit);
+//            telemetry.addData("IsArmOver", outtakeSubsystem.isArmOver());
             telemetry.addData("FilterState", intakeSubsystem.intakeFilter);
             telemetry.addData("Color logic", intakeSubsystem.colorLogic());
             telemetry.addData("IsRed", intakeSubsystem.isRed);
+            telemetry.addData("IsYellow", intakeSubsystem.isYellow);
             telemetry.addData("Color value", intakeSubsystem.getColorValue());
-            telemetry.addData("OuttakePos", outtakeSubsystem.liftPosition);
-            telemetry.addData("IntakePos", intakeSubsystem.slidePosition);
-            telemetry.addData("Dropped", dropped);
-            telemetry.addData("ClimbPos", driveBase.getClimbPosition());
+//            telemetry.addData("OuttakePos", outtakeSubsystem.liftPosition);
+//            telemetry.addData("IntakePos", intakeSubsystem.slidePosition);
+//            telemetry.addData("Dropped", dropped);
+//            telemetry.addData("ClimbPos", driveBase.getClimbPosition());
             loopTime.updateLoopTime(telemetry);
             telemetry.update();
         }
@@ -169,6 +172,7 @@ public class PrometheusDrive extends LinearOpMode
         switch (state)
         {
             case READY:
+                intakeClipHoldLogic(0, 8);
                 if (delay(100))
                 {
                     if (gamepad1.right_bumper)
@@ -198,7 +202,7 @@ public class PrometheusDrive extends LinearOpMode
                         toggleRisingEdge.mode(gamepad1.right_bumper);
                         resetTimer();
                         break;
-                    } else if (gamepad2.right_bumper)
+                    } else if (gamepad1LeftTrigger())
                     {
                         state = OuttakeState.INTAKE_EXTENDO_SUB;
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
@@ -291,7 +295,7 @@ public class PrometheusDrive extends LinearOpMode
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                     if (
-                            (delay(300) && colorValue > 500 || gamepad1.y || gamepad2.left_stick_button)
+                            (delay(300) && colorValue > 900 || gamepad1.y || gamepad2.left_stick_button)
                     )
                     {
                         if (!gamepad2.left_stick_button && (intakeSubsystem.colorLogic() || gamepad1.y))
@@ -302,6 +306,7 @@ public class PrometheusDrive extends LinearOpMode
                             outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                             gamepad1.rumbleBlips(1);
+                            comingFromTheSub = true;
                             resetTimer();
                             break;
                         } else
@@ -347,10 +352,16 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case AFTER_EXTENDO: // this state only exist to introduce the behaviour that at transfer_start the slides are already in
-                if (delay(400) && intakeSubsystem.isSlidesAtBase())
+                if ((comingFromTheSub ? delay(1000) : delay(400)) && intakeSubsystem.isSlidesAtBase())
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     state = OuttakeState.TRANSFER_START;
+                    resetTimer();
+                    break;
+                }
+                if (gamepad2.left_stick_button)
+                {
+                    state = OuttakeState.INTAKE_EXTENDO_DROP;
                     resetTimer();
                     break;
                 }
@@ -365,7 +376,12 @@ public class PrometheusDrive extends LinearOpMode
                 if (gamepad1.right_stick_button)
                 {
                    intakeSubsystem.intakeSlideMotorRawControl(0);
-                   intakeSubsystem.intakeSpin(-0.33);
+                   if (delay(800))
+                   {
+                       intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                       intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                   }
+                   else intakeSubsystem.intakeSpin(-0.33);
                 }
                 else
                 {
@@ -738,7 +754,7 @@ public class PrometheusDrive extends LinearOpMode
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                     if (
-                            ((delay(300) && colorValue > 500) ||
+                            ((delay(300) && colorValue > 900) ||
                                     gamepad1.y ||
                                     gamepad2.left_stick_button) &&
                                     dropped)
@@ -752,6 +768,7 @@ public class PrometheusDrive extends LinearOpMode
                             outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
                             gamepad1.rumbleBlips(1);
                             dropped = false;
+                            comingFromTheSub = true;
                             resetTimer();
                             break;
                         }
@@ -812,6 +829,7 @@ public class PrometheusDrive extends LinearOpMode
                     goToDeposit = false;
                     goToHPDeposit = false;
                     dropped = false;
+                    comingFromTheSub = false;
                     outtakeSubsystem.liftMotorRawControl(0);
                     intakeSlideBtn.OffsetTargetPosition = 0;
                     intakeSlideTarget = 0;
@@ -999,6 +1017,19 @@ public class PrometheusDrive extends LinearOpMode
             intakeClipTimer = globalTimer;
         }
     }
+//    public boolean colourLogicWithTimer()
+//    {
+//        if (intakeSubsystem.getColorValue() > 900) {
+//            if (globalTimer - colourTimer > 50){
+//                return  (prevIsYellow == intakeSubsystem.isYellow) && (prevIsRed == intakeSubsystem.isRed);
+//            } else {
+//                prevIsRed = intakeSubsystem.isRed;
+//                prevIsYellow = intakeSubsystem.isYellow;
+//            }
+//        } else {
+//            colourTimer = globalTimer;
+//        }
+//    }
     public void outtakeLiftPresets()
     {
         if (isSample)

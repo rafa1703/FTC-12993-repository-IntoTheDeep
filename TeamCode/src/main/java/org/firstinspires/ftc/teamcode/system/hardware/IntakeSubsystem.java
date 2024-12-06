@@ -27,20 +27,20 @@ public class IntakeSubsystem
 
     public static final double
         leftArmHighPos = 0,
-        leftArmHalfDownPos = 0.3,
-        leftArmLowPos = 0.37;
+        leftArmHalfDownPos = 0.345,
+        leftArmLowPos = 0.39;
     public static final double
         rightArmHighPos = 0,
-        rightArmHalfDownPos = 0.3,
-        rightArmLowPos = 0.37;
+        rightArmHalfDownPos = 0.345,
+        rightArmLowPos = 0.39;
 
     public static final double
         chuteUpPos = 0.68,
         chuteDropPos = 0.165;
     public static final double
         flapTransferPos = 0,
-        flapDownPos = 0.5,
-        flapReadyPos = 0.5;
+        flapDownPos = 0.48,
+        flapReadyPos = 0.48;
 
     public static final double // in inches
         slideExtensionLimit = 18.5,
@@ -103,7 +103,7 @@ public class IntakeSubsystem
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
     private final double TICKS_PER_BAREMOTOR = 28;
-    public boolean isRed = false;
+    public boolean isRed = false, isYellow = false;
 
     public IntakeSubsystem(GeneralHardware hardware)
     {
@@ -141,6 +141,7 @@ public class IntakeSubsystem
             double blueValue = colourSensor.getNormalizedColors().blue;
             isRed = redValue > blueValue;
             colorValue = colourSensor.alpha();
+            isYellow = colorValue > 2500;
         }
     }
 
@@ -281,13 +282,13 @@ public class IntakeSubsystem
         switch (intakeFilter)
         {
             case SIDE_ONLY:
-                if (colorValue > 2500) return false;
+                if (isYellow) return false;
                 else return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
             case NEUTRAL:
-                return (colorValue > 2500) ||
+                return (isYellow) ||
                         isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
             case YELLOW_ONLY:
-                return (colorValue > 2500);
+                return isYellow;
             default:
                 return true;
         }
