@@ -219,7 +219,7 @@ public class PrometheusDrive extends LinearOpMode
                 if (gamepad1.b || gamepad2.b)
                 {
                     intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
-                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    intakeSubsystem.intakeSpin(-0.6);
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 }
                 else
@@ -822,7 +822,7 @@ public class PrometheusDrive extends LinearOpMode
 
                 break;
             case RETURN:
-                if (outtakeSubsystem.liftAtBase() && delay(500) && !outtakeSubsystem.isArmOver())
+                if ((outtakeSubsystem.liftAtBase() && delay(500) && !outtakeSubsystem.isArmOver()) || delay(1750))
                 {
                     isSample = true;
                     goToIntake = false;
