@@ -227,7 +227,7 @@ public class SpecimenAuto extends LinearOpMode
                         else if (pickupCycle == 0) intakeSubsystem.intakeSlideInternalPID(0);
                         //else if (pickupCycle != 3) intakeSubsystem.intakeSlideInternalPID(5);
                         //if (delay(600) && ejectionTrajectory.isFinished() && reachedFinalHeading && intakeSubsystem.getColorValue() < 100)
-                        if (delay(600) && intakeSubsystem.getColorValue() < 100)
+                        if ((delay(600) && intakeSubsystem.getColorValue() < 100) || delay(2000))
                         {
                             state = pickupCycle == 3 ? autoState.INTAKE : autoState.SAMPLE_PICKUP;
                             if (pickupCycle == 3) intakeClipHoldLogic(0, 8);

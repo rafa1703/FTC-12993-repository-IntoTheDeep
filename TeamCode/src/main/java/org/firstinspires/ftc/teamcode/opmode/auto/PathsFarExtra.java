@@ -34,7 +34,7 @@ public class PathsFarExtra
         preloadTrajectory = new TrajectoryBuilder() // spline heading, this was tuned in field
                 .addBezierSegment(0.9,
                         new Point(7.2, -62.5),
-                        new Point(3, -30),
+                        new Point(-1, -30),
                         new Point(3, -26.8)
                 )
                 .addFinalPose(3, -26.8, Math.toRadians(90))

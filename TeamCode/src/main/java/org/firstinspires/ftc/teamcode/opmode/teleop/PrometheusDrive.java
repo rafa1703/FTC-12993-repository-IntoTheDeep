@@ -352,7 +352,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case AFTER_EXTENDO: // this state only exist to introduce the behaviour that at transfer_start the slides are already in
-                if ((comingFromTheSub ? delay(1000) : delay(400)) && intakeSubsystem.isSlidesAtBase())
+                if ((comingFromTheSub ? delay(550) : delay(400)) && intakeSubsystem.isSlidesAtBase())
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                     state = OuttakeState.TRANSFER_START;
@@ -435,7 +435,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case TRANSFER_START:
-                if (delay(830) && outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase())
+                if (((comingFromTheSub ? delay(370) : delay(450)) && outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase()) || delay(1000))
                 {
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
@@ -455,15 +455,15 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
 
-                    if (delay(230))
+                    if (comingFromTheSub ? delay(0) : delay(230) )
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                    if (delay(240))
+                    if (comingFromTheSub ? delay(180) : delay(240))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
 
                     }
-                    if (delay(400))
+                    if (comingFromTheSub ? delay(280) :delay(340))
                     {
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
                     }
@@ -635,7 +635,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case SAMPLE_DEPOSIT: // this will actually start the deposit, so lift and arm presets
-                if (delay(400) && dropped) //secondToggleForTheDrop.mode(gamepad1.right_bumper) && delay(400) && dropped)
+                if (delay(250) && dropped) //secondToggleForTheDrop.mode(gamepad1.right_bumper) && delay(400) && dropped)
                 {
                     state = OuttakeState.RETURN;
                     resetTimer();
@@ -650,10 +650,10 @@ public class PrometheusDrive extends LinearOpMode
                         outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SAMPLE);
                         if (delay(60))
                         {
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
+                            outtakeSubsystem.wristSetPos(0.7);
                         }
                         if (delay(140))
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+                            outtakeSubsystem.armSetPos(0.63);
                     }
                     if (delay(200) && toggleRisingEdge.mode(gamepad1.right_bumper))
                     {
@@ -664,15 +664,7 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 else
                 {
-                    if (delay(300))
-                    {
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
-                    }
-                    else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE_DROP);
-                    if (delay(100))
-                    {
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                    }
+                    if (delay(30)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                 }
                 break;
             case SPECIMEN_DEPOSIT: // we want to deposit and intake
@@ -822,7 +814,7 @@ public class PrometheusDrive extends LinearOpMode
 
                 break;
             case RETURN:
-                if ((outtakeSubsystem.liftAtBase() && delay(500) && !outtakeSubsystem.isArmOver()) || delay(1750))
+                if ((outtakeSubsystem.liftAtBase() && delay(500) && !outtakeSubsystem.isArmOver()) || delay(950))
                 {
                     isSample = true;
                     goToIntake = false;
@@ -951,15 +943,15 @@ public class PrometheusDrive extends LinearOpMode
         {
             if (gamepad2.dpad_up)
             {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.YELLOW_ONLY; // yellow only
+                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // yellow only
             }
             if (gamepad2.dpad_right)
             {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.NEUTRAL; // both neutral and alliance
+                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // both neutral and alliance
             }
             if (gamepad2.dpad_down)
             {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.SIDE_ONLY; // only alliance
+                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // only alliance
             }
             if (gamepad2.dpad_left)
             {
@@ -1034,7 +1026,7 @@ public class PrometheusDrive extends LinearOpMode
     {
         if (isSample)
         {
-            if (isSampleLow) outtakeSubsystem.liftToInternalPIDTicks(350);
+            if (isSampleLow) outtakeSubsystem.liftToInternalPIDTicks(550);
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftLowBucketPos);
             else  outtakeSubsystem.liftToInternalPIDTicks(1655);
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
