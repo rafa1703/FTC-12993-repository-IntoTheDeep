@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.gvf.trajectories;
 
 
+import com.arcrobotics.ftclib.util.MathUtils;
+
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.opencv.core.Point;
@@ -13,6 +15,8 @@ public class TrajectoryBuilder
     private Pose finalPose = null;
     private Pose startPose = null;
     private final ArrayList<SpatialMarker> spatialMarkers = new ArrayList<>();
+    private double trajectoryTimeOutTime = 1000.0; // default is 1000ms
+    private double finalSpeed = 0.15; // default is 1000ms
 
     public TrajectoryBuilder(Pose startPose){
         this.startPose = startPose;
@@ -43,6 +47,18 @@ public class TrajectoryBuilder
         finalPose = pose;
         return this;
     }
+    public TrajectoryBuilder addTrajectoryTimeOut(double ms)
+    {
+        trajectoryTimeOutTime = ms;
+        return this;
+    }
+    /** @param speed Range 0-1**/
+    public TrajectoryBuilder addFinalSpeed(double speed)
+    {
+        speed = MathUtils.clamp(speed, 0, 1);
+        finalSpeed = speed;
+        return this;
+    }
     public TrajectoryBuilder addFinalPose(double x, double y, double heading)
     {
         finalPose = new Pose(x, y, heading);
@@ -60,7 +76,7 @@ public class TrajectoryBuilder
             Vector finalVector = segments.get(segments.size() -1).getEndPoint(); // transform vector into the final pose
             finalPose = new Pose(finalVector.getX(), finalVector.getY(), finalVector.getAngle()); // keep in mind this angle is wrong as it gets the angle from arctan(y/x).
         }
-        return new Trajectory(segments, startPose, finalPose, spatialMarkers);
+        return new Trajectory(segments, startPose, finalPose, spatialMarkers, trajectoryTimeOutTime, finalSpeed);
     }
     //public Trajectory end() {return new Trajectory(segments, finalPose);}
 }

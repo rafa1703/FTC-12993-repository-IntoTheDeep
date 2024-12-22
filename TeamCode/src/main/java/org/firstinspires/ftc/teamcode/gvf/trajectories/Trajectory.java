@@ -26,7 +26,7 @@ public class Trajectory
     private double prevT;
     private double timer = 0;
     private double HIGHER_DIMENSION_THRESHOLD;
-
+    private double FINAL_SPEED;
     public Trajectory(TrajectorySegment segment)
     {
         segments.add(segment);
@@ -40,15 +40,16 @@ public class Trajectory
 
     public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers)
     {
-        this(segments, startPose, finalPose, spatialMarkers, 1000.0); // 500ms is the default
+        this(segments, startPose, finalPose, spatialMarkers, 1000.0, 0.15); // 1000ms and 0.15 speed is the default
     }
-    public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers, double timerThreshold)
+    public Trajectory(ArrayList<TrajectorySegment> segments, @NonNull Pose startPose, @NonNull Pose finalPose, ArrayList<SpatialMarker> spatialMarkers, double timerThreshold, double finalSpeed)
     {
         this.segments = segments;
         this.startPose = startPose;
         this.finalPose = finalPose;
         this.spatialMarkers = spatialMarkers;
         this.HIGHER_DIMENSION_THRESHOLD = timerThreshold;
+        this.FINAL_SPEED = finalSpeed;
         init();
     }
 
@@ -108,12 +109,11 @@ public class Trajectory
                 }
             }
         }
-        //TODO: add an exit condition so we dont calculate if we finished
         BezierCurve curve = segments.get(u).returnCurve();
         boolean lastCurve = u == numberOfSegments;
 
         // passing t here removes another full iteration of the curve
-        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, segments.get(u).getMaxSpeed());
+        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, FINAL_SPEED, segments.get(u).getMaxSpeed());
 
         if(!spatialMarkers.isEmpty()) // hope this doesn't break shit
         {
@@ -178,7 +178,7 @@ public class Trajectory
         boolean lastCurve = u == numberOfSegments;
         curve = segments.get(u).returnCurve();
 
-        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, segments.get(u).getMaxSpeed());
+        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, FINAL_SPEED, segments.get(u).getMaxSpeed());
         // if we less then the threshold we can say we are finished
         if (segments.get(numberOfSegments).getEndPoint().subtract(currentPose.toPoint()).getMagnitude() < threshold)
         {
@@ -240,7 +240,7 @@ public class Trajectory
         boolean lastCurve = u == numberOfSegments;
 
 
-        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, segments.get(u).getMaxSpeed());
+        Vector powerVector = gvfLogic.calculate(curve, t, predictedPose, lastCurve, FINAL_SPEED, segments.get(u).getMaxSpeed());
         // we need to change the z component of the power vector, yes this being done here is dodgy as fuck but i don't care
         // (it needs to be here because i want to interpolate using the u value of the trajectory and not the t value
         double finalHeading = finalPose.getHeading();

@@ -19,20 +19,19 @@ public class GVFLogic
     public boolean usePID = false;
     public double tangentFinalHeading;
 
-    public Vector calculate(@NonNull BezierCurve curve, double t, Pose pose, boolean slowDown, double maxSpeed)
+    public Vector calculate(@NonNull BezierCurve curve, double t, Pose pose, boolean slowDown,double slowSpeed, double maxSpeed)
     {
-        // correction is like the go back to the fucking line and then path shit is follow the bitch spline
         Point robot = pose.toPoint();
         Vector endPoint = curve.getEndPoint();
-        // FIXME: 18/8/2024 i am an idiot and this will proably never fucking work and i just wasting time because i m...
         //double t = curve.returnClosestT(robot);
         Vector closestPoint = new Vector(curve.parametric(t));
         Vector derivative = curve.getTangentialVector(t);
         Vector robotToPoint = closestPoint.subtract(robot);
         Vector robotToEnd = endPoint.subtract(robot);
-
-        double CORRECTION_DIS = 30; // tune
-        double SAVING_THROW_DIS = 24;
+        // TODO i think if i tune this better i can run a normal predictive thing
+        double CORRECTION_DIS = 30; // this should probably be closer to half a tile
+        double SAVING_THROW_DIS = 24; // this should be way less
+        double SLOWDOWN_DIS = 34; // this maybe has to be interpolated based on how much to slow down
 
         double directPursuitThreshold = 1;
         // going from above now should not break anything and improve cycle times
@@ -61,10 +60,10 @@ public class GVFLogic
         Vector movementVector = new Vector(Math.cos(direction), Math.sin(direction));
         double speed = maxSpeed;
 
-        if (robotToEnd.getMagnitude() < 34 && slowDown)
+        if (robotToEnd.getMagnitude() < SLOWDOWN_DIS && slowDown)
         {
             // like a weighted average for the speed
-            speed = interpolation(0.15, speed, robotToEnd.getMagnitude() / 34);
+            speed = interpolation(slowSpeed, speed, robotToEnd.getMagnitude() / SLOWDOWN_DIS);
         }
         movementVector.scaleBy(speed);
 
@@ -140,5 +139,14 @@ public class GVFLogic
     public double getTangentFinalHeading()
     {
         return tangentFinalHeading;
+    }
+
+    public double calculateCurvature(BezierCurve curve, double t)
+    {
+        Vector d = curve.getTangentialVector(t);
+        Vector d2 = curve.getDoubleDerivedVector(t);
+
+        return (d.getX() * d2.getY() - d2.getX() * d.getY()) /
+                (Math.sqrt(Math.pow(d.getX() * d.getX()  + d.getY() * d.getY(),3)));
     }
 }

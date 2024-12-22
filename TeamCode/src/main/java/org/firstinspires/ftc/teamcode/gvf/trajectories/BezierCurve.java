@@ -93,6 +93,31 @@ public class BezierCurve
 
         return new Point(x, y);
     }
+    private Point parametricDoubleDerived(double t)
+    {
+        if (!(t > 0 && t < 1))
+        {
+            if (t == 0) return parametricDoubleDerived(0.01);
+            return new Point();
+        }
+
+        double x = 0, y = 0;
+        for(int r = 0; r <= n; r++)
+        {
+            double pow = Math.pow(1 - t, n - r - 2);
+            double n2 = Math.pow(n, 2);
+            double t2 = Math.pow(t, 2);
+            // extracted common part
+            double v = n2 * t2 - (n * t * (2 * r + t)) + (r * (r + 2 * t - 1));
+
+            x += computeBinomial(n, r) * points[r].x * pow * Math.pow(t, r - 2) * v;
+
+            y += computeBinomial(n, r) * points[r].y * pow * Math.pow(t, r - 2) * v;
+        }
+
+        return new Point(x, y);
+    }
+
     /*    private Point parametricDerived2(double t)
         {
             if (!(t >= 0 && t <= 1))
@@ -132,6 +157,11 @@ public class BezierCurve
     public Vector getTangentialVector(double t)
     {
         Point point = parametricDerived(t);
+        return new Vector(point.x, point.y);
+    }
+    public Vector getDoubleDerivedVector(double t)
+    {
+        Point point = parametricDoubleDerived(t);
         return new Vector(point.x, point.y);
     }
     public double getTangentialHeading(double t)
