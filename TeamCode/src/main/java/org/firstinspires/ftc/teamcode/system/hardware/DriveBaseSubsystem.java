@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
+import static com.sun.tools.doclint.Entity.le;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -7,6 +9,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
 
 @Config // Allows dashboard to tune
 public class DriveBaseSubsystem
@@ -16,9 +19,26 @@ public class DriveBaseSubsystem
             FL,
             FR,
             BL,
-            BR,
-            climbMotor;
+            BR;
+    public ServoPika
+            leftPTOS,
+            rightPTOS;
 
+
+    public enum PTOState
+    {
+        OUT(0, 0),
+        IN(0,0);
+
+        public final double  leftPos;
+        public final double rightPos;
+
+        PTOState(double leftPos, double rightPos)
+        {
+            this.leftPos = leftPos;
+            this.rightPos = rightPos;
+        }
+    }
     // higher values of k means more adjustment.
     // c centers the adjustment
 
@@ -45,22 +65,7 @@ public class DriveBaseSubsystem
     double PowerBase = 1;
     double PowerBaseTurn = 0.88;
     double PowerStrafe = 1.1;
-    int hangHalfUpPos = 1600, hangUpPos = 2450, hangDownPos = 0, hangClimbPos = -2000;
 
-    public void runClimbToTarget(int climbTarget)
-    {
-        climbMotor.setTargetPosition(climbTarget);
-        climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        climbMotor.setPower(1);
-    }
-
-    public enum ClimbState
-    {
-        READY,
-        HALF_OUT,
-        OUT,
-        UP
-    }
     Telemetry telemetry;
     public DriveBaseSubsystem(GeneralHardware hardware)
     {
@@ -68,7 +73,6 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
-        climbMotor = hardware.climbM;
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     // this could be run in robothardware
@@ -77,9 +81,6 @@ public class DriveBaseSubsystem
         // zero brake behavior means when motors aren't powered, they will auto brake
         if (Float) setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
         else setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
-        climbMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
     }
     public void setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior zeroPowerBehaviour)
     {
@@ -88,47 +89,12 @@ public class DriveBaseSubsystem
         BL.setZeroPowerBehavior(zeroPowerBehaviour);
         FL.setZeroPowerBehavior(zeroPowerBehaviour);
     }
-    public void climbHang(ClimbState state)
+    public void PTOState(PTOState state)
     {
-        switch (state)
-        {
-            case READY:
-                if (Math.abs(climbMotor.getCurrentPosition() - hangDownPos) < 5)
-                {
-                    climbMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-                    climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
-                    climbMotor.setPower(0); // cut power
-                }
-                else
-                {
-                    climbMotor.setTargetPosition(hangDownPos);
-                    climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                    climbMotor.setPower(1);
-                }
-                break;
-            case HALF_OUT:
-                climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
-                climbMotor.setTargetPosition(hangHalfUpPos);
-                climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                climbMotor.setPower(1);
-                break;
-            case OUT:
-                climbMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.FLOAT);
-                climbMotor.setTargetPosition(hangUpPos);
-                climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                climbMotor.setPower(1);
-                break;
-            case UP:
-                climbMotor.setTargetPosition(hangClimbPos);
-                climbMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-                climbMotor.setPower(1);
-                break;
-        }
+        leftPTOS.setPosition(state.leftPos);
+        rightPTOS.setPosition(state.rightPos);
     }
-    public int getClimbPosition()
-    {
-        return climbMotor.getCurrentPosition();
-    }
+
     public static double adjustedJoystick(double x) {
         double y = Math.pow(c-x,m);
         return Math.pow(x,y);

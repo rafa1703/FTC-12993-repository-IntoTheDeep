@@ -1,46 +1,32 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.IntakeTurretServoState.STRAIGHT;
+
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.CRServoPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
 
 @Config
 public class IntakeSubsystem
 {
-    ServoPika chuteS, flapS, leftArmS, rightArmS, clipS;
-
-    MotorPika intakeMotor, intakeSlideMotor;
+    ServoPika clipS, armS, turretS;
+    CRServoPika intakeS;
+    MotorPika intakeSlideMotor;
     RevColorSensorV3 colourSensor;
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
     long colorValue;
-    double intakeSpeed = 1;
     GeneralHardware.Side side;
-
-    public static final double
-        leftArmHighPos = 0,
-        leftArmHalfDownPos = 0.345,
-        leftArmLowPos = 0.39;
-    public static final double
-        rightArmHighPos = 0,
-        rightArmHalfDownPos = 0.345,
-        rightArmLowPos = 0.39;
-
-    public static final double
-        chuteUpPos = 0.68,
-        chuteDropPos = 0.165;
-    public static final double
-        flapTransferPos = 0,
-        flapDownPos = 0.48,
-        flapReadyPos = 0.48;
 
     public static final double // in inches
         slideExtensionLimit = 18.5,
@@ -50,48 +36,69 @@ public class IntakeSubsystem
         slideTransfer = -2,
         slideAutoFar = 18.5,
         slideAutoClose = 14;
-    public final double
-        clipHoldPos = 0.72,
-        clipOpenPos = 1;
     private final double slideThreshold = 8;
-    public enum Servos
-    {
-        CHUTE,
-        FLAP,
-        ARMS,
-        CLIP,
-        R_ARM,
-        L_ARM,
-        ALL
-    }
+
     public enum IntakeSpinState
     {
-        INTAKE,
-        DROP,
-        REVERSE,
-        OFF
+        INTAKE(1),
+        REVERSE(-1),
+        OFF(0);
+
+        public final double power;
+
+        IntakeSpinState(double power)
+        {
+            this.power = power;
+        }
     }
     public enum IntakeArmServoState
     {
-        HIGH,
-        HALF_DOWN,
-        LOW
-    }
-    public enum IntakeChuteServoState
-    {
-        UP,
-        DROP
-    }
-    public enum IntakeFlapServoState
-    {
-        READY,
-        TRANSFER,
-        DOWN
+        READY(0),
+        TRANSFER_BACK(0),
+        TRANSFER_FRONT(0),
+        HALF_TRANSFER(0),
+        HORIZONTAL(0),
+        HALF_DOWN(0),
+        DOWN(0),
+        BACK(0),
+        IN(0),
+        AROUND(0);
+
+        public final double pos;
+
+        IntakeArmServoState(double pos)
+        {
+            this.pos = pos;
+        }
     }
     public enum IntakeClipServoState
     {
-        HOLD,
-        OPEN
+        HOLD(0),
+        OPEN(0);
+
+        public final double pos;
+
+        IntakeClipServoState(double pos)
+        {
+            this.pos = pos;
+        }
+
+    }
+    public enum IntakeTurretServoState
+    {
+        MAX_LEFT(0),
+        LEFT(0),
+        STRAIGHT(0),
+        RIGHT(0),
+        MAX_RIGHT(0),
+        AROUND(0);
+
+        public final double pos;
+
+        IntakeTurretServoState(double pos)
+        {
+            this.pos = pos;
+        }
     }
     public enum IntakeFilter
     {
@@ -109,14 +116,11 @@ public class IntakeSubsystem
     {
         side = hardware.side;
 
-        chuteS = hardware.chuteS;
-        flapS = hardware.flapS;
-        leftArmS = hardware.intakeLeftArmS;
-        rightArmS = hardware.intakeRightArmS;
+        turretS = hardware.turretS;
+        intakeS = hardware.intakeS;
         clipS = hardware.clipS;
         colourSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
 
-        intakeMotor = hardware.intakeM;
         intakeSlideMotor = hardware.intakeSlidesM;
 
         intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
@@ -125,7 +129,6 @@ public class IntakeSubsystem
     public void intakeHardwareSetUp()
     {
         // if we need to reverse anything
-        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakeSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -149,93 +152,71 @@ public class IntakeSubsystem
     {
         switch (state)
         {
-
             case INTAKE:
-                intakeMotor.setPower(intakeSpeed);
+                intakeS.setPower(1);
                 break;
-            case DROP:
             case OFF:
-                intakeMotor.setPower(0);
+                intakeS.setPower(0);
                 break;
             case REVERSE:
-                intakeMotor.setPower(-0.7);
+                intakeS.setPower(-1);
                 break;
         }
     }
     public void intakeSpin(double spinDirection)
     {
-        intakeMotor.setPower(spinDirection);
+        intakeS.setPower(spinDirection);
     }
 
     public void intakeArm(IntakeArmServoState state)
     {
-        switch (state)
-        {
-            case HIGH:
-                leftArmS.setPosition(leftArmHighPos);
-                rightArmS.setPosition(rightArmHighPos);
-                break;
-            case HALF_DOWN:
-                leftArmS.setPosition(leftArmHalfDownPos);
-                rightArmS.setPosition(rightArmHalfDownPos);
-                break;
-            case LOW:
-                leftArmS.setPosition(leftArmLowPos);
-                rightArmS.setPosition(rightArmLowPos);
-                break;
-        }
+        armS.setPosition(state.pos);
     }
-    public void armSetPos(double rPos, double lPos)
+    public void armSetPos(double armPos)
     {
-        leftArmS.setPosition(lPos);
-        rightArmS.setPosition(rPos);
+        armS.setPosition(armPos);
     }
-    public void intakeChute(IntakeChuteServoState state)
+    public double armGetPos()
     {
-        switch (state)
-        {
-            case UP:
-                chuteS.setPosition(chuteUpPos);
-                break;
-            case DROP:
-                chuteS.setPosition(chuteDropPos);
-                break;
-        }
+        return armS.getPosition();
     }
-    public void chuteSetPos(double pos)
+
+    public void intakeTurret(IntakeTurretServoState state)
     {
-        chuteS.setPosition(pos);
+        turretS.setPosition(state.pos);
     }
-    public void intakeFlap(IntakeFlapServoState state)
+    public void intakeTurretSetPos(double pos)
     {
-        switch (state)
-        {
-            case READY:
-                flapS.setPosition(flapReadyPos);
-                break;
-            case TRANSFER:
-                flapS.setPosition(flapTransferPos);
-                break;
-            case DOWN:
-                flapS.setPosition(flapDownPos);
-                break;
-        }
+        turretS.setPosition(pos);
     }
-    public void flapSetPos(double pos)
+    public void intakeTurretSetAngle(double angle)
     {
-        flapS.setPosition(pos);
+        turretS.setPosition(angle * 0.002816901408); // 1 / 355
+    }
+    public void intakeTurretBasedOnHeadingVel(double headingVel)
+    {
+        double t = Math.min(1, headingVel / 2);
+        double i = interpolation(0, 65, t);
+        turretS.setPosition(STRAIGHT.pos + angleToServoTicks(i) * Math.signum(headingVel));
+    }
+    public double angleToServoTicks(double angle)
+    {
+        return angle * (1/355.0);
+    }
+    private double interpolation(double p1, double p2, double t) {
+        return (1 - t) * p1 + t * p2;
+    }
+    public double getTurretAngle()
+    {
+        return turretS.getPosition() * 355;
+    }
+    public double getTurretPos()
+    {
+        return turretS.getPosition();
     }
     public void intakeClip(IntakeClipServoState state)
     {
-        switch (state)
-        {
-            case HOLD:
-                clipS.setPosition(clipHoldPos);
-                break;
-            case OPEN:
-                clipS.setPosition(clipOpenPos);
-                break;
-        }
+        clipS.setPosition(state.pos);
     }
     public void clipSetPos(double pos)
     {
@@ -250,6 +231,14 @@ public class IntakeSubsystem
     public void intakeSlideInternalPID(double inches)
     {
         slideTarget = (int) inchesToTicksSlidesMotor(inches);
+        intakeSlideMotor.setTargetPosition(slideTarget);
+        intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeSlideMotor.setPower(1);
+    }
+    public void intakeSlideInternalPID(double inches, boolean limit)
+    {
+        slideTarget = (int) inchesToTicksSlidesMotor(inches);
+        if (slideTarget > slideExtensionLimit) slideTarget = (int) inchesToTicksSlidesMotor(slideExtensionLimit);
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(1);
@@ -298,6 +287,11 @@ public class IntakeSubsystem
 //        else if (!isRed) return (side == GeneralHardware.Side.Blue);
 //        else return (side == GeneralHardware.Side.Red);
     }
+    public boolean isSample()
+    {
+        if (isYellow) return true;
+        else return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+    }
     public double getColorValue()
     {
         return colorValue;
@@ -327,94 +321,5 @@ public class IntakeSubsystem
         return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/12 = 5
     }
-
-//    public void disablePWM(Servos servos)
-//    {
-//        switch (servos)
-//        {
-//            case CHUTE:
-//                chuteS.setPwmDisable();
-//                break;
-//            case FLAP:
-//                flapS.setPwmDisable();
-//                break;
-//            case ARMS:
-//                leftArmS.setPwmDisable();
-//                rightArmS.setPwmDisable();
-//                break;
-//            case CLIP:
-//                clipS.setPwmDisable();
-//                break;
-//            case R_ARM:
-//                rightArmS.setPwmDisable();
-//                break;
-//            case L_ARM:
-//                leftArmS.setPwmDisable();
-//                break;
-//            case ALL:
-//                chuteS.setPwmDisable();
-//                flapS.setPwmDisable();
-//                leftArmS.setPwmDisable();
-//                rightArmS.setPwmDisable();
-//                clipS.setPwmDisable();
-//                rightArmS.setPwmDisable();
-//                leftArmS.setPwmDisable();
-//                break;
-//        }
-//    }
-//    public void enablePWM(Servos servos)
-//    {
-//        switch (servos)
-//        {
-//            case CHUTE:
-//                chuteS.setPwmEnable();
-//                break;
-//            case FLAP:
-//                flapS.setPwmEnable();
-//                break;
-//            case ARMS:
-//                leftArmS.setPwmEnable();
-//                rightArmS.setPwmEnable();
-//                break;
-//            case CLIP:
-//                clipS.setPwmEnable();
-//                break;
-//            case R_ARM:
-//                rightArmS.setPwmEnable();
-//                break;
-//            case L_ARM:
-//                leftArmS.setPwmEnable();
-//                break;
-//            case ALL:
-//                chuteS.setPwmEnable();
-//                flapS.setPwmEnable();
-//                leftArmS.setPwmEnable();
-//                rightArmS.setPwmEnable();
-//                clipS.setPwmEnable();
-//                rightArmS.setPwmEnable();
-//                leftArmS.setPwmEnable();
-//                break;
-//        }
-//    }
-//    public boolean isPWMEnabled(Servos servos)
-//    {
-//        switch (servos)
-//        {
-//            case CHUTE:
-//                return chuteS.isPwmEnabled();
-//            case FLAP:
-//                return flapS.isPwmEnabled();
-//            case ARMS:
-//                return leftArmS.isPwmEnabled() && rightArmS.isPwmEnabled();
-//            case CLIP:
-//                return clipS.isPwmEnabled();
-//            case R_ARM:
-//                return rightArmS.isPwmEnabled();
-//            case L_ARM:
-//                return leftArmS.isPwmEnabled();
-//            default:
-//                return false;
-//        }
-//    }
 
 }

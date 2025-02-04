@@ -7,19 +7,19 @@ import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.sli
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleFar;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTransfer;
 
-import android.graphics.Path;
-
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.system.accessory.SideAfterAuto;
-import org.firstinspires.ftc.teamcode.system.accessory.ToggleFallingEdge;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleRisingEdge;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDownWithLimit;
 import org.firstinspires.ftc.teamcode.system.accessory.LoopTime;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
+import org.firstinspires.ftc.teamcode.system.accessory.math.Angles;
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
@@ -29,7 +29,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 public class PrometheusDrive extends LinearOpMode
 {
     ElapsedTime GlobalTimer;
-    double globalTimer, sequenceTimer, intakeClipTimer, colourTimer;
+    double globalTimer, sequenceTimer, intakeClipTimer, turretTimer, internalTimer;;
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     DriveBaseSubsystem driveBase;
@@ -38,11 +38,12 @@ public class PrometheusDrive extends LinearOpMode
     // this matches the initial value in the intakeSubsystem
     IntakeSubsystem.IntakeFilter prevIntakeFilterState;
     LoopTime loopTime = new LoopTime();
+
+
     enum OuttakeState {
         READY,
         INTAKE_EXTENDO,
         INTAKE_EXTENDO_SUB,
-        INTAKE_EXTENDO_DROP,
         INTAKE,
         AFTER_EXTENDO,
         TRANSFER_START,
@@ -51,10 +52,11 @@ public class PrometheusDrive extends LinearOpMode
         AFTER_SPECIMEN_INTAKE,
         OUTTAKE_ADJUST,
         HP_DEPOSIT,
+        HP_DEPOSIT_EXTENDO,
         SAMPLE_DEPOSIT,
         SPECIMEN_DEPOSIT,
         HANG_START,
-        HANG_OUT,
+        HANG_FIRST,
         HANG_END,
         RETURN,
         MANUAL_ENCODER_RESET,
@@ -62,29 +64,42 @@ public class PrometheusDrive extends LinearOpMode
     OuttakeState state = OuttakeState.READY;
     ToggleUpOrDown intakeSlideBtn = new ToggleUpOrDown(1, 1, 0);
     ToggleUpOrDownWithLimit intakeSlideSubBtn = new ToggleUpOrDownWithLimit(1, 1, 0, 4); // this instance will control
+    ToggleUpOrDown liftFineAdjustBtn = new ToggleUpOrDown(1, 1, 0);
+    ToggleUpOrDown liftFineAdjustIntakeBtn = new ToggleUpOrDown(1, 1, 0);
     ToggleRisingEdge toggleRisingEdge = new ToggleRisingEdge();
     ToggleRisingEdge toggleRisingEdgeD2Intake = new ToggleRisingEdge();
     ToggleRisingEdge secondToggleForTheDrop = new ToggleRisingEdge();
+    ToggleRisingEdge toggleFineAdjustLift = new ToggleRisingEdge();
+    ToggleRisingEdge toggleIntakeEdgeCase = new ToggleRisingEdge();
     ToggleUpOrDown intakeArmToggle = new ToggleUpOrDown(1, 1,0);
+    ToggleUpOrDown intakeTurretToggle = new ToggleUpOrDown(1, 1, 2);
     int intakeSLideIncrement = 5; // in
     double colorValue;
     double intakeSlideTarget;
     double intakeSlideTargetClimb = 17;
+    double liftTarget;
+    boolean intakeEdgeCase = false;
     boolean dropped = false;
     boolean isSampleLow = false, isSpecimenLow = false; // this start at high and remembers
+    boolean wasSpecLow = false, wasSampleLow = false;
     boolean isSample = false;
+    boolean specOnLeft;
     boolean goToIntake = false;
-    boolean goToDeposit = false;
+    boolean goToSampleDeposit = false;
     boolean goToHPDeposit = false;
-    boolean fineAdjustingRailIntake = false;
-    double railFineAdjustIntakeCache;
-    boolean fineAdjustingRailDeposit = false;
+    boolean goToHPExtendoDeposit;
+    boolean fineAdjustingLiftIntake = false;
+    double fineAdjustLiftIntakeCache;
     boolean fineAdjustingRailManualReset = false;
-    double railFineAdjustDepositHighCache;
-    double railFineAdjustDepositLowCache;
-    boolean prevIsYellow, prevIsRed;
-    boolean comingFromTheSub;
-
+    boolean intakeTurretUsingPresets = false;
+    boolean fineAdjustingLiftSpec = false;
+    int liftFineAdjustSpecLowCache;
+    int liftFineAdjustSpecHighCache;
+    double liftFineAdjustIntakeCache;
+    boolean transferFromFront;
+    boolean lowBarTransfer;
+    IMU imu;
+    double angularVel, heading;
 
 
     @Override
@@ -111,19 +126,19 @@ public class PrometheusDrive extends LinearOpMode
             driveBase = new DriveBaseSubsystem(hardware);
             prevIntakeFilterState = intakeSubsystem.intakeFilter;
             driveBase.setUpZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+            imu = hardware.imu;
+            //imu.initialize()
+            imu.resetYaw();
 
-            railFineAdjustDepositHighCache = 0.135;
-            railFineAdjustDepositLowCache = 0.68;
 
-            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
-            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
-            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.READY);
+            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
 
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-            intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
-            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.READY);
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
         }
         // hubs are inside hardware
         waitForStart();
@@ -137,11 +152,21 @@ public class PrometheusDrive extends LinearOpMode
             intakeSubsystem.intakeReads(
                     state == OuttakeState.INTAKE ||
                     state == OuttakeState.INTAKE_EXTENDO ||
-                    state == OuttakeState.INTAKE_EXTENDO_DROP ||
+                    state == OuttakeState.HP_DEPOSIT_EXTENDO ||
                     state == OuttakeState.INTAKE_EXTENDO_SUB ||
                     state == OuttakeState.SPECIMEN_DEPOSIT
             );
             outtakeSubsystem.outtakeReads();
+            if (
+                    state == OuttakeState.INTAKE_EXTENDO_SUB ||
+                    state == OuttakeState.SPECIMEN_INTAKE ||
+                    state == OuttakeState.SPECIMEN_DEPOSIT ||
+                    state == OuttakeState.AFTER_SPECIMEN_INTAKE
+            )
+            {
+                heading = Angles.normalizeDegrees(imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES));
+                angularVel = imu.getRobotAngularVelocity(AngleUnit.DEGREES).xRotationRate;
+            }
             outtakeSequence();
 
 
@@ -172,61 +197,55 @@ public class PrometheusDrive extends LinearOpMode
         switch (state)
         {
             case READY:
-                intakeClipHoldLogic(0, 8);
-                if (delay(100))
+                if (gamepad1.right_bumper)
                 {
-                    if (gamepad1.right_bumper)
-                    {
-                        state = OuttakeState.INTAKE;
-                        toggleRisingEdge.mode(gamepad1.right_bumper);
-                        resetTimer();
-                        break;
-                    } else if (gamepad1.left_bumper)
-                    {
-                        state = OuttakeState.INTAKE_EXTENDO;
-                        intakeSlideTarget = slideTeleClose;
-                        intakeSlideBtn.upToggle(gamepad1.left_bumper);
-                        intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                        resetTimer();
-                        break;
-                    }
-                    if (gamepad1.options)
-                    {
-                        state = OuttakeState.HANG_START;
-                        resetTimer();
-                        break;
-                    }
-                    if (gamepad2LeftTrigger())
-                    {
-                        state = OuttakeState.SPECIMEN_INTAKE;
-                        toggleRisingEdge.mode(gamepad1.right_bumper);
-                        resetTimer();
-                        break;
-                    } else if (gamepad1LeftTrigger())
-                    {
-                        state = OuttakeState.INTAKE_EXTENDO_SUB;
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                        intakeSlideTarget = 5;
-                        intakeSlideBtn.OffsetTargetPosition = 0;
-                        intakeSlideSubBtn.upToggle(gamepad2.right_bumper);
-                        intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                        resetTimer();
-                        break;
-                    }
+                    state = OuttakeState.INTAKE;
+                    toggleRisingEdge.mode(gamepad1.right_bumper);
+                    resetTimer();
+                    break;
+                } else if (gamepad1.left_bumper)
+                {
+                    state = OuttakeState.INTAKE_EXTENDO;
+                    intakeSlideTarget = slideTeleClose;
+                    intakeSlideBtn.upToggle(gamepad1.left_bumper);
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    resetTimer();
+                    break;
+                } else if (gamepad1LeftTrigger())
+                {
+                    state = OuttakeState.INTAKE_EXTENDO_SUB;
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
+                    intakeSlideTarget = 5;
+                    intakeSlideBtn.OffsetTargetPosition = 0;
+                    intakeSlideSubBtn.upToggle(gamepad2.right_bumper);
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    resetTimer();
+                    break;
                 }
 
-                if (gamepad1.b || gamepad2.b)
+                if (gamepad1.options)
                 {
-                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
-                    intakeSubsystem.intakeSpin(-0.6);
+                    state = OuttakeState.HANG_START; // i need to improve this sequencing
+                    resetTimer();
+                    break;
+                }
+                if (gamepad2LeftTrigger())
+                {
+                    state = OuttakeState.SPECIMEN_INTAKE;
+                    toggleRisingEdge.mode(gamepad1.right_bumper);
+                    resetTimer();
+                    break;
+                }
+
+                if (gamepad1.b || gamepad2.b) // might have the slides go out for a bit to get stuff unstuck maybe the arm goes forward too?
+                {
+                    intakeSubsystem.intakeSpin(-1);
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 }
                 else
                 {
-                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
+                    intakeClipHoldLogic(0, 8);
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 }
                 break;
             case INTAKE_EXTENDO: // this state is just for using the extendo outside of the submersible
@@ -235,33 +254,45 @@ public class PrometheusDrive extends LinearOpMode
                 if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleClose;
                 if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
                 colorValue = intakeSubsystem.getColorValue();
-                outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
-                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                if (delay(170))
+
+
+                if (delay(50))
                 {
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
                     if (gamepad1.right_stick_button)
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                     else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
+
+                    if (delay(120)) // waits until the arm is out
+                    {
+                        intakeTurretToggle.upToggle(gamepad1RightTrigger());
+                        intakeTurretToggle.downToggle(gamepad1LeftTrigger(), 2);
+
+                        if (gamepad1LeftTrigger() || gamepad1RightTrigger())
+                        {
+                            intakeTurretUsingPresets = true;
+                        }
+                        if (intakeTurretUsingPresets)
+                        {
+                            double angle = 25 * intakeTurretToggle.OffsetTargetPosition;
+                            if (angle >= 20 && angle <= 150)
+                            {
+                                intakeSubsystem.intakeTurretSetAngle(25 * intakeTurretToggle.OffsetTargetPosition);
+                            }
+                        }
+                        else intakeSubsystem.intakeTurretBasedOnHeadingVel(angularVel);
+                    }
+
                     if ((delay(700) && colorValue > 500) ||
                             gamepad1.y)
                     {
-                        if (true)
-                        {
                             state = OuttakeState.AFTER_EXTENDO;
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH); // this makes sure arm is up
+                            intakeTurretUsingPresets = false;
                             gamepad1.rumbleBlips(1);
                             resetTimer();
                             break;
-                        } else
-                        {
-                            state = OuttakeState.INTAKE_EXTENDO_DROP;
-                            resetTimer();
-                            break;
-                        }
                     }
                 }
                 break;
@@ -274,136 +305,109 @@ public class PrometheusDrive extends LinearOpMode
                     intakeSlideTarget = intakeSLideIncrement * intakeSlideSubBtn.OffsetTargetPosition;
                 } else
                 {
-                    intakeSlideTarget += -gamepad2.right_stick_y * 0.8; // 0.8 in (20 in per second)
+                    intakeSlideTarget += -gamepad2.right_stick_y * 0.8; // 0.8 in (20 in per second) // FIXME: Should probably normalize this with looptimes
                     if (intakeSlideTarget > slideExtensionLimit)
                         intakeSlideTarget = slideExtensionLimit; // caps for extension limit
                 }
                 colorValue = intakeSubsystem.getColorValue();
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY);
-                if (delay(80))
+                presetChaining(gamepad1.a, false, gamepad1.x, gamepad1.y);
+                if (gamepad1LeftTrigger())
+                {
+                    lowBarTransfer = true;
+                }
+                if (delay(110))
                 {
 
                     intakeSubArmHeight();
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
+                    if (gamepad2LeftTrigger() || gamepad2RightTrigger())
+                    {
+                        intakeTurretUsingPresets = true;
+                    }
+                    if (intakeTurretUsingPresets) intakeSubsystem.intakeTurretSetAngle(25 * intakeTurretToggle.OffsetTargetPosition);
+                    else intakeSubsystem.intakeTurretBasedOnHeadingVel(angularVel);
 
-                    if (gamepad1.right_stick_button || gamepad2LeftTrigger())
+                    if (gamepad1.right_stick_button)
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                     else  // this makes so the brushes only run after we have dropped
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                     if (
-                            (delay(300) && colorValue > 900 || gamepad1.y || gamepad2.left_stick_button)
+                            (delay(300) && colorValue > 900 || gamepad1.left_stick_button)
                     )
                     {
-                        if (!gamepad2.left_stick_button && (intakeSubsystem.colorLogic() || gamepad1.y))
+                        if (!gamepad1.left_stick_button && (intakeSubsystem.colorLogic() || gamepad1.y))
                         {
                             state = OuttakeState.AFTER_EXTENDO;
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH); // this makes sure arm is up
-                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                            if (intakeArmToggle.OffsetTargetPosition < 0) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.IN);
+                            else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL); // this makes sure arm is up
                             gamepad1.rumbleBlips(1);
-                            comingFromTheSub = true;
-                            resetTimer();
-                            break;
-                        } else
-                        {
-                            state = OuttakeState.INTAKE_EXTENDO_DROP;
                             resetTimer();
                             break;
                         }
                     }
                 }
+                else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
                 break;
-            case INTAKE_EXTENDO_DROP:
-                if (colorValue < 100 && delay(1000) && gamepad2.right_stick_button) // gives at least one second
+            case AFTER_EXTENDO: // this might be necessary to check the colour and go back the slides
+                if (delay(200) && intakeSubsystem.isSlidesAtBase())
                 {
-                    intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
-                    state = OuttakeState.INTAKE_EXTENDO_SUB;
+                    state = goToHPExtendoDeposit ? OuttakeState.HP_DEPOSIT_EXTENDO : OuttakeState.TRANSFER_START;
+                    isSample = intakeSubsystem.isSample();
                     resetTimer();
                     break;
                 }
-
-                colorValue = intakeSubsystem.getColorValue();
-
-                if (delay(20))
+                presetChaining(gamepad1.a, false, gamepad1.x, gamepad1.y);
+                if (gamepad1LeftTrigger())
                 {
-                    intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
-                    intakeSlideTarget += -gamepad2.right_stick_y * 0.8; // 0.8 in (20 in per second)
-                    if (intakeSlideTarget > slideExtensionLimit)
-                        intakeSlideTarget = slideExtensionLimit; // caps for extension limit
-
-                    intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
-                    if (gamepad1.right_bumper)
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                    else
-                    {
-                        if (delay(950))
-                            intakeSubsystem.intakeSpin(0);
-                        else if (delay(600) && colorValue < 100)
-                            intakeSubsystem.intakeSpin(-0.3);
-                        else if (delay(500)) intakeSubsystem.intakeSpin(0.4);
-                        else intakeSubsystem.intakeSpin(0);
-                    }
-                }
-                break;
-            case AFTER_EXTENDO: // this state only exist to introduce the behaviour that at transfer_start the slides are already in
-                if ((comingFromTheSub ? delay(550) : delay(400)) && intakeSubsystem.isSlidesAtBase())
-                {
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                    state = OuttakeState.TRANSFER_START;
-                    resetTimer();
-                    break;
-                }
-                if (gamepad2.left_stick_button)
-                {
-                    state = OuttakeState.INTAKE_EXTENDO_DROP;
-                    resetTimer();
-                    break;
-                }
-                if (gamepad2.right_bumper)
-                {
-                    goToDeposit = true;
-                }
-                if (gamepad2.left_bumper)
-                {
-                    goToHPDeposit = true;
+                    lowBarTransfer = true;
                 }
                 if (gamepad1.right_stick_button)
                 {
                    intakeSubsystem.intakeSlideMotorRawControl(0);
-                   if (delay(800))
+                   if (delay(200))
                    {
-                       intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                    }
-                   else intakeSubsystem.intakeSpin(-0.33);
+                   else intakeSubsystem.intakeSpin(0); // this might have to be spinning in to lock in
                 }
                 else
                 {
-                    if (intakeSubsystem.slidePosition < 20)
+                    intakeSubsystem.intakeSpin(0);
+                    if (lowBarTransfer)
                     {
-                        intakeSubsystem.intakeSpin(0.7);
-                    }
-                    else if (delay(90))
-                    {
-                        intakeSubsystem.intakeSpin(-0.2);
-                    }
-                    else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                        if (delay(320))
+                        {
+                            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.AROUND);
+                        }
+                        else if (delay(210))
+                        {
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.IN);
+                        }
+                        else if (delay(110))
+                        {
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.AROUND);
+                        }
+                        else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 
-                    if (delay(200)) // gives time for the intake to go up
+                    }
+                    else
                     {
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
+                        intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                        if (delay(100))
+                        {
+                            intakeSubsystem.intakeArm(transferFromFront ? IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT :
+                                    IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
+                        }
+                    }
+                    if (delay(200)) // gives time for the arm to go up
+                    {
                         intakeClipHoldLogic(-10, 5);
                     }
                 }
-
                 break;
             case INTAKE:
                 if (gamepad1.left_bumper)
@@ -414,59 +418,92 @@ public class PrometheusDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                if (toggleIntakeEdgeCase.mode(gamepad1.dpad_down))
+                {
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    intakeEdgeCase = !intakeEdgeCase;
+                    internalTimerReset();
+                }
+
+                if (!intakeEdgeCase)
+                {
+                    intakeTurretToggle.upToggle(gamepad1RightTrigger());
+                    intakeTurretToggle.downToggle(gamepad1LeftTrigger(), 2);
+                    if (delay(120)) // waits until the arm is out
+                    {
+                        if (gamepad1LeftTrigger() || gamepad1RightTrigger())
+                        {
+                            intakeTurretUsingPresets = true;
+                        }
+                        if (intakeTurretUsingPresets)
+                            intakeSubsystem.intakeTurretSetAngle(25 * intakeTurretToggle.OffsetTargetPosition);
+                        else intakeSubsystem.intakeTurretBasedOnHeadingVel(angularVel);
+                    }
+                    intakeClipHoldLogic(slideTeleBase, 5);
+                }
+                else
+                {
+                    if (internalDelay(100))
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(7);
+                        intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                        if (internalDelay(240))
+                        {
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.BACK);
+                        }
+                    }
+                }
+
                 if(gamepad1.right_stick_button) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                intakeClipHoldLogic(slideTeleBase, 5);
                 colorValue = intakeSubsystem.getColorValue();
                 if (
-                        (delay(400) && colorValue > 500 )||
+                        (delay(400) && colorValue > 800 )||
                         (intakeSubsystem.intakeFilter == IntakeSubsystem.IntakeFilter.OFF && (toggleRisingEdge.mode(gamepad1.right_bumper))) ||
-                        (gamepad1.y)
+                        (gamepad2RightTrigger())
 
                 )
                 {
                     state = OuttakeState.TRANSFER_START;
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    intakeTurretUsingPresets = false;
                     gamepad1.rumbleBlips(2);
                     resetTimer();
                     break;
                 }
                 break;
+
             case TRANSFER_START:
-                if (((comingFromTheSub ? delay(370) : delay(450)) && outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase()) || delay(1000))
+                // we should hold at transfer pos if nothing was selected
+                if (
+                        ((delay(290) && outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase()) || delay(1000))
+                        && (goToHPDeposit || goToSampleDeposit)) // we sit in this state until we have decided the continuation
                 {
                     state = OuttakeState.TRANSFER_END;
                     resetTimer();
                     break;
                 }
-                if (gamepad2.right_bumper) // this allows d2 to pre going to deposit after
+                if (delay(20) && goToHPExtendoDeposit) // we can exit this state early as we don't use the outtake in that state
                 {
-                    goToDeposit = true;
+                    state = OuttakeState.HP_DEPOSIT_EXTENDO;
+                    outtakeSubsystem.liftMotorRawControl(0);
+                    resetTimer();
+                    break;
                 }
-                if (gamepad2.left_bumper)
-                {
-                    goToHPDeposit = true;
-                }
+                presetChaining(gamepad1.a, false, gamepad1.x, gamepad1.y);
+
                 intakeClipHoldLogicWithoutPowerCutout(slideTransfer, 10); // this controls the intake slides and the clip
-                outtakeSubsystem.liftToInternalPIDTicks(-20);
-                if (delay(90))
+                outtakeSubsystem.liftToInternalPID(-2);
+                if (delay(50))
                 {
-                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER);
+                    intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                    if (transferFromFront) turretSpinTo(0, OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT,
+                            OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
+                    else turretSpinTo(180, OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK,
+                            OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
 
-                    if (comingFromTheSub ? delay(0) : delay(230) )
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                    if (comingFromTheSub ? delay(180) : delay(240))
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-
-                    }
-                    if (comingFromTheSub ? delay(280) :delay(340))
-                    {
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
-                    }
+                    if (delay(180)) intakeSubsystem.intakeArm(transferFromFront ?
+                            IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT : IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
                 }
                 break;
             case TRANSFER_END:
@@ -477,80 +514,51 @@ public class PrometheusDrive extends LinearOpMode
                     isSample = true;
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-                    intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
                     state = OuttakeState.OUTTAKE_ADJUST;
                     resetTimer();
                     break;
                 }
-                if (gamepad2.right_bumper) // this allows d2 to pre going to deposit after
-                {
-                    goToDeposit = true;
-                }
-                if (gamepad2.left_bumper)
-                {
-                    goToHPDeposit = true;
-                }
                 if ((delay(40)))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                    if (delay(150))
+                    {
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    }
                     if (delay(200))
                     {
-                        intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
                     }
-                    if (delay(350))
-                    {
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FINISH); // we might have to wait to go up
-                        outtakeSubsystem.liftMotorRawControl(0);
-                    }
-                    if (delay(390))
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.TRANSFER_FINISH);
                 }
                 break;
             case SPECIMEN_INTAKE:
                 if (toggleRisingEdge.mode(gamepad1.right_bumper))
                 {
                     state = OuttakeState.AFTER_SPECIMEN_INTAKE;
-                   // toggleRisingEdge.mode(gamepad1.right_bumper);
                     resetTimer();
                     break;
                 }
-                outtakeSubsystem.liftToInternalPIDTicks(0);
                 liftHeightLogic(gamepad2.x, gamepad2.a);
-                // Optimize this later, as
-                if (delay(500))
+                if (delay(60))
                 {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE); // this makes the arm go over
-                    if (delay(700)) // tune this so it only runs when the arm has reached intake pos
+                    turretSpinTo(180, OuttakeSubsystem.OuttakeArmServoState.INTAKE, OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                    if (outtakeSubsystem.turretReached(180) && delay(200) || delay(600))
                     {
-                        if (Math.abs(gamepad2.left_trigger - gamepad2.right_trigger) > 0)
+                        liftFineAdjustIntakeBtn.upToggle(gamepad1RightTrigger());
+                        liftFineAdjustIntakeBtn.downToggle(gamepad1LeftTrigger(), 1);
+                        if (toggleFineAdjustLift.mode(gamepad1RightTrigger() || gamepad1LeftTrigger()))
                         {
-                            fineAdjustingRailIntake = true;
-                            outtakeSubsystem.fineAdjustRail(gamepad2.left_trigger - gamepad2.right_trigger, globalTimer);
-                            railFineAdjustIntakeCache = outtakeSubsystem.railGetPos();
+                            fineAdjustingLiftIntake = true;
+                            liftFineAdjustIntakeCache = OuttakeSubsystem.liftSpecimenIntakePos + liftFineAdjustIntakeBtn.OffsetTargetPosition; // inch offset
                         }
-                        else if (!fineAdjustingRailIntake)
-                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.INTAKE);
+                        if (!fineAdjustingLiftIntake)
+                            outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftSpecimenIntakePos);
                         else
                         {
-                            outtakeSubsystem.railSetPos(railFineAdjustIntakeCache);
+                            outtakeSubsystem.liftToInternalPID(liftFineAdjustIntakeCache);
                         }
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                     }
                 }
-                else
-                {
-                    if (!outtakeSubsystem.isArmOver())
-                    {
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.PERPENDICULAR);
-                    }
-                    if (outtakeSubsystem.railGetPos() < 0.7 ? delay(200) : delay(350))
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                    }
-                }
-
                 break;
             case AFTER_SPECIMEN_INTAKE: // AUTO state no driver controls here
                 if (delay(400))
@@ -564,18 +572,24 @@ public class PrometheusDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
+
+                liftHeightLogic(gamepad2.x, gamepad2.a);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 if (delay(90))
-                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
+                {
+                    outtakeSubsystem.liftToInternalPID(fineAdjustingLiftIntake ? liftFineAdjustIntakeCache + 6 :
+                            OuttakeSubsystem.liftSpecimenIntakePos + 6);
+                }
                 if (delay(300))
                 {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
+                    outtakeSubsystem.armState(isSpecimenLow ? OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_LOW :
+                            OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
                 }
                 break;
             case OUTTAKE_ADJUST: // this allows for the drivers to pre adjust heights
                 if (
-                        (gamepad1.right_bumper || gamepad2.right_bumper) && delay(300) ||
-                                (goToDeposit && delay(100))
+                        (gamepad1.right_bumper || gamepad2.right_bumper) && delay(100) ||
+                                (goToSampleDeposit && delay(40))
                 )
                 {
                     state = OuttakeState.SAMPLE_DEPOSIT;
@@ -583,21 +597,12 @@ public class PrometheusDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                if (
-                        ((gamepad1.left_bumper || gamepad2.left_bumper) && delay(300)) ||
-                        goToHPDeposit && delay(100)
-                )
+                specSideLogic(gamepad1.dpad_left || gamepad2.dpad_left, gamepad1.dpad_right || gamepad2.right_bumper);
+                if ((gamepad1.left_bumper|| gamepad2.left_bumper) && delay(100))
                 {
-                    state = OuttakeState.HP_DEPOSIT;
-                    resetTimer();
-                    break;
+                    state = OuttakeState.SPECIMEN_DEPOSIT;
                 }
-                if (gamepad2LeftTrigger())
-                {
-                    goToIntake = true; // this allows d2 to pre going to intake after
-                }
-
-                // this way the height control is independent of the of which type of deposit we are doing
+                presetChaining(false, gamepad2LeftTrigger(), false, false);
                 liftHeightLogic(gamepad2.x, gamepad2.a);
                 break;
             case HP_DEPOSIT:
@@ -607,25 +612,16 @@ public class PrometheusDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                if (gamepad2LeftTrigger())
-                {
-                    goToIntake = true; // this allows d2 to pre going to intake after
-                }
+                presetChaining(false, gamepad2LeftTrigger(), false, false);
                 liftHeightLogic(gamepad2.x, gamepad2.a);
                 if (!dropped)
                 {
-                    if (delay(60)) // rail has time to go up
+                    if (delay(40))
                     {
-                        if (delay(120)) // arm goes over
-                        {
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                        }
+                        outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
+                        turretSpinTo(0, OuttakeSubsystem.OuttakeArmServoState.HP_DEPOSIT,
+                                OuttakeSubsystem.OuttakeWristServoState.HP_DEPOSIT);
                     }
-                    if (delay(410))
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.LOW);
-                    else if (!outtakeSubsystem.isArmOver())
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
                 }
                 if (delay(420) && toggleRisingEdge.mode(gamepad1.right_bumper))
                 {
@@ -633,6 +629,29 @@ public class PrometheusDrive extends LinearOpMode
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                     resetTimer();
                 }
+                break;
+            case HP_DEPOSIT_EXTENDO:
+                intakeSlideBtn.upToggle(gamepad1.left_bumper);
+                intakeSlideBtn.downToggle(gamepad1.right_bumper, 1);
+                if (intakeSlideBtn.OffsetTargetPosition == 1) intakeSlideTarget = slideTeleClose;
+                if (intakeSlideBtn.OffsetTargetPosition == 2) intakeSlideTarget = slideTeleFar;
+
+                if (delay(90))
+                {
+
+                    if (gamepad1.right_bumper && delay(200))
+                    {
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    }
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
+                    if (delay(200) || intakeSubsystem.getColorValue() < 500)
+                    {
+                        state = OuttakeState.RETURN;
+                        resetTimer();
+                        break;
+                    }
+                }
+
                 break;
             case SAMPLE_DEPOSIT: // this will actually start the deposit, so lift and arm presets
                 if (delay(250) && dropped) //secondToggleForTheDrop.mode(gamepad1.right_bumper) && delay(400) && dropped)
@@ -647,75 +666,89 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     if (delay(40))
                     {
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SAMPLE);
-                        if (delay(60))
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
+                        if (delay(150))
                         {
-                            outtakeSubsystem.wristSetPos(0.7);
+                            if (heading <= 45 && heading >= -45)
+                            {
+                                outtakeSubsystem.turretKeepToAngle(135, heading);
+                            }
                         }
-                        if (delay(140))
-                            outtakeSubsystem.armSetPos(0.63);
+                        if (gamepad2LeftTrigger())
+                        {
+                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
+                        }
+                        else if (gamepad2RightTrigger())
+                        {
+                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+                        }
+
                     }
                     if (delay(200) && toggleRisingEdge.mode(gamepad1.right_bumper))
                     {
                         secondToggleForTheDrop.mode(gamepad1.right_bumper);
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                         dropped = true;
                         resetTimer();
                     }
                 }
-                else
-                {
-                    if (delay(30)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                }
                 break;
             case SPECIMEN_DEPOSIT: // we want to deposit and intake
-                if (!dropped)
-                    liftHeightLogic(gamepad1.x, gamepad1.a);
-                if (delay(40))
-                {
-                    if (gamepad2LeftTrigger())
-                    {
-                        goToIntake = true;
-                    }
-                    // this just runs the correct height for the lift
-                    if (!dropped)
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
-                        outtakeLiftPresets();
-                    }
-                    else outtakeSubsystem.liftToInternalPIDTicks(0);
-                }
+
+                liftHeightLogic(gamepad1.x, gamepad1.a);
+                presetChaining(false, gamepad1LeftTrigger(),  gamepad1RightTrigger(), gamepad1.a);
+
                 if (!dropped)
                 {
                     if (delay(40))
                     {
-                        if (Math.abs(gamepad1.left_trigger - gamepad1.right_trigger) > 0)
+                        // if
+                        liftFineAdjustBtn.upToggle(gamepad1RightTrigger());
+                        liftFineAdjustBtn.downToggle(gamepad1LeftTrigger(), 1);
+                        if (toggleFineAdjustLift.mode(gamepad1RightTrigger() || gamepad1LeftTrigger())) // this could maybe be simplified, but this construction is more logical, test and maybe do
                         {
-                            fineAdjustingRailDeposit = true;
-                            outtakeSubsystem.fineAdjustRail(gamepad1.left_trigger - gamepad1.right_trigger, globalTimer);
-                            if (isSpecimenLow) railFineAdjustDepositLowCache = outtakeSubsystem.railGetPos();
-                            else railFineAdjustDepositHighCache = outtakeSubsystem.railGetPos();
+                            if (wasSpecLow != isSampleLow)
+                            {
+                                liftFineAdjustBtn.OffsetTargetPosition =
+                                        isSpecimenLow ? liftFineAdjustSpecLowCache : liftFineAdjustSpecHighCache; // basically this should ensure we can flip between high and low
+                                wasSpecLow = isSampleLow;
+                            }
+                            liftTarget = (isSpecimenLow ? OuttakeSubsystem.liftLowBarPos : OuttakeSubsystem.liftHighBarPos) + liftFineAdjustBtn.OffsetTargetPosition; // this will increment at one inch
+                            if (isSpecimenLow) liftFineAdjustSpecLowCache = liftFineAdjustBtn.OffsetTargetPosition;
+                            else liftFineAdjustSpecHighCache = liftFineAdjustBtn.OffsetTargetPosition;
+                        } else if (fineAdjustingLiftSpec) // this should work
+                        {
+                            liftTarget = isSpecimenLow ? OuttakeSubsystem.liftLowBarPos + liftFineAdjustSpecLowCache :
+                                    OuttakeSubsystem.liftHighBarPos + liftFineAdjustSpecHighCache;
                         }
-                        else if (!fineAdjustingRailDeposit)
-                            outtakeRailSpecimenPresets();
                         else
                         {
-                            outtakeSubsystem.railSetPos(isSpecimenLow ? railFineAdjustDepositLowCache : railFineAdjustDepositHighCache);
+                            liftTarget = isSpecimenLow ? OuttakeSubsystem.liftLowBarPos : OuttakeSubsystem.liftHighBarPos;
                         }
+                        outtakeSubsystem.liftToInternalPID(liftTarget);
+                        outtakeSubsystem.wristState(isSpecimenLow ? OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_LOW :
+                                OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
 
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
                         if (toggleRisingEdge.mode(gamepad1.right_bumper))
                         {
-                            outtakeSubsystem.clawSetPos(1);
                             secondToggleForTheDrop.mode(gamepad1.right_bumper);
                             dropped = true;
+                            internalTimerReset();
                         }
                     }
                 }
                 else
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                  //  outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.READY); // maybe this will fix the transfer bug
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
+                    if (internalDelay(110)) // reduce strain in the claw we wait
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
+                        if (internalDelay(140))
+                        {
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPIN);
+                        }
+                    }
                 }
 
                 // the intake part
@@ -727,47 +760,48 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 else
                 {
-                    intakeSlideTarget += -gamepad2.right_stick_y * 0.8; // 0.8 in (20 in per second)
+                    intakeSlideTarget += -gamepad2.right_stick_y * 0.8; // 0.8 in (20 in per second) // FIXME: prob normalize this
                     if (intakeSlideTarget > slideTeleFar) intakeSlideTarget = slideTeleFar; // caps for extension limit
                 }
                 colorValue = intakeSubsystem.getColorValue();
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
 
-                if (delay(80))
+                if (delay(110))
                 {
-                    if (dropped)
-                        intakeSubArmHeight();
-                    else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+                    intakeTurretToggle.upToggle(gamepad2.right_bumper);
+                    intakeTurretToggle.downToggle(gamepad2.left_bumper, 1);
+                    if (intakeTurretUsingPresets)
+                    {
+                        intakeSubsystem.intakeTurretSetAngle(25 * intakeTurretToggle.OffsetTargetPosition);
+                    }
+                    else if (dropped) intakeSubsystem.intakeTurretBasedOnHeadingVel(angularVel);
                     intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget);
 
-                    if (gamepad1.right_stick_button)
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                    else if (dropped) // this makes so the brushes only run after we have dropped
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-
+                    if (dropped)
+                    {
+                        intakeSubArmHeight();
+                        if (gamepad1.right_stick_button)
+                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                        else
+                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    }
+                    else
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                    }
                     if (
                             ((delay(300) && colorValue > 900) ||
-                                    gamepad1.y ||
                                     gamepad2.left_stick_button) &&
                                     dropped)
                     {
-                        intakeSubsystem.intakeSpin(-0.1);
-                        if (!gamepad2.left_stick_button && (intakeSubsystem.colorLogic() || gamepad1.y))
+                        if (intakeSubsystem.colorLogic() || gamepad1.y)
                         {
                             state = OuttakeState.AFTER_EXTENDO;
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH); // this makes sure arm is up
-                            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
+                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL); // this makes sure arm is up
                             gamepad1.rumbleBlips(1);
                             dropped = false;
                             comingFromTheSub = true;
-                            resetTimer();
-                            break;
-                        }
-                        else
-                        {
-                            state = OuttakeState.INTAKE_EXTENDO_DROP;
-                            dropped = false;
                             resetTimer();
                             break;
                         }
@@ -775,42 +809,12 @@ public class PrometheusDrive extends LinearOpMode
                 }
                 break;
             case HANG_START:
-                if (gamepad1.right_bumper && delay(100))
-                {
-                    state = OuttakeState.HANG_OUT;
-                    toggleRisingEdge.mode(gamepad1.right_bumper);
-                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                    resetTimer();
-                    break;
-                }
-                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                driveBase.climbHang(DriveBaseSubsystem.ClimbState.HALF_OUT);
 
                 break;
-            case HANG_OUT:
-                if (toggleRisingEdge.mode(gamepad1.right_bumper) && delay(40))
-                {
-                    state = OuttakeState.HANG_END;
-                    resetTimer();
-                }
-                intakeSlideTargetClimb += -gamepad1.right_stick_y * 0.8; // 0.8 in (20 in per second)
-                if (intakeSlideTargetClimb > slideTeleFar)
-                    intakeSlideTargetClimb = slideTeleFar; // caps for extension limit
-                intakeSubsystem.intakeSlideInternalPID(0);
+            case HANG_FIRST:
 
-                driveBase.climbHang(DriveBaseSubsystem.ClimbState.OUT);
                 break;
             case HANG_END:
-                intakeSlideTargetClimb += -gamepad1.right_stick_y * 0.8; // 0.8 in (20 in per second)
-                if (intakeSlideTargetClimb > slideTeleFar)
-                    intakeSlideTargetClimb = slideTeleFar; // caps for extension limit
-                if(driveBase.getClimbPosition() < -500)
-                {
-                    intakeSubsystem.intakeSlideInternalPID(5);
-                }
-                else intakeSubsystem.intakeSlideInternalPID(0);
-
-                driveBase.climbHang(DriveBaseSubsystem.ClimbState.UP);
 
                 break;
             case RETURN:
@@ -818,7 +822,7 @@ public class PrometheusDrive extends LinearOpMode
                 {
                     isSample = true;
                     goToIntake = false;
-                    goToDeposit = false;
+                    goToSampleDeposit = false;
                     goToHPDeposit = false;
                     dropped = false;
                     comingFromTheSub = false;
@@ -838,33 +842,15 @@ public class PrometheusDrive extends LinearOpMode
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
                 if (delay(40))
                 {
-                    driveBase.climbHang(DriveBaseSubsystem.ClimbState.READY); // this will effectively only run once
-                    if (outtakeSubsystem.isArmOver())
+                    if (delay(120))
+                        intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                    double diff = Angles.normalizeDegrees(outtakeSubsystem.turretAngle - 180);
+                    if (diff <= 45 && diff>=-45)
                     {
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.HIGH);
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
                     }
-                    else if (intakeSubsystem.slidePosition < 17)
-                        outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
-
-                    if (delay(100))
-                    {
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER);
-                    }
-                    if (delay(300))
-                    {
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    }
-                    else outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                    if (delay(190))
-                    {
-                        intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-                        intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
-                    }
-                    if (outtakeSubsystem.railGetPos() < 0.7  && outtakeSubsystem.isArmOver()? delay(350) : delay(420))
-                    {
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
-                    }
+                    else turretSpinTo(180 , OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK, OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
                 }
                 break;
             case MANUAL_ENCODER_RESET:
@@ -879,32 +865,17 @@ public class PrometheusDrive extends LinearOpMode
                     break;
                 }
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                outtakeSubsystem.armSetPos(0.4); //so we don't like get stuck in the bars
                 if (delay(100))
                 {
                     outtakeSubsystem.liftMotorRawControl(-gamepad2.left_stick_y);
                     intakeSubsystem.intakeSlideMotorRawControl(-gamepad2.right_stick_y);
                 }
-                if (Math.abs(gamepad2.left_trigger - gamepad2.right_trigger) > 0)
-                {
-                    fineAdjustingRailManualReset = true;
-                    outtakeSubsystem.fineAdjustRail(gamepad2.left_trigger - gamepad2.right_trigger, globalTimer);
-                    railFineAdjustIntakeCache = outtakeSubsystem.railGetPos();
-                }
-                else if (!fineAdjustingRailManualReset)
-                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.OVER_THE_TOP);
-
-                if (gamepad2.left_bumper)
+                if (gamepad1.right_stick_button)
                 {
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 }
                 else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                if (gamepad2.a) intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
-                if (gamepad2.x) intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
-                if (gamepad2.y) intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
-                if (gamepad2.b) intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
-                if (gamepad2.dpad_up) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-                if (gamepad2.dpad_down) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+
                 break;
         }
         // we run everything here that isn't state specific
@@ -913,7 +884,6 @@ public class PrometheusDrive extends LinearOpMode
                 (state != OuttakeState.READY) &&
                 (state != OuttakeState.MANUAL_ENCODER_RESET) &&
                 (state != OuttakeState.RETURN) &&
-                (state != OuttakeState.INTAKE_EXTENDO_DROP) &&
                 (state != OuttakeState.INTAKE_EXTENDO_SUB) &&
                 (state != OuttakeState.SPECIMEN_DEPOSIT)
                 ) || (
@@ -921,7 +891,6 @@ public class PrometheusDrive extends LinearOpMode
                 (gamepad2.b) &&
                 (state != OuttakeState.READY) &&
                 (state != OuttakeState.MANUAL_ENCODER_RESET) &&
-                (state != OuttakeState.INTAKE_EXTENDO_DROP) &&
                 (state != OuttakeState.RETURN) &&
                 (state != OuttakeState.INTAKE_EXTENDO_SUB) && // we can't reset here or bot goes birrrrrr
                 (state != OuttakeState.SPECIMEN_DEPOSIT))
@@ -935,43 +904,26 @@ public class PrometheusDrive extends LinearOpMode
         if (gamepad2.share)
         {
             state = OuttakeState.MANUAL_ENCODER_RESET;
-            //intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.DROP);
-            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.TRANSFER);
             resetTimer();
         }
-        if (state != OuttakeState.MANUAL_ENCODER_RESET)
+        if (gamepad1.dpad_left)
         {
-            if (gamepad2.dpad_up)
-            {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // yellow only
-            }
-            if (gamepad2.dpad_right)
-            {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // both neutral and alliance
-            }
-            if (gamepad2.dpad_down)
-            {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // only alliance
-            }
-            if (gamepad2.dpad_left)
-            {
-                intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.OFF; // toggles it off
-            }
-            updateGamepadLED(intakeSubsystem.intakeFilter); // this just make sure we are not queuing up infinite LED calls
+            imu.resetYaw();
         }
     }
     public void intakeArmHeight()
     {
-        if (gamepad1.x || gamepad2.x) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
-        else if (gamepad1.a || gamepad2.a) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+        if (gamepad1.x || gamepad2.x) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+        else if (gamepad1.a || gamepad2.a) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
     }
     public void intakeSubArmHeight()
     {
         intakeArmToggle.upToggle(gamepad2.a);
-        intakeArmToggle.downToggle(gamepad2.x, 2);
-        if (intakeArmToggle.OffsetTargetPosition == 0) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+        intakeArmToggle.downToggle(gamepad2.x, 1);
+        if (intakeArmToggle.OffsetTargetPosition == -1) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.BACK);
+        if (intakeArmToggle.OffsetTargetPosition == 0) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
         if (intakeArmToggle.OffsetTargetPosition == 1) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
-        if (intakeArmToggle.OffsetTargetPosition == 2) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
+        if (intakeArmToggle.OffsetTargetPosition == 2) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
     }
 
     public void intakeClipHoldLogic(double slideToPosition, int closeThreshold)
@@ -1039,17 +991,7 @@ public class PrometheusDrive extends LinearOpMode
                 //outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
         }
     }
-    public void outtakeRailSpecimenPresets() // am gonna assume we only need a single arm position
-    {
-        if (isSpecimenLow)
-        {
-            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_LOW);
-        }
-        else
-        {
-            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
-        }
-    }
+
     public void liftHeightLogic(boolean high, boolean low)
     {
         if (isSample)
@@ -1063,7 +1005,52 @@ public class PrometheusDrive extends LinearOpMode
             else if (high) isSpecimenLow = false;
         }
     }
-
+    public void specOrSampleLogic(boolean spec, boolean sample)
+    {
+        if (sample) isSample = true;
+        else if (spec) isSample = false;
+    }
+    public void specSideLogic(boolean left, boolean right)
+    {
+        if (left) specOnLeft = true;
+        else if (right) specOnLeft = false;
+    }
+    public void presetChaining(boolean goToSampleDeposit, boolean goToIntake, boolean goToHPDeposit, boolean goToHPExtendoDeposit)
+    {
+        if (goToSampleDeposit) this.goToSampleDeposit = true;
+        if (goToIntake) this.goToIntake = true;
+        if (goToHPDeposit) this.goToHPDeposit = true;
+        if (goToHPExtendoDeposit) this.goToHPExtendoDeposit = true;
+    }
+    public void turretSpinTo(double targetAngle, OuttakeSubsystem.OuttakeArmServoState armState, OuttakeSubsystem.OuttakeWristServoState wristState)
+    { // this currently has power cutoff
+        if (outtakeSubsystem.turretReached(targetAngle))
+        {
+            if (globalTimer - turretTimer > 150)
+            {
+                if (armState != null) // i just did this if i don't really want to pass a state the correct would be to pass default in the state
+                    outtakeSubsystem.armState(armState);
+                if (wristState != null)
+                    outtakeSubsystem.wristState(wristState);
+                outtakeSubsystem.turretRawControl(0);
+            }
+            else
+            {
+                outtakeSubsystem.turretSpinTo(targetAngle);
+            }
+        }
+        else
+        {
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPIN);
+            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPIN);
+            outtakeSubsystem.turretSpinTo(targetAngle); // we
+            globalTimer = turretTimer;
+        }
+    }
+    public boolean isBetweenAngle(double angle, double min, double max)
+    {
+        return angle <= max && angle >= min;
+    }
     public void updateGamepadLED(IntakeSubsystem.IntakeFilter newState)
     {
         if (newState != prevIntakeFilterState)
@@ -1107,7 +1094,14 @@ public class PrometheusDrive extends LinearOpMode
     {
         return (globalTimer - sequenceTimer) > delayTime;
     }
-
+    public boolean internalDelay(double delayTime)
+    {
+        return globalTimer - internalTimer > delayTime;
+    }
+    public void internalTimerReset()
+    {
+        internalTimer = globalTimer;
+    }
     public void resetTimer()
     {
         sequenceTimer = globalTimer;
