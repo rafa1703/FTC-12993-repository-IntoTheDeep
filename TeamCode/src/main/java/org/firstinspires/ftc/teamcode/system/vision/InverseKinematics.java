@@ -15,7 +15,20 @@ public class InverseKinematics
         ty = Math.toRadians(ty);
         return (h2 - h1) / Math.tan(a1 + ty);
     }
+    public Pose samplePos(double ty, double tx, Pose robotPose)
+    {
 
+
+        //  |----|
+        //   / |
+        //c /  | y
+        // /---|
+        //   x
+        double y = distanceToSample(ty);
+        double c = y / Math.cos(Math.toRadians(tx));
+        double x = Math.sin(Math.toRadians(tx)) * c;
+        return  robotPose.plus(new Pose(x, y ));
+    }
     public Pose targetPoseAlignedWithSample(Pose currentPos, double distanceToSample, double tx)
     {
         tx = Math.toRadians(tx);

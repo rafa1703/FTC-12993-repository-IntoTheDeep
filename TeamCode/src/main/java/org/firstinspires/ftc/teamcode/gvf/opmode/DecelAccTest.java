@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.gvf.opmode;
 
 
+import static org.firstinspires.ftc.teamcode.system.accessory.math.Angles.normalizeRadians;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.config.Config;
@@ -13,6 +15,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
+import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 
@@ -37,6 +40,7 @@ public class DecelAccTest extends LinearOpMode
     private Pose endPose;
     private double errorDistance;
     FtcDashboard dashboard = FtcDashboard.getInstance();
+    IntakeSubsystem intakeSubsystem;
 
     int step = 0;
 
@@ -44,9 +48,15 @@ public class DecelAccTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        intakeSubsystem = new IntakeSubsystem(hardware);
+
         dash = FtcDashboard.getInstance();
 
         telemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());
+        while (!isStarted())
+        {
+            intakeSubsystem.intakeSlideInternalPID(18.5);
+        }
         waitForStart();
         hardware.drive.getLocalizer().setPose(new Pose(0, 0 , Math.toRadians(0)));
 
@@ -57,13 +67,14 @@ public class DecelAccTest extends LinearOpMode
 
         while (opModeIsActive() && !isStopRequested())
         {
+            hardware.drive.getLocalizer().setHeadingDecelInterpolationOnSlidePos(18.5 / 18.5);
             hardware.update();
             switch (step)
             {
                 case 0:
                     if (timer.seconds() <= accelerationTime)
                     {
-                        hardware.drive.setTargetVector(new Vector(1, 0));
+                        hardware.drive.setTargetVector(new Vector(0, 0, 1));
                     } else
                     {
                         step++;
@@ -81,11 +92,13 @@ public class DecelAccTest extends LinearOpMode
                         stopped = hardware.drive.stopped();
                         Vector end = new Vector(endPose.toPoint());
                         Vector predicted = new Vector(predictedPose.toPoint());
-                        errorDistance = predicted.subtract(end).getMagnitude();
+                        errorDistance = normalizeRadians(predictedPose.getHeading() - endPose.getHeading());//predicted.subtract(end).getMagnitude();
 
                     }
                     break;
             }
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
+            intakeSubsystem.intakeSlideInternalPID(18.5);
             // 2.62 y decel, 87.68 x decel
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();

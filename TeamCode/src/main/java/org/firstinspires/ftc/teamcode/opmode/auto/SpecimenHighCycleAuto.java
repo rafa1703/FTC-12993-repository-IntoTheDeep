@@ -1,9 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideAutoFar;
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleBase;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -11,13 +8,18 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.PathsFarExtra;
+import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDownCircular;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+
+import java.util.Arrays;
 
 @Autonomous(name = "6+0 Far", group = "Far")
 public class SpecimenHighCycleAuto extends LinearOpMode
@@ -49,6 +51,8 @@ public class SpecimenHighCycleAuto extends LinearOpMode
     boolean startedExtending = false;
     double xPosition, yPosition, headingPosition;
     double headingErrorToEndPose;
+    ToggleUpOrDownCircular rowToggle = new ToggleUpOrDownCircular(1, 1, 0, 2);
+    ToggleUpOrDownCircular columnToggle = new ToggleUpOrDownCircular(1, 1, 3, 5);
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -81,6 +85,12 @@ public class SpecimenHighCycleAuto extends LinearOpMode
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
             }
 
+            rowToggle.upToggle(gamepad1.dpad_up);
+            rowToggle.downToggle(gamepad1.dpad_down, 1);
+            columnToggle.upToggle(gamepad1.dpad_right);
+            columnToggle.downToggle(gamepad1.dpad_left, 1);
+            drawSub(telemetry, rowToggle.OffsetTargetPosition, columnToggle.OffsetTargetPosition);
+            telemetry.update();
             globalTimer = GlobalTimer.milliseconds();
         }
         waitForStart();
@@ -541,6 +551,23 @@ public class SpecimenHighCycleAuto extends LinearOpMode
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
             intakeSubsystem.intakeSlideInternalPID(slideToPosition);
             intakeClipTimer = globalTimer;
+        }
+    }
+    public void drawSub(Telemetry telemetry, int row, int column)
+    {
+        int rows = 3;
+        int cols = 6;
+        char[][] grid = new char[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                grid[i][j] = '-'; // Fill with default character
+            }
+        }
+        // Fill the specified square
+        grid[row][column] = 'X';
+        for (int i = 0; i < rows; i++)
+        {
+            telemetry.addLine(Arrays.toString(grid[row]));
         }
     }
 

@@ -8,7 +8,11 @@ import com.qualcomm.robotcore.hardware.CRServoImplEx;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.CRServoPika;
@@ -18,10 +22,12 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
 @Config
 public class IntakeSubsystem
 {
+
     ServoPika clipS, armS, turretS;
     CRServoPika intakeS;
     MotorPika intakeSlideMotor;
     RevColorSensorV3 colourSensor;
+    DistanceSensor distanceSensor;
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
@@ -29,14 +35,15 @@ public class IntakeSubsystem
     GeneralHardware.Side side;
 
     public static final double // in inches
-        slideExtensionLimit = 18.5,
-        slideTeleClose = 12,
-        slideTeleFar = 18.5, // max extension is 27 under the extension limit
-        slideTeleBase = 0,
-        slideTransfer = -2,
-        slideAutoFar = 18.5,
-        slideAutoClose = 14;
+            slideExtensionLimit = 18.5,
+            slideTeleClose = 12,
+            slideTeleFar = 18.5, // max extension is 27 under the extension limit
+            slideTeleBase = 0,
+            slideTransfer = -2,
+            slideAutoFar = 18.5,
+            slideAutoClose = 14;
     private final double slideThreshold = 8;
+    double distance;
 
     public enum IntakeSpinState
     {
@@ -51,6 +58,7 @@ public class IntakeSubsystem
             this.power = power;
         }
     }
+
     public enum IntakeArmServoState
     {
         READY(0),
@@ -71,6 +79,7 @@ public class IntakeSubsystem
             this.pos = pos;
         }
     }
+
     public enum IntakeClipServoState
     {
         HOLD(0),
@@ -84,6 +93,7 @@ public class IntakeSubsystem
         }
 
     }
+
     public enum IntakeTurretServoState
     {
         MAX_LEFT(0),
@@ -100,6 +110,7 @@ public class IntakeSubsystem
             this.pos = pos;
         }
     }
+
     public enum IntakeFilter
     {
         SIDE_ONLY, // Only alliance samples
@@ -107,6 +118,7 @@ public class IntakeSubsystem
         YELLOW_ONLY,
         OFF // intakes everything
     }
+
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
     private final double TICKS_PER_BAREMOTOR = 28;
@@ -120,7 +132,7 @@ public class IntakeSubsystem
         intakeS = hardware.intakeS;
         clipS = hardware.clipS;
         colourSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
-
+        distanceSensor = hardware.distanceSensor;
         intakeSlideMotor = hardware.intakeSlidesM;
 
         intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
@@ -145,6 +157,7 @@ public class IntakeSubsystem
             isRed = redValue > blueValue;
             colorValue = colourSensor.alpha();
             isYellow = colorValue > 2500;
+            distance = distanceSensor.getDistance(DistanceUnit.INCH);
         }
     }
 
@@ -163,6 +176,7 @@ public class IntakeSubsystem
                 break;
         }
     }
+
     public void intakeSpin(double spinDirection)
     {
         intakeS.setPower(spinDirection);
@@ -172,10 +186,12 @@ public class IntakeSubsystem
     {
         armS.setPosition(state.pos);
     }
+
     public void armSetPos(double armPos)
     {
         armS.setPosition(armPos);
     }
+
     public double armGetPos()
     {
         return armS.getPosition();
@@ -185,39 +201,49 @@ public class IntakeSubsystem
     {
         turretS.setPosition(state.pos);
     }
+
     public void intakeTurretSetPos(double pos)
     {
         turretS.setPosition(pos);
     }
+
     public void intakeTurretSetAngle(double angle)
     {
         turretS.setPosition(angle * 0.002816901408); // 1 / 355
     }
+
     public void intakeTurretBasedOnHeadingVel(double headingVel)
     {
         double t = Math.min(1, headingVel / 2);
         double i = interpolation(0, 65, t);
         turretS.setPosition(STRAIGHT.pos + angleToServoTicks(i) * Math.signum(headingVel));
     }
+
     public double angleToServoTicks(double angle)
     {
-        return angle * (1/355.0);
+        return angle * (1 / 355.0);
     }
-    private double interpolation(double p1, double p2, double t) {
+
+    private double interpolation(double p1, double p2, double t)
+    {
         return (1 - t) * p1 + t * p2;
     }
+
     public double getTurretAngle()
     {
         return turretS.getPosition() * 355;
     }
+
     public double getTurretPos()
     {
         return turretS.getPosition();
     }
+
     public void intakeClip(IntakeClipServoState state)
     {
         clipS.setPosition(state.pos);
     }
+
     public void clipSetPos(double pos)
     {
         clipS.setPosition(pos);
@@ -228,6 +254,7 @@ public class IntakeSubsystem
         slideTarget = rotations;
         intakeSlideMotor.setPower(intakeSlidesPID.update(rotations, slidePosition, 1));
     }
+
     public void intakeSlideInternalPID(double inches)
     {
         slideTarget = (int) inchesToTicksSlidesMotor(inches);
@@ -235,14 +262,17 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(1);
     }
+
     public void intakeSlideInternalPID(double inches, boolean limit)
     {
         slideTarget = (int) inchesToTicksSlidesMotor(inches);
-        if (slideTarget > slideExtensionLimit) slideTarget = (int) inchesToTicksSlidesMotor(slideExtensionLimit);
+        if (slideTarget > slideExtensionLimit)
+            slideTarget = (int) inchesToTicksSlidesMotor(slideExtensionLimit);
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(1);
     }
+
     public void intakeSlideInternalPIDTicks(int ticks)
     {
         slideTarget = ticks;
@@ -250,6 +280,7 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(1);
     }
+
     public void intakeSlideInternalPID(int rotations, double maxPower)
     {
         slideTarget = rotations;
@@ -257,22 +288,26 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(maxPower);
     }
+
     public void intakeSlideMotorEncoderReset()
     {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
     }
+
     public void intakeSlideMotorRawControl(double manualControlIntakeSlide)
     {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         intakeSlideMotor.setPower(manualControlIntakeSlide * 0.75);
     }
+
     public boolean colorLogic()
     {
         switch (intakeFilter)
         {
             case SIDE_ONLY:
                 if (isYellow) return false;
-                else return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+                else
+                    return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
             case NEUTRAL:
                 return (isYellow) ||
                         isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
@@ -286,6 +321,21 @@ public class IntakeSubsystem
 //        if (colorValue > 1500) return intakeFilter != IntakeFilter.SIDE_ONLY;
 //        else if (!isRed) return (side == GeneralHardware.Side.Blue);
 //        else return (side == GeneralHardware.Side.Red);
+    }
+    public boolean isDistance(double inch)
+    {
+        return distance < inch;
+    }
+    public double armLength(double armAngle)
+    {
+        double d = 6.5;
+        return d / Math.cos(Math.toRadians(Math.abs(armAngle)));
+    }
+    public Vector armPosIn2dPlane(double armAngle)
+    {
+        double y =  6.5 / Math.cos(Math.toRadians(Math.abs(armAngle)));
+        double x = 6.5 / Math.sin(Math.toRadians(Math.abs(armAngle)));
+        return new Vector(x, y);
     }
     public boolean isSample()
     {

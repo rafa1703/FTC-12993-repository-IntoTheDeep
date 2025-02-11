@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.gvf.trajectories;
 
 import static org.firstinspires.ftc.teamcode.system.hardware.Globals.normalizeRadians;
 
+import static java.lang.Math.PI;
+
 import androidx.annotation.NonNull;
 
 
@@ -18,7 +20,7 @@ public class GVFLogic
     public boolean splineHeading = false;
     public boolean usePID = false;
     public double tangentFinalHeading;
-
+    public double centripetalCorrectionCoefficient = 0.006;
     public Vector calculate(@NonNull BezierCurve curve, double t, Pose pose, boolean slowDown,double slowSpeed, double maxSpeed)
     {
         Point robot = pose.toPoint();
@@ -51,7 +53,7 @@ public class GVFLogic
 
         Vector tempRobot = new Vector(robot.x, robot.y);
         // this just say if the closest point and the robot is tangent or t is greater than the follow the path threshold we follow the end point
-        if ((t == 1 && Math.abs(tempRobot.subtract(closestPoint).getAngle() - derivative.getAngle()) <= 0.5 * Math.PI)
+        if ((t == 1 && Math.abs(tempRobot.subtract(closestPoint).getAngle() - derivative.getAngle()) <= 0.5 * PI)
                 || t >= directPursuitThreshold)
         {
             direction = endPoint.subtract(robot).getAngle();
@@ -92,12 +94,12 @@ public class GVFLogic
     {
         //Normalize radians with a scaled (t)
         double diff = theta2 - theta1;
-        diff %= 2 * Math.PI;
-        if (Math.abs(diff) > Math.PI) {
+        diff %= 2 * PI;
+        if (Math.abs(diff) > PI) {
             if (diff > 0) {
-                diff -= 2 * Math.PI;
+                diff -= 2 * PI;
             } else {
-                diff += 2 * Math.PI;
+                diff += 2 * PI;
             }
         }
         return theta1 + t * diff;
@@ -141,12 +143,21 @@ public class GVFLogic
         return tangentFinalHeading;
     }
 
-    public double calculateCurvature(BezierCurve curve, double t)
+    public double centripetalForce(double r, Vector velocityVector)
     {
-        Vector d = curve.getTangentialVector(t);
-        Vector d2 = curve.getDoubleDerivedVector(t);
+        double m = 0;
+        double v = velocityVector.getMagnitude();
+        return m * (v * v) / r;
+    }
 
-        return (d.getX() * d2.getY() - d2.getX() * d.getY()) /
-                (Math.sqrt(Math.pow(d.getX() * d.getX()  + d.getY() * d.getY(),3)));
+    public void centripetalCorrectionVector(BezierCurve curve , double t, double velocity)
+    {
+
+        Vector velocityVectorAtT = curve.getTangentialVector(t);
+        double theta = velocityVectorAtT.getAngle() + PI/2.0;
+
+        Vector centripetalCorrectionVector = new Vector(Math.cos(theta), Math.sin(theta))
+                .scaledBy(curve.calculateCurvature(t) * centripetalCorrectionCoefficient)
+                .scaledBy(velocity * velocity);
     }
 }

@@ -117,6 +117,18 @@ public class BezierCurve
 
         return new Point(x, y);
     }
+    public double calculateCurvature(double t) // this returns a radius
+    {
+        Vector d = getTangentialVector(t);
+        Vector d2 = getDoubleDerivedVector(t);
+        // cyllis does this
+        return (d.getX() * d2.getY() - d2.getX() * d.getY()) /
+                (Math.sqrt(Math.pow(d.getX() * d.getX()  + d.getY() * d.getY(),3)));
+
+/*        // wolfpack does this
+        return  (Math.sqrt(Math.pow(d.getX() * d.getX()  + d.getY() * d.getY(),3))) /
+                (d.getX() * d2.getY() - d2.getX() * d.getY());*/
+    }
 
     /*    private Point parametricDerived2(double t)
         {

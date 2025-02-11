@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
@@ -41,6 +42,7 @@ public class GeneralHardware
     public CRServoPika intakeS;
     public ServoPika clawS, wristS, pivotS, armS;
     public RevColorSensorV3 colourSensor;
+    public DistanceSensor distanceSensor;
     public GoBildaPinpointDriver pinpoint;
     public LocalizerPinpoint localizerPinpoint;
 
@@ -107,6 +109,7 @@ public class GeneralHardware
 
         turretEncoder = hm.get(AnalogInput.class, "turretEncoder");
         colourSensor = hm.get(RevColorSensorV3.class, "colorSensor");
+        distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
         voltageSupplier = new TimedSupplier<>(voltageSensor::getVoltage, 40);

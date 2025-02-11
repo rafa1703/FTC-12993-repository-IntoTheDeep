@@ -25,13 +25,15 @@ public class LocalizationTest extends LinearOpMode
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         drive = new DriveBaseSubsystem(hardware);
-        hardware.drive.getLocalizer().setOffSet(new Pose(7.2, -62.5, Math.toRadians(90)));
+       //hardware.drive.getLocalizer().setOffSet(new Pose(7.2, -62.5, Math.toRadians(90)));
+        hardware.drive.getLocalizer().setOffSet(new Pose(0, 0, Math.toRadians(0)));
         waitForStart();
         while (opModeIsActive())
         {
             hardware.resetCacheHubs();
             hardware.drive.getLocalizer().update();
             drive.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            //drive.drive(gamepad1.left_trigger - gamepad1.right_trigger, 0, gamepad1.left_stick_x);
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose pose = hardware.drive.getPoseEstimate();
@@ -49,8 +51,8 @@ public class LocalizationTest extends LinearOpMode
             packet.put("Localizer velX", hardware.drive.getLocalizer().getVelocity().getX());
             packet.put("Localizer velY", hardware.drive.getLocalizer().getVelocity().getY());
 
-            DashboardUtil.drawRobot(fieldOverlay, predictedPose.toPose2d(), true, "red");
             DashboardUtil.drawRobot(fieldOverlay, pose.toPose2d(), true, "black");
+            DashboardUtil.drawRobot(fieldOverlay, predictedPose.toPose2d(), true, "red");
 
 
             dashboard.sendTelemetryPacket(packet);

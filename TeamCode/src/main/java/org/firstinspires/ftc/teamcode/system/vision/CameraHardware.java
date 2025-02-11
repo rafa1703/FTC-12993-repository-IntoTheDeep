@@ -4,6 +4,10 @@ import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.opencv.core.Point;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class CameraHardware
 {
@@ -17,7 +21,7 @@ public class CameraHardware
 
     public void hardwareSetUp(GeneralHardware hardware)
     {
-        limelight.setPollRateHz(50); // This sets how often we ask Limelight for data (50 times per second)
+        limelight.setPollRateHz(100); // This sets how often we ask Limelight for data (50 times per second)
         if (hardware.side == GeneralHardware.Side.Blue)
             limelight.pipelineSwitch(0);
         else  limelight.pipelineSwitch(1);
@@ -55,5 +59,32 @@ public class CameraHardware
     public void pause()
     {
         limelight.pause();
+    }
+    public double sampleAngle()
+    {
+        List<List<Double>> corners = latestResult.getColorResults().get(0).getTargetCorners();
+        List<Point> cornerPoints = new ArrayList<>();
+        for (List<Double> point : corners)
+        {
+            cornerPoints.add(new Point(point.get(0), point.get(1)));
+        }
+
+        double maxDistance = Double.NEGATIVE_INFINITY;
+        Point a = new Point();
+        Point b = new Point();
+        for (int i = 0; i < cornerPoints.size(); i++)
+        {
+            Point firstPoint = cornerPoints.get(i);
+            Point secondPoint = cornerPoints.get(i + 1);
+            double distance = Math.sqrt(Math.pow(secondPoint.x - firstPoint.x, 2) + Math.pow(secondPoint.y - firstPoint.y, 2));
+            if (distance > maxDistance)
+            {
+                maxDistance = distance;
+                a = firstPoint;
+                b = secondPoint;
+            }
+        }
+        double slope = (b.y - a.y) / (b.x - a.x);
+        return Math.atan(slope);
     }
 }
