@@ -1192,10 +1192,6 @@ public class PrometheusDrive extends LinearOpMode
     {
         return gamepad2.left_trigger > 0.2;
     }
-    public boolean delay(double delayTime)
-    {
-        return (globalTimer - sequenceTimer) > delayTime;
-    }
     public boolean internalDelay(double delayTime)
     {
         return globalTimer - internalTimer > delayTime;
@@ -1204,6 +1200,11 @@ public class PrometheusDrive extends LinearOpMode
     {
         internalTimer = globalTimer;
     }
+    public boolean delay(double delayTime)
+    {
+        return (globalTimer - sequenceTimer) > delayTime;
+    }
+
     public void resetTimer()
     {
         sequenceTimer = globalTimer;

@@ -15,7 +15,7 @@ public class SpecAutoPath
             secondDeposit, secondIntake, // cycle 2
             thirdDeposit, thirdIntake, // cycle 3
             forthDeposit, forthIntake, // cycle 4
-            fifthDeposit, // cycle 5
+            fifthDeposit, fifthIntake, // cycle 5
             parkTrajectory;
 
     public Pose farStartPose = new Pose(7.2, -62.5, Math.toRadians(90));
@@ -149,6 +149,13 @@ public class SpecAutoPath
 
                 )
                 .addFinalPose(9, -38, Math.toRadians(-35)) // this might need to be at a lower angle
+                .build();
+        fifthIntake = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(9, -38),
+                        new Point(24, -48)
+                )
+                .addFinalPose(24, -48, Math.toRadians(-35))
                 .build();
 
         parkTrajectory = new TrajectoryBuilder() // spline heading

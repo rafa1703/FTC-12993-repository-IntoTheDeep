@@ -65,6 +65,7 @@ public class IntakeSubsystem
         TRANSFER_BACK(0),
         TRANSFER_FRONT(0),
         HALF_TRANSFER(0),
+        TRANSFER_FINISH(0),
         HORIZONTAL(0),
         HALF_DOWN(0),
         DOWN(0),
@@ -336,6 +337,19 @@ public class IntakeSubsystem
         double y =  6.5 / Math.cos(Math.toRadians(Math.abs(armAngle)));
         double x = 6.5 / Math.sin(Math.toRadians(Math.abs(armAngle)));
         return new Vector(x, y);
+    }
+    public void intakeInverseKinematics(Pose robot, Pose sample)
+    {
+        double armAngle = sample.getHeading() * -1;
+        double trueArmAngle = armAngle - robot.getHeading();
+
+        double armYOffSet = 6.5 * Math.cos(trueArmAngle);
+        double armXOffSet = 6.5 * Math.sin(trueArmAngle);
+        Pose extendoPose = sample.plus(new Pose(armXOffSet, armYOffSet));
+        double intakeDis = extendoPose.getDistance(robot);
+
+        intakeSlideInternalPID(intakeDis);
+        intakeTurretSetAngle(trueArmAngle);
     }
     public boolean isSample()
     {

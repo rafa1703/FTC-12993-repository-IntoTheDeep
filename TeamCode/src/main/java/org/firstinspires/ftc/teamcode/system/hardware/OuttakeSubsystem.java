@@ -113,7 +113,9 @@ public class OuttakeSubsystem
         HALF_TRANSFER(0),
         SAMPLE(0),
         SPECIMEN_HIGH(0),
+        SPECIMEN_HIGH_BACK(0),
         SPECIMEN_LOW(0),
+        SPECIMEN_LOW_BACK(0),
         INTAKE(0),
         HP_DEPOSIT(0);
 
@@ -135,7 +137,9 @@ public class OuttakeSubsystem
         SAMPLE(0),
         SAMPLE_DROP(0),
         SPECIMEN_HIGH(0),
+        SPECIMEN_HIGH_BACK(0),
         SPECIMEN_LOW(0),
+        SPECIMEN_LOW_BACK(0),
         HP_DEPOSIT(0),
         INTAKE(0);
 
@@ -252,6 +256,10 @@ public class OuttakeSubsystem
     public void turretKeepToAngle(double turretTargetAngle, double heading) // the target angle is field centric ig
     {
         turretKeepToAngle(turretTargetAngle, heading, false);
+    }
+    public boolean turretReached()
+    {
+        return Math.abs(Angles.normalizeDegrees(turretTarget - turretAngle)) < turretThreshold;
     }
     public boolean turretReached(double turretTargetAngle)
     {
