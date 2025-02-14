@@ -20,6 +20,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
+import org.firstinspires.ftc.teamcode.system.vision.InverseKinematics;
 
 import java.util.Arrays;
 
@@ -55,13 +56,16 @@ public class Specimen7Auto extends LinearOpMode
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     CameraHardware cameraHardware;
+    InverseKinematics cameraInverseKinematics = new InverseKinematics();
+    Pose preloadPose = trajectories.preloadTrajectory.getFinalPose();
     double globalTimer, sequenceTimer, internalTimer, intakeClipTimer, turretTimer;
     int cycle = 0;
     PickupState pickupState = PickupState.SUB_DROP;
     int subIntakeCycle = 0;
     int pickupCycle;
     boolean intakedSpec = false;
-    boolean attemptedIntake = false;
+    boolean cachedSlideTarget = false;
+    double slideCachedTarget;
     boolean startedExtending = false;
     boolean dropped = false;
     boolean intakedSample;
@@ -150,7 +154,13 @@ public class Specimen7Auto extends LinearOpMode
         switch (state)
         {
             case PRELOAD_DEPOSIT:
-                hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
+
+                if (cameraHardware.getLatestResult().isValid() && !cachedSlideTarget)
+                {
+                    Pose allingPose = preloadPose.plus(new Pose(0, 0, Math.toRadians(cameraHardware.getLatestResult().getTx())));
+                    hardware.drive.setTargetPose(allingPose);
+                }
+                else hardware.drive.setTargetPose(preloadPose);
 
                 if (delay(20))
                 {
@@ -159,11 +169,27 @@ public class Specimen7Auto extends LinearOpMode
                 }
                 if (dropped)
                 {
+                    if (hardware.drive.reachedHeading(Math.toRadians(2)))
+                    {
+                        if (!cachedSlideTarget)
+                        {
+                            slideCachedTarget = cameraInverseKinematics.distanceToSample(cameraHardware.getLatestResult().getTy()); // cache distance because the slides will get in front of the camera
+                            cachedSlideTarget = true;
+                        }
+                        else if (internalDelay(90)) intakeSubsystem.intakeSlideInternalPID(slideCachedTarget - 6.5);
+                    }
                     if(internalDelay(100))
                     {
                         outtakeSubsystem.liftTo(0);
                         turretSpinTo(0, OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT,
                                 OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
+                    }
+                    if ((intakeSubsystem.getColorValue() > 800 && internalDelay(150)) || internalDelay(1200))
+                    {
+                        state = autoState.SUB_TO_HP;
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_TRANSFER);
+                        resetTimer();
+                        break;
                     }
                 }
                 else
@@ -179,11 +205,11 @@ public class Specimen7Auto extends LinearOpMode
                 break;
             case SUB_TO_HP:
 
-                 hardware.drive.followTrajectorySplineHeading(trajectories.subToHpAndIntake);
-                 intakeSubsystem.intakeSlideInternalPID(-2);
+                hardware.drive.followTrajectorySplineHeading(trajectories.subToHpAndIntake);
+                if (delay(90)) intakeSubsystem.intakeSlideInternalPID(-2);
+
                 if (!transferred)
                 {
-
                     if (delay(200)) // trasnfer + hp deposit position
                     {
                         if (delay(300))
@@ -519,8 +545,6 @@ public class Specimen7Auto extends LinearOpMode
                     }
                 }
                 break;
-
-
             case DROP:
                 if (cycle < 2)
                 {
@@ -549,17 +573,11 @@ public class Specimen7Auto extends LinearOpMode
 
                 break;
             case PARK:
-                if (trajectories.parkTrajectory.isFinished() && delay(1000))
+                if (trajectories.parkTrajectory.isFinished())
                 {
                     state = autoState.IDLE;
                     resetTimer();
                     break;
-                }
-                if (delay(400))
-                {
-                    outtakeSubsystem.liftToInternalPIDTicks(0);
-                    outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.MIDDLE);
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER);
                 }
                 hardware.drive.followTrajectorySplineHeading(trajectories.parkTrajectory);
                 break;
