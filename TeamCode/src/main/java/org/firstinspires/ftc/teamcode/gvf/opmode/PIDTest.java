@@ -26,7 +26,6 @@ public class PIDTest extends LinearOpMode
         hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
         Pose targetPose = new Pose(0, 0, Math.toRadians(180));
         hardware.drive.setTargetPose(targetPose);
-        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
         waitForStart();
         while (opModeIsActive())
         {

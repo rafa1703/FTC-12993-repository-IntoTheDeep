@@ -43,9 +43,6 @@ public class SplineTest extends LinearOpMode
                 .build();
         while(opModeIsActive())
         {
-            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN);
-            outtakeSubsystem.railState(OuttakeSubsystem.OuttakeRailServoState.SPECIMEN_HIGH);
-            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN);
             outtakeSubsystem.liftToInternalPIDTicks(700);
             hardware.drive.followTrajectorySplineHeading(spline);
             hardware.update();

@@ -43,10 +43,6 @@ public class PidMotorTest extends LinearOpMode
             if (gamepad1.b) intake = -0.4;
             else intake = 0;
             if (gamepad1.right_bumper) intake = 1;
-            //intakeSubsystem.intakeSlideMotorRawControl(0.5);
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.LOW);
-            intakeSubsystem.intakeChute(IntakeSubsystem.IntakeChuteServoState.UP);
-            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
             intakeSubsystem.intakeSlideInternalPID(intakeTarget);
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
             intakeSubsystem.intakeSpin(intake);

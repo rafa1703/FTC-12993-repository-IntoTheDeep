@@ -36,17 +36,6 @@ public class ServoTest extends LinearOpMode
         waitForStart();
         while (opModeIsActive())
         {
-            outtakeSubsystem.liftMotorRawControl(0);
-            outtakeSubsystem.railSetPos(railPos);
-            outtakeSubsystem.armSetPos(armPos);
-            outtakeSubsystem.wristSetPos(wristPos);
-            outtakeSubsystem.clawSetPos(clawPos);
-
-            intakeSubsystem.armSetPos(intakeRightArmPos, intakeLefArmPos);
-            intakeSubsystem.flapSetPos(flapPos);
-            intakeSubsystem.clipSetPos(clipPos);
-            intakeSubsystem.chuteSetPos(chutePos);
-            intakeSubsystem.flapSetPos(flapPos);
 //            if (gamepad1.a)
 //            {
 //                intakeSubsystem.disablePWM(IntakeSubsystem.Servos.FLAP);

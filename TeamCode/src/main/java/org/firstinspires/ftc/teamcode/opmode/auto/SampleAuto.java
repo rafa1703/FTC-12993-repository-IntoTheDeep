@@ -1,3 +1,4 @@
+/*
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 
@@ -14,7 +15,7 @@ import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.PathsClose;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.SampleAutoPath;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -40,7 +41,7 @@ public class SampleAuto extends LinearOpMode
     autoState state = autoState.PRELOAD_DEPOSIT;
     GeneralHardware hardware;
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    PathsClose trajectories = new PathsClose();
+    SampleAutoPath trajectories = new SampleAutoPath();
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     double globalTimer, sequenceTimer, intakeClipTimer;
@@ -448,3 +449,4 @@ public class SampleAuto extends LinearOpMode
         sequenceTimer = globalTimer;
     }
 }
+*/

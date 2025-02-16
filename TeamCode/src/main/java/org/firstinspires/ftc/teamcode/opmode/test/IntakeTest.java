@@ -26,7 +26,6 @@ public class IntakeTest extends LinearOpMode
         waitForStart();
         while (opModeIsActive())
         {
-            intakeSubsystem.intakeFlap(IntakeSubsystem.IntakeFlapServoState.DOWN);
             if (gamepad1.a)
             {
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);

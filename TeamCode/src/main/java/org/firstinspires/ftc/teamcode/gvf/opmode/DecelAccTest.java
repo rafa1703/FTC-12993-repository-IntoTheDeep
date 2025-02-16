@@ -97,7 +97,6 @@ public class DecelAccTest extends LinearOpMode
                     }
                     break;
             }
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HIGH);
             intakeSubsystem.intakeSlideInternalPID(18.5);
             // 2.62 y decel, 87.68 x decel
             TelemetryPacket packet = new TelemetryPacket();

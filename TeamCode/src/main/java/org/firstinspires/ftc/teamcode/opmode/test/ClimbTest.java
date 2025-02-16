@@ -38,8 +38,6 @@ public class ClimbTest extends LinearOpMode
 
         while (opModeIsActive())
         {
-            driveBase.runClimbToTarget(climbTarget);
-            telemetry.addData("ClimbPos", driveBase.getClimbPosition());
             telemetry.update();
         }
     }
