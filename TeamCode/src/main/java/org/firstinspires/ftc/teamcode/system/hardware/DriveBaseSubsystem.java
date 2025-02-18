@@ -4,7 +4,9 @@ import static com.sun.tools.doclint.Entity.le;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -73,6 +75,17 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
+        drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
+    }
+    public DriveBaseSubsystem(HardwareMap hardwareMap)
+    {
+        FL = new MotorPika(hardwareMap.get(DcMotorEx.class, "FL"));
+        FR = new MotorPika(hardwareMap.get(DcMotorEx.class, "FR"));
+        BL = new MotorPika(hardwareMap.get(DcMotorEx.class, "BL"));
+        BR = new MotorPika(hardwareMap.get(DcMotorEx.class, "BR"));
+
+        BL.setDirection(DcMotorSimple.Direction.REVERSE);
+        FL.setDirection(DcMotorSimple.Direction.REVERSE);
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     // this could be run in robothardware

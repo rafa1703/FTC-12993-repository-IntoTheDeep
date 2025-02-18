@@ -287,7 +287,7 @@ public class PrometheusDrive extends LinearOpMode
                         if (intakeTurretUsingPresets)
                         {
                             double angle = 25 * intakeTurretToggle.OffsetTargetPosition;
-                            if (angle >= 20 && angle <= 150)
+                            if (isBetweenAngle(angle, 20, 120))
                             {
                                 intakeSubsystem.intakeTurretSetAngle(25 * intakeTurretToggle.OffsetTargetPosition);
                             }
