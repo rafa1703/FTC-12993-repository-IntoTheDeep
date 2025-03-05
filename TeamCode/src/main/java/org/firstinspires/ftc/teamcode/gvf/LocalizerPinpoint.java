@@ -21,6 +21,7 @@ public class LocalizerPinpoint
 {
     public static boolean ENABLED = true;
     private Pose pose;
+    private Pose prevPose;
     private GoBildaPinpointDriver localizer;
     private Vector velocity = new Vector();
     public Vector driveBaseVelocity = new Vector();
@@ -96,9 +97,17 @@ public class LocalizerPinpoint
     public void update() {
         if(!ENABLED) return;
         localizer.update();
-
         // This fixes the pose
         Pose2D pose2d = localizer.getPosition();
+        if ( // this should catch if the pinpoint like dies
+                Double.isNaN(pose2d.getX(DistanceUnit.INCH)) ||
+                Double.isNaN(pose2d.getY(DistanceUnit.INCH)) ||
+                Double.isNaN(pose2d.getHeading(AngleUnit.RADIANS)) ||
+                        prevPose.getDistance(new Pose(pose2d)) > 10
+        )
+        {
+            return;
+        }
         pose = new Pose(pose2d.getX(DistanceUnit.INCH), pose2d.getY(DistanceUnit.INCH), pose2d.getHeading(AngleUnit.RADIANS));
         Vector vector = new Vector(pose.getX() , pose.getY(), pose.getHeading());
         double h = vector.getZ();
@@ -106,8 +115,8 @@ public class LocalizerPinpoint
         vector = new Vector(vector.getX(), vector.getY(), h + headingOffset);
         pose = new Pose(vector.getX() + xOffset, vector.getY()  + yOffset, vector.getZ());
 
-        double radsPerSecond = localizer.getHeadingVelocity();
-        radsPerSecond = hVelFilter.getValue(radsPerSecond);
+//        double radsPerSecond = localizer.getHeadingVelocity();
+//        radsPerSecond = hVelFilter.getValue(radsPerSecond);
         velocity = new Vector(
                 xVelFilter.getValue(mmPerSecondToInPerSecond(localizer.getVelX())),
                 yVelFilter.getValue(mmPerSecondToInPerSecond(localizer.getVelY())));
@@ -115,9 +124,10 @@ public class LocalizerPinpoint
         Vector sVector = new Vector(
                 Math.signum(driveBaseVelocity.getX()) * Math.pow(driveBaseVelocity.getX(), 2) / (2.0 * xDeceleration),
                 Math.signum(driveBaseVelocity.getY()) * Math.pow(driveBaseVelocity.getY(), 2) / (2.0 * yDeceleration));
-        double hGlide = Math.signum(radsPerSecond) * Math.pow(radsPerSecond, 2) / (2.0 * hDeceleration); // this should work because apparently rotational thing is the same as linear lol
+        //double hGlide = Math.signum(radsPerSecond) * Math.pow(radsPerSecond, 2) / (2.0 * hDeceleration); // this should work because apparently rotational thing is the same as linear lol
         driveBaseSVector = sVector.rotated(0);
-        driveBaseSVector = new Vector(sVector.getX(), sVector.getY(), hGlide);
+        prevPose = pose;
+        //driveBaseSVector = new Vector(sVector.getX(), sVector.getY(), hGlide);
 
     }
 

@@ -12,8 +12,8 @@ public class Angles
     public static double normalizeDegrees(double degrees)
     {
         degrees %= 360;
-        if (degrees < -180) degrees += 180;
-        if(degrees > 180) degrees -= 180;
+        if (degrees < -180) degrees += 360;
+        if(degrees > 180) degrees -= 360;
         return degrees;
     }
 }

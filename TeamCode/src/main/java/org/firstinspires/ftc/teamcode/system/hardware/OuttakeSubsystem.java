@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.system.hardware;
 
+import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
-import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
+import org.firstinspires.ftc.teamcode.gvf.utils.LowPassFilter;
 import org.firstinspires.ftc.teamcode.system.accessory.math.Angles;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -18,41 +19,57 @@ import java.util.Map;
 public class OuttakeSubsystem
 {
 
-    ServoPika clawS, wristS, pivotS, armS;
+    ServoPika clawS, wristS, pivotS, armS, lockS;
 
     MotorPika liftMotor, turretMotor;
+    Encoder turretIncrementalEncoder;
+    AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
     PID turretPID = new PID(0.04, 0, 0.003, 0, 0);
+    LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
     public double turretTarget, turretAngle;
 
-    public int turretPosition;
     GeneralHardware.Side side;
     private final double TICKS_PER_BARE_MOTOR = 28;
 
     public static final double
-            liftMaxExtension = 14, // 1655ticks
-            liftHighBucketPos = 14,
-            liftLowBucketPos = 2,
-            liftHighBarPos = 6,
-            liftLowBarPos = 0,
+            liftMaxExtension = 22.5,
+            liftHighBucketPos = 40,
+            liftLowBucketPos = 6,
+            liftHighBarPos = 15,
+            liftLowBarPos = 6,
             liftSpecimenIntakePos = 0,
-            liftBasePos = 0; // maybe make this -5 because of shit intake clip
+            liftBasePos = 0;
     private final double liftThreshold = 8;
     public static final double // degree
             turretFrontAngle = 0,
             turretBackAngle = 180;
     public final double turretThreshold = 2;
     private final double maxAngleAxon = 355;
+    public double turretIncrementalPosition;
+    public double initialOffsetPosition;
 
+    public enum OuttakeTurretState
+    {
+        TRANSFER_FRONT(0),
+        TRANSFER_BACK(180),
+        SPEC_DEPOSIT_BACK_AUTO(225);
+
+        public final double angle;
+        OuttakeTurretState(double angle)
+        {
+            this.angle = angle;
+        }
+    }
     public enum OuttakePivotServoState
     {
-        UP(4, 0),
+        UP(4, 0.19),
         RIGHT_UP(5, 0),
-        RIGHT(6, 0),
-        RIGHT_DOWN(0, 0),
-        DOWN(0, 0),
+        RIGHT(6, 0.97),
+        RIGHT_DOWN(7, 0),
+        DOWN(0, 0.69),
         LEFT_DOWN(1, 0),
         LEFT(2, 0),
         LEFT_UP(3, 0);
@@ -90,9 +107,9 @@ public class OuttakeSubsystem
     }
     public enum OuttakeClawServoState
     {
-        OPEN(0),
-        CLOSE(0),
-        INTAKE(0);
+        OPEN(0.8),
+        CLOSE(0.63),
+        INTAKE(0.9);
 
         public final double pos;
 
@@ -106,18 +123,18 @@ public class OuttakeSubsystem
     {
 
         READY(0),
-        SPIN(0),
-        STRAIGHT(0),
-        TRANSFER_FRONT(0),
-        TRANSFER_BACK(0),
+        SPIN(0.55),
+        STRAIGHT(0.65),
+        TRANSFER_FRONT(0.85),
+        TRANSFER_BACK(0.3),
         HALF_TRANSFER(0),
-        SAMPLE(0),
-        SPECIMEN_HIGH(0),
-        SPECIMEN_HIGH_BACK(0),
-        SPECIMEN_LOW(0),
-        SPECIMEN_LOW_BACK(0),
-        INTAKE(0),
-        HP_DEPOSIT(0);
+        SAMPLE(0.7),
+        SPECIMEN_HIGH(1),
+        SPECIMEN_HIGH_BACK(0.3),
+        SPECIMEN_LOW(0.88),
+        SPECIMEN_LOW_BACK(0.37),
+        INTAKE(0.15),
+        HP_DEPOSIT(0.05);
 
         public final double pos;
 
@@ -130,18 +147,18 @@ public class OuttakeSubsystem
     public enum OuttakeWristServoState
     {
         READY(0),
-        SPIN(0),
-        TRANSFER_FRONT(0),
-        TRANSFER_BACK(0),
+        SPIN(0.45),
+        TRANSFER_FRONT(0.75),
+        TRANSFER_BACK(0.26),
         TRANSFER_FINISH(0),
-        SAMPLE(0),
+        SAMPLE(0.4),
         SAMPLE_DROP(0),
-        SPECIMEN_HIGH(0),
-        SPECIMEN_HIGH_BACK(0),
-        SPECIMEN_LOW(0),
-        SPECIMEN_LOW_BACK(0),
+        SPECIMEN_HIGH(0.49),
+        SPECIMEN_HIGH_BACK(0.3),
+        SPECIMEN_LOW(0.78),
+        SPECIMEN_LOW_BACK(0.27),
         HP_DEPOSIT(0),
-        INTAKE(0);
+        INTAKE(0.42);
 
         public final double pos;
 
@@ -160,8 +177,12 @@ public class OuttakeSubsystem
         clawS = hardware.clawS;
         pivotS = hardware.pivotS;
         armS = hardware.armS;
+        lockS = hardware.lockS;
 
         liftMotor = hardware.outtakeLiftM;
+        turretMotor = hardware.turretM;
+        turretEncoder = hardware.turretEncoder;
+        turretIncrementalEncoder = hardware.turretIncrementalEncoder;
         outtakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
 
@@ -170,18 +191,40 @@ public class OuttakeSubsystem
         // if we need to reverse anything
         // i want this to be done inside the hardware class
         //clawS.setDirection(Servo.Direction.REVERSE);
-        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        turretMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+        turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        cacheTurretInitialPosition();
+    }
+
+    public void cacheTurretInitialPosition()
+    {
+        initialOffsetPosition = turretAngleToTicks(turretAngle());
     }
 
     public void outtakeReads()
     {
-        liftPosition = liftMotor.getCurrentPosition();
-        turretPosition = turretMotor.getCurrentPosition();
+        outtakeReads(true);
     }
-
+    public void outtakeReads(boolean i2c)
+    {
+        liftPosition = liftMotor.getCurrentPosition();
+        turretIncrementalPosition = turretMotor.getCurrentPosition();// + initialOffsetPosition;//turretIncrementalEncoder.getCurrentPosition();// - initialOffsetPosition;
+        if (i2c) turretAngle = turretAngle();
+    }
+    /** returns the absolute angle **/
+    public double turretAngle()
+    {
+        return turretFilter.getValue(turretEncoder.getVoltage() / 3.227 * 360);
+    }
+    public double encoderVoltage()
+    {
+        return turretEncoder.getVoltage();
+    }
 
     public void pivotServoState(OuttakePivotServoState state)
     {
@@ -233,6 +276,30 @@ public class OuttakeSubsystem
         wristS.setPosition(pos);
     }
 
+    public void turretSpinTo(OuttakeTurretState state)
+    {
+        turretSpinToCorrected(state.angle);
+    }
+    public void turretSpinToCorrected(double turretTargetAngle)
+    {
+        turretTarget = Angles.normalizeDegrees(turretTargetAngle - turretAngle);
+        double incrementalFinalAngle = turretTicksToAngle(turretIncrementalPosition) + turretTarget;
+        // if the incremental pos is greater than the wiring limit we must turn the other way to fix it
+        if (incrementalFinalAngle >= 400 || incrementalFinalAngle <= -400)
+        {
+            turretTarget += 360 * Math.signum(incrementalFinalAngle) * -1; // go the opposite way
+        }
+        double power = turretPID.update(turretTarget, 0, 1);
+        turretMotor.setPower(power);
+    }
+    public double turretAngleToTicks(double angle)
+    {
+        return angle / 360 * 4000;
+    }
+    public double turretTicksToAngle(double ticks)
+    {
+        return ticks / 4000 * 360;
+    }
     public void turretSpinTo(double turretTargetAngle)
     {
         turretTarget = Angles.normalizeDegrees(turretTargetAngle - turretAngle);
@@ -248,6 +315,7 @@ public class OuttakeSubsystem
     public void turretKeepToAngle(double turretTargetAngle, double heading, boolean back) // the target angle is field centric ig
     {
         turretTargetAngle += back ? 180 : 0;
+        heading = -heading;
         double diff = Angles.normalizeDegrees(turretTargetAngle - heading);
         turretTarget = Angles.normalizeDegrees(diff - turretAngle);
         double power = turretPID.update(turretTarget, 0, 1);
@@ -343,14 +411,14 @@ public class OuttakeSubsystem
 
     public double ticksToInchesSlidesMotor(double ticks)
     {
-        return 0.01276363636 * ticks;
+        return ticks / 964 * 22.5;
         // 0.58 is the radius of the pulley
         // and 1.2 is the ratios of teeth
     }
 
     public double inchesToTicksSlidesMotor(double inches)
     {
-        return 78.3475783476 * inches;
+        return inches / 22.5 * 964;
     }
 
     public boolean isArmOver()
@@ -358,9 +426,9 @@ public class OuttakeSubsystem
         return armS.getPosition() > OuttakeArmServoState.STRAIGHT.pos;
     }
 
-    public double getArmAngle()
+    public double getArmPos()
     {
-        return servoPosToAngle(armS.getPosition());
+        return armS.getPosition();
     }
 
     /**

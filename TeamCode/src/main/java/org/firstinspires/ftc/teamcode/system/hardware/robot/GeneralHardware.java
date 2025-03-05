@@ -4,10 +4,10 @@ import com.qualcomm.hardware.bosch.BHI260IMU;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServoImplEx;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -23,7 +23,6 @@ import org.firstinspires.ftc.teamcode.gvf.LocalizerPinpoint;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.odo.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
-import org.firstinspires.ftc.teamcode.system.accessory.imu.ImuThread;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.CRServoPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
@@ -38,13 +37,15 @@ public class GeneralHardware
     public MotorPika FL, BL, outtakeLiftM, turretM;
     public AnalogInput turretEncoder;
     public Encoder perpendicularOdo, parallelOdo;
-    public ServoPika turretS, clipS, intakeArmS, leftPTOS, rightPTOS;
-    public CRServoPika intakeS;
-    public ServoPika clawS, wristS, pivotS, armS;
+    public ServoPika turretS, clipS, intakeArmS, ptoS;
+    public CRServoPika intakeCS;
+    public ServoPika clawS, wristS, pivotS, armS, lockS;
+    public ServoPika leftClimbS, rightClimbS;
     public RevColorSensorV3 colourSensor;
     public DistanceSensor distanceSensor;
     public GoBildaPinpointDriver pinpoint;
     public LocalizerPinpoint localizerPinpoint;
+    public Encoder turretIncrementalEncoder;
 
     public MecanumDrive drive;
 
@@ -92,23 +93,28 @@ public class GeneralHardware
        /* perpendicularOdo = new Encoder(intakeM.getMotor());
         parallelOdo = new Encoder(BR.getMotor());*/
 
-        intakeS = new CRServoPika(hm.get(CRServoImplEx.class, "intakeS"));
+        intakeCS = new CRServoPika(hm.get(CRServoImplEx.class, "intakeCS"));
         clipS = new ServoPika(hm.get(ServoImplEx.class, "clipS"));
-        intakeArmS = new ServoPika(hm.get(ServoImplEx.class, "intakeS"));
-        leftPTOS = new ServoPika(hm.get(ServoImplEx.class, "leftPTOS"));
-        rightPTOS = new ServoPika(hm.get(ServoImplEx.class, "rightPTOS"));
+        intakeArmS = new ServoPika(hm.get(ServoImplEx.class, "intakeArmS"));
+        ptoS = new ServoPika(hm.get(ServoImplEx.class, "ptoS"));
         turretS = new ServoPika(hm.get(ServoImplEx.class, "turretS"));
 
         clawS = new ServoPika(hm.get(ServoImplEx.class, "clawS"));
         wristS = new ServoPika(hm.get(ServoImplEx.class, "wristS"));
         armS = new ServoPika(hm.get(ServoImplEx.class, "armS"));
-        pivotS = new ServoPika(hm.get(ServoImplEx.class, "flapS"));
+        pivotS = new ServoPika(hm.get(ServoImplEx.class, "pivotS"));
+        lockS = new ServoPika(hm.get(ServoImplEx.class, "lockS"));
+
+        leftClimbS = new ServoPika(hm.get(ServoImplEx.class, "leftClimbS"));
+        rightClimbS = new ServoPika(hm.get(ServoImplEx.class, "rightClimbS"));
+
         //seh3 = hm.get(ServoImplEx.class, "seh3");
         //seh4 = hm.get(ServoImplEx.class, "seh4");
         //seh5 = hm.get(ServoImplEx.class, "seh5");
 
         turretEncoder = hm.get(AnalogInput.class, "turretEncoder");
-        colourSensor = hm.get(RevColorSensorV3.class, "colorSensor");
+        turretIncrementalEncoder = new Encoder(turretM.getMotor());
+        colourSensor = hm.get(RevColorSensorV3.class, "colourSensor");
         distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
 
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
@@ -116,6 +122,14 @@ public class GeneralHardware
         //dc0 = hm.get(DigitalChannel.class, "dc0");
         //dc1 = hm.get(DigitalChannel.class, "dc1");
 
+        imu = hardwareMap.get(BHI260IMU.class, "imu"); // we initialize a normal instance of the imu for tele
+        imu.initialize(new IMU.Parameters(
+                new RevHubOrientationOnRobot(
+                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP
+                )
+        ));
+        imu.resetYaw();
 
         //reverse correct motors
         //FR.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -149,7 +163,6 @@ public class GeneralHardware
             S = side == Side.Red ? 1 : -1;
             A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);
         }
-        else imu = hardwareMap.get(BHI260IMU.class, "imu"); // we initialize a normal instance of the imu for tele
     }
     @Deprecated
     /** This has to be called when the opMode initializes, only auto **/

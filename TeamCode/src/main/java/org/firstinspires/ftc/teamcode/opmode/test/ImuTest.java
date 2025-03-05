@@ -5,25 +5,18 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.ServoImplEx;
+import com.qualcomm.robotcore.hardware.IMU;
 
-
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 @Config
-@TeleOp(name = "ClimbTest", group = "Test")
-public class ClimbTest extends LinearOpMode
+@TeleOp(name = "Imu Test", group = "Test")
+public class ImuTest extends LinearOpMode
 {
-    public static int climbTarget = 0;
-    public static double climbRPos = 0, climbLPos = 0;
-    // in 2900
-    // into the thing 440
-    // hook onto other thing 100
-    // climbing 4000
-
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     DriveBaseSubsystem driveBase;
@@ -31,20 +24,23 @@ public class ClimbTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        //hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
-        ServoImplEx climbR = hardwareMap.get(ServoImplEx.class, "climbrS");
-        ServoImplEx climbL = hardwareMap.get(ServoImplEx.class,"climblS");
-//        intakeSubsystem = new IntakeSubsystem(hardware);
-//        outtakeSubsystem = new OuttakeSubsystem(hardware);
-//        driveBase = new DriveBaseSubsystem(hardware);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        intakeSubsystem = new IntakeSubsystem(hardware);
+        outtakeSubsystem = new OuttakeSubsystem(hardware);
+        driveBase = new DriveBaseSubsystem(hardware);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
-
+        IMU imu;
+        imu = hardware.imu;
+        imu.resetYaw();
         while (opModeIsActive())
         {
-            climbR.setPosition(climbRPos);
-            climbL.setPosition(climbLPos);
+            hardware.resetCacheHubs();
+            driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            intakeSubsystem.intakeTurretSetAngle(90);
+            telemetry.addData("Heading ", imu.getRobotYawPitchRollAngles());
+            telemetry.addData("Angular vel ", imu.getRobotAngularVelocity(AngleUnit.DEGREES).zRotationRate);
             telemetry.update();
-        }
+      }
     }
 }

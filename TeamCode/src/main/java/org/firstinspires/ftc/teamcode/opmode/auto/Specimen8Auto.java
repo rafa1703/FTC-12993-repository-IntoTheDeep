@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.SpecAutoPath;
@@ -24,8 +23,8 @@ import org.firstinspires.ftc.teamcode.system.vision.InverseKinematics;
 
 import java.util.Arrays;
 
-@Autonomous(name = "7+0", group = "SPEC")
-public class Specimen7Auto extends LinearOpMode
+@Autonomous(name = "8+0", group = "SPEC")
+public class Specimen8Auto extends LinearOpMode
 {
     enum autoState {
         PRELOAD_DEPOSIT,
@@ -626,7 +625,7 @@ public class Specimen7Auto extends LinearOpMode
         char[][] grid = new char[rows][cols];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                grid[i][j] = '-'; // Fill with default character
+                grid[i][j] = '-';
             }
         }
         // Fill the specified square
@@ -657,7 +656,7 @@ public class Specimen7Auto extends LinearOpMode
         {
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPIN);
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPIN);
-            outtakeSubsystem.turretSpinToCorrected(targetAngle); // we
+            outtakeSubsystem.turretSpinToCorrected(targetAngle);
             globalTimer = turretTimer;
         }
     }

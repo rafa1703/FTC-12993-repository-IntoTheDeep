@@ -433,7 +433,6 @@ public class SampleAuto extends LinearOpMode
                 hardware.drive.followTrajectorySplineHeading(trajectories.parkTrajectory);
                 if (delay(200))
                 {
-                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.HALF_TRANSFER);
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                     outtakeSubsystem.liftToInternalPIDTicks(100);
                 }
@@ -494,14 +493,14 @@ public class SampleAuto extends LinearOpMode
             }
             else
             {
-                outtakeSubsystem.turretSpinTo(targetAngle);
+                outtakeSubsystem.turretSpinToCorrected(targetAngle);
             }
         }
         else
         {
             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPIN);
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPIN);
-            outtakeSubsystem.turretSpinTo(targetAngle); // we
+            outtakeSubsystem.turretSpinToCorrected(targetAngle); // we
             globalTimer = turretTimer;
         }
     }

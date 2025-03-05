@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
@@ -24,7 +26,7 @@ public class IntakeSubsystem
 {
 
     ServoPika clipS, armS, turretS;
-    CRServoPika intakeS;
+    CRServoPika intakeCS;
     MotorPika intakeSlideMotor;
     RevColorSensorV3 colourSensor;
     DistanceSensor distanceSensor;
@@ -33,13 +35,14 @@ public class IntakeSubsystem
     public int slideTarget, slidePosition;
     long colorValue;
     GeneralHardware.Side side;
+    double intakeSlidesFineAdjustTimer;
 
-    public static final double // in inches
+    public static final double // in inches, 24 max slides
             slideExtensionLimit = 18.5,
             slideTeleClose = 12,
-            slideTeleFar = 18.5, // max extension is 27 under the extension limit
+            slideTeleFar = 18.5,
             slideTeleBase = 0,
-            slideTransfer = -2,
+            slideTransfer = -5,
             slideAutoFar = 18.5,
             slideAutoClose = 14;
     private final double slideThreshold = 8;
@@ -61,16 +64,16 @@ public class IntakeSubsystem
 
     public enum IntakeArmServoState
     {
-        READY(0),
-        TRANSFER_BACK(0),
-        TRANSFER_FRONT(0),
-        HALF_TRANSFER(0),
-        TRANSFER_FINISH(0),
-        HORIZONTAL(0),
-        HALF_DOWN(0),
-        DOWN(0),
-        BACK(0),
-        IN(0),
+        READY(0.53),
+        TRANSFER_BACK(0.48),
+        TRANSFER_FRONT(0.6),
+        HALF_TRANSFER(0.33),
+        TRANSFER_FINISH(0.55),
+        HORIZONTAL(0.82),
+        HALF_DOWN(0.9),
+        DOWN(0.95),
+        BACK(0.95),
+        IN(0.45),
         AROUND(0);
 
         public final double pos;
@@ -97,12 +100,13 @@ public class IntakeSubsystem
 
     public enum IntakeTurretServoState
     {
-        MAX_LEFT(0),
-        LEFT(0),
-        STRAIGHT(0),
-        RIGHT(0),
-        MAX_RIGHT(0),
-        AROUND(0);
+        TRANSFER(0.28),
+        MAX_LEFT(0.43),
+        LEFT(0.345),
+        STRAIGHT(0.26),
+        RIGHT(0.195),
+        MAX_RIGHT(0.13),
+        AROUND(0.83);
 
         public final double pos;
 
@@ -130,18 +134,35 @@ public class IntakeSubsystem
         side = hardware.side;
 
         turretS = hardware.turretS;
-        intakeS = hardware.intakeS;
+        intakeCS = hardware.intakeCS;
         clipS = hardware.clipS;
+        armS = hardware.intakeArmS;
         colourSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
         distanceSensor = hardware.distanceSensor;
         intakeSlideMotor = hardware.intakeSlidesM;
 
         intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
+    public IntakeSubsystem(HardwareMap hardware)
+    {
+        side = GeneralHardware.Side.Red;
+
+        turretS = new ServoPika(hardware.get(ServoImplEx.class, "turretS"));
+        armS = new ServoPika(hardware.get(ServoImplEx.class, "armS"));
+        intakeCS = new CRServoPika(hardware.get(CRServoImplEx.class, "intakeCS"));
+        clipS = new ServoPika(hardware.get(ServoImplEx.class, "clipS"));
+        colourSensor = hardware.get(RevColorSensorV3.class, "colourSensor"); // no supplier as i want this to pool immediately and synchronously
+        distanceSensor = hardware.get(DistanceSensor.class, "distanceSensor");
+        intakeSlideMotor = new MotorPika(hardware.get(DcMotorEx.class, "intakeSlides"));
+
+        intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
+    }
+
 
     public void intakeHardwareSetUp()
     {
         // if we need to reverse anything
+        intakeCS.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeSlideMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         intakeSlideMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         intakeSlideMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -167,20 +188,20 @@ public class IntakeSubsystem
         switch (state)
         {
             case INTAKE:
-                intakeS.setPower(1);
+                intakeCS.setPower(1);
                 break;
             case OFF:
-                intakeS.setPower(0);
+                intakeCS.setPower(0);
                 break;
             case REVERSE:
-                intakeS.setPower(-1);
+                intakeCS.setPower(-1);
                 break;
         }
     }
 
     public void intakeSpin(double spinDirection)
     {
-        intakeS.setPower(spinDirection);
+        intakeCS.setPower(spinDirection);
     }
 
     public void intakeArm(IntakeArmServoState state)
@@ -215,8 +236,9 @@ public class IntakeSubsystem
 
     public void intakeTurretBasedOnHeadingVel(double headingVel)
     {
-        double t = Math.min(1, headingVel / 2);
-        double i = interpolation(0, 65, t);
+        double t = Math.min(1, Math.abs(headingVel / 130));
+        double i = interpolation(0, 60, t);
+        if (i < 1) i = 0;
         turretS.setPosition(STRAIGHT.pos + angleToServoTicks(i) * Math.signum(headingVel));
     }
 
@@ -289,7 +311,6 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(maxPower);
     }
-
     public void intakeSlideMotorEncoderReset()
     {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -326,6 +347,10 @@ public class IntakeSubsystem
     public boolean isDistance(double inch)
     {
         return distance < inch;
+    }
+    public double getDistance()
+    {
+        return distance;
     }
     public double armLength(double armAngle)
     {
@@ -378,11 +403,13 @@ public class IntakeSubsystem
     }
 
     public double ticksToInchesSlidesMotor(double ticks){
-        return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
+        return 24 * ticks / 611;
+        //return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
+        return 611 * inches / 24;
+        //return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/12 = 5
     }
 
