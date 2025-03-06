@@ -126,7 +126,7 @@ public class OuttakeSubsystem
         READY(0),
         SPIN(0.55),
         STRAIGHT(0.65),
-        TRANSFER_FRONT(0.85),
+        TRANSFER_FRONT(0.94),
         TRANSFER_BACK(0.32),
         HALF_TRANSFER(0),
         SAMPLE(0.7),
@@ -149,7 +149,7 @@ public class OuttakeSubsystem
     {
         READY(0),
         SPIN(0.45),
-        TRANSFER_FRONT(0.75),
+        TRANSFER_FRONT(0.6),
         TRANSFER_BACK(0.26),
         TRANSFER_FINISH(0),
         SAMPLE(0.4),
@@ -282,7 +282,7 @@ public class OuttakeSubsystem
     public void turretSpinTo(OuttakeTurretState state)
     {
         turretTarget = state.angle;
-        double pow = turretPID.update(turretAngleToTicks(state.angle), turretIncrementalPosition, 1);
+        double pow = turretAbsolutePID.update(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
         turretMotor.setPower(pow);
     }
     public void turretSpinToTicks(double angle)

@@ -35,15 +35,16 @@ public class IntakeTest extends LinearOpMode
             outtakeSubsystem.outtakeReads(true);
             //outtakeSubsystem.turretSpinTo(180);
 //            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
-            intakeSubsystem.armSetPos(armI);
-            outtakeSubsystem.armSetPos(armO);
-            outtakeSubsystem.wristSetPos(wrist);
-            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
+//            intakeSubsystem.armSetPos(armI);
+//            outtakeSubsystem.armSetPos(armO);
+//            outtakeSubsystem.wristSetPos(wrist);
+//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+//            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
 //            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
-            outtakeSubsystem.clawState(claw);
+//            outtakeSubsystem.clawState(claw);
 //            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
-
+            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+            intakeSubsystem.armSetPos(1);
             telemetry.addData("Pos", intakeSubsystem.slidePosition);
             telemetry.addData("Distance", intakeSubsystem.getDistance());
             telemetry.addData("Colour", intakeSubsystem.getColorValue());
