@@ -1069,6 +1069,7 @@ public class SentinelDrive extends LinearOpMode
         {
             intakeTurretUsingPresets = true;
         }
+
         if (intakeTurretUsingPresets)
         {
             if (intakeTurretToggle.OffsetTargetPosition == 0)
