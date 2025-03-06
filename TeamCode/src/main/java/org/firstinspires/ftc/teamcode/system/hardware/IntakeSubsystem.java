@@ -38,9 +38,9 @@ public class IntakeSubsystem
     double intakeSlidesFineAdjustTimer;
 
     public static final double // in inches, 24 max slides
-            slideExtensionLimit = 18.5,
+            slideExtensionLimit = 26,
             slideTeleClose = 12,
-            slideTeleFar = 18.5,
+            slideTeleFar = 24,
             slideTeleBase = 0,
             slideTransfer = -5,
             slideAutoFar = 18.5,
@@ -67,14 +67,15 @@ public class IntakeSubsystem
         READY(0.53),
         TRANSFER_BACK(0.48),
         TRANSFER_FRONT(0.6),
-        HALF_TRANSFER(0.33),
+        HALF_TRANSFER(0.8),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
         HALF_DOWN(0.9),
         DOWN(0.95),
         BACK(0.95),
         IN(0.45),
-        AROUND(0);
+        EDGE_CASE(0.42),
+        AROUND(0.5);
 
         public final double pos;
 
@@ -178,7 +179,6 @@ public class IntakeSubsystem
             double blueValue = colourSensor.getNormalizedColors().blue;
             isRed = redValue > blueValue;
             colorValue = colourSensor.alpha();
-            isYellow = colorValue > 2500;
             distance = distanceSensor.getDistance(DistanceUnit.INCH);
         }
     }

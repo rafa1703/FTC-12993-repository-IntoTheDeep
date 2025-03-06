@@ -25,7 +25,8 @@ public class OuttakeSubsystem
     Encoder turretIncrementalEncoder;
     AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
-    PID turretPID = new PID(0.04, 0, 0.003, 0, 0);
+    public PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
+    PID turretAbsolutePID = new PID(0.04, 0, 0.003, 0, 0);
     LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
@@ -48,7 +49,7 @@ public class OuttakeSubsystem
             turretBackAngle = 180;
     public final double turretThreshold = 2;
     private final double maxAngleAxon = 355;
-    public double turretIncrementalPosition;
+    public int turretIncrementalPosition;
     public double initialOffsetPosition;
 
     public enum OuttakeTurretState
@@ -126,7 +127,7 @@ public class OuttakeSubsystem
         SPIN(0.55),
         STRAIGHT(0.65),
         TRANSFER_FRONT(0.85),
-        TRANSFER_BACK(0.3),
+        TRANSFER_BACK(0.32),
         HALF_TRANSFER(0),
         SAMPLE(0.7),
         SPECIMEN_HIGH(1),
@@ -183,6 +184,8 @@ public class OuttakeSubsystem
         turretMotor = hardware.turretM;
         turretEncoder = hardware.turretEncoder;
         turretIncrementalEncoder = hardware.turretIncrementalEncoder;
+        hardware.BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // this is a little bit dodge but necessary
+        hardware.BR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         outtakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
 
@@ -213,13 +216,13 @@ public class OuttakeSubsystem
     public void outtakeReads(boolean i2c)
     {
         liftPosition = liftMotor.getCurrentPosition();
-        turretIncrementalPosition = turretMotor.getCurrentPosition();// + initialOffsetPosition;//turretIncrementalEncoder.getCurrentPosition();// - initialOffsetPosition;
+        turretIncrementalPosition = turretIncrementalEncoder.getCurrentPosition() + (int) initialOffsetPosition; // + initialOffsetPosition;//turretIncrementalEncoder.getCurrentPosition();// - initialOffsetPosition;
         if (i2c) turretAngle = turretAngle();
     }
     /** returns the absolute angle **/
     public double turretAngle()
     {
-        return turretFilter.getValue(turretEncoder.getVoltage() / 3.227 * 360);
+        return turretFilter.getValue(turretEncoder.getVoltage() / 3.225 * 360)  - 5;
     }
     public double encoderVoltage()
     {
@@ -278,8 +281,17 @@ public class OuttakeSubsystem
 
     public void turretSpinTo(OuttakeTurretState state)
     {
-        turretSpinToCorrected(state.angle);
+        turretTarget = state.angle;
+        double pow = turretPID.update(turretAngleToTicks(state.angle), turretIncrementalPosition, 1);
+        turretMotor.setPower(pow);
     }
+    public void turretSpinToTicks(double angle)
+    {
+        turretTarget = angle;
+        double pow = turretPID.update(turretAngleToTicks(angle), turretIncrementalPosition, 1);
+        turretMotor.setPower(pow);
+    }
+
     public void turretSpinToCorrected(double turretTargetAngle)
     {
         turretTarget = Angles.normalizeDegrees(turretTargetAngle - turretAngle);
@@ -318,7 +330,17 @@ public class OuttakeSubsystem
         heading = -heading;
         double diff = Angles.normalizeDegrees(turretTargetAngle - heading);
         turretTarget = Angles.normalizeDegrees(diff - turretAngle);
-        double power = turretPID.update(turretTarget, 0, 1);
+        double power = turretAbsolutePID.update(turretTarget, 0, 1);
+        turretMotor.setPower(power);
+    }
+    public void turretKeepToAngleTicks(double turretTargetAngle, double heading) // the target angle is field centric ig
+    {
+//         turretTargetAngle += back ? 180 : 0;
+        double turretAngle = Angles.reduceDegrees(turretTicksToAngle(turretIncrementalPosition));
+        heading = -heading;
+        double diff = Angles.normalizeDegrees(turretTargetAngle - heading);
+        turretTarget = Angles.normalizeDegrees(diff - turretAngle);
+        double power = turretAbsolutePID.update(turretTarget, 0, 1);
         turretMotor.setPower(power);
     }
     public void turretKeepToAngle(double turretTargetAngle, double heading) // the target angle is field centric ig

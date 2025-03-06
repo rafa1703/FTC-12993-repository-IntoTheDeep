@@ -113,7 +113,7 @@ public class GeneralHardware
         //seh5 = hm.get(ServoImplEx.class, "seh5");
 
         turretEncoder = hm.get(AnalogInput.class, "turretEncoder");
-        turretIncrementalEncoder = new Encoder(turretM.getMotor());
+        turretIncrementalEncoder = new Encoder(BR.getMotor());
         colourSensor = hm.get(RevColorSensorV3.class, "colourSensor");
         distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
 
