@@ -25,8 +25,8 @@ public class OuttakeSubsystem
     Encoder turretIncrementalEncoder;
     AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
-    public PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
-    PID turretAbsolutePID = new PID(0.04, 0, 0.003, 0, 0);
+    PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
+    PID turretAbsolutePID = new PID(0.025, 0.02, 0.0003, 15, 0);
     LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
@@ -35,11 +35,11 @@ public class OuttakeSubsystem
     GeneralHardware.Side side;
     private final double TICKS_PER_BARE_MOTOR = 28;
 
-    public static final double
+    public double
             liftMaxExtension = 22.5,
-            liftHighBucketPos = 40,
+            liftHighBucketPos = 22.5,
             liftLowBucketPos = 6,
-            liftHighBarPos = 15,
+            liftHighBarPos = 12,
             liftLowBarPos = 6,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
@@ -56,6 +56,9 @@ public class OuttakeSubsystem
     {
         TRANSFER_FRONT(0),
         TRANSFER_BACK(180),
+        CLIMB_START(150),
+        ANGLE190(190),
+        ANGLE170(170),
         SPEC_DEPOSIT_BACK_AUTO(225);
 
         public final double angle;
@@ -66,14 +69,14 @@ public class OuttakeSubsystem
     }
     public enum OuttakePivotServoState
     {
-        UP(4, 0.19),
-        RIGHT_UP(5, 0),
-        RIGHT(6, 0.97),
-        RIGHT_DOWN(7, 0),
-        DOWN(0, 0.69),
-        LEFT_DOWN(1, 0),
-        LEFT(2, 0),
-        LEFT_UP(3, 0);
+        UP(2, 0.13),
+        RIGHT_UP(1, 1),
+        RIGHT(0, 0.97),
+        RIGHT_DOWN(7, 0.83),
+        DOWN(6, 0.69),
+        LEFT_DOWN(5, 0.58),
+        LEFT(4, 0.415),
+        LEFT_UP(3, 0.3);
 
         private static final Map<Double, OuttakePivotServoState> BY_POSITION = new HashMap<>();
         private static final Map<Integer, OuttakePivotServoState> BY_ORDER = new HashMap<>();
@@ -130,7 +133,7 @@ public class OuttakeSubsystem
         TRANSFER_BACK(0.32),
         HALF_TRANSFER(0),
         SAMPLE(0.7),
-        SPECIMEN_HIGH(1),
+        SPECIMEN_HIGH(0.93),
         SPECIMEN_HIGH_BACK(0.3),
         SPECIMEN_LOW(0.88),
         SPECIMEN_LOW_BACK(0.37),
@@ -154,12 +157,12 @@ public class OuttakeSubsystem
         TRANSFER_FINISH(0),
         SAMPLE(0.4),
         SAMPLE_DROP(0),
-        SPECIMEN_HIGH(0.49),
+        SPECIMEN_HIGH(0.475),
         SPECIMEN_HIGH_BACK(0.3),
         SPECIMEN_LOW(0.78),
         SPECIMEN_LOW_BACK(0.27),
         HP_DEPOSIT(0),
-        INTAKE(0.42);
+        INTAKE(0.45);
 
         public final double pos;
 
@@ -168,6 +171,19 @@ public class OuttakeSubsystem
             this.pos = pos;
         }
     }
+    public enum OuttakeLockServoState
+    {
+        OPEN(0.2),
+        LOCKED(0.45);
+
+        public final double pos;
+        OuttakeLockServoState(double pos)
+        {
+            this.pos = pos;
+        }
+
+    }
+
 
 
     public OuttakeSubsystem(GeneralHardware hardware)
@@ -222,7 +238,7 @@ public class OuttakeSubsystem
     /** returns the absolute angle **/
     public double turretAngle()
     {
-        return turretFilter.getValue(turretEncoder.getVoltage() / 3.225 * 360)  - 5;
+        return turretFilter.getValue(turretEncoder.getVoltage() / 3.225 * 360)  - 4;
     }
     public double encoderVoltage()
     {
@@ -245,9 +261,17 @@ public class OuttakeSubsystem
     {
         pivotS.setPosition(0.002816901408 * angle);
     }
-    public void pivotSerPosByOrder(int order)
+    public void pivotSetPosByOrder(int order)
     {
         pivotS.setPosition(OuttakePivotServoState.valueOfOrder(order).pos);
+    }
+    public void lockServoState(OuttakeLockServoState state)
+    {
+        lockS.setPosition(state.pos);
+    }
+    public void lockSetPos(double pos)
+    {
+        lockS.setPosition(pos);
     }
     public void clawState(OuttakeClawServoState state)
     {
@@ -285,13 +309,19 @@ public class OuttakeSubsystem
         double pow = turretAbsolutePID.update(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
         turretMotor.setPower(pow);
     }
-    public void turretSpinToTicks(double angle)
+    public void turretSpinToGains(OuttakeTurretState state)
     {
-        turretTarget = angle;
-        double pow = turretPID.update(turretAngleToTicks(angle), turretIncrementalPosition, 1);
+        turretTarget = state.angle;
+        double pow = turretAbsolutePID.updateImprovedControllers(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
         turretMotor.setPower(pow);
     }
-
+//    public void turretSpinToTicks(double angle)
+//    {
+//        turretTarget = angle;
+//        double pow = turretPID.update(turretAngleToTicks(angle), turretIncrementalPosition, 1);
+//        turretMotor.setPower(pow);
+//    }
+    @Deprecated
     public void turretSpinToCorrected(double turretTargetAngle)
     {
         turretTarget = Angles.normalizeDegrees(turretTargetAngle - turretAngle);
@@ -312,18 +342,21 @@ public class OuttakeSubsystem
     {
         return ticks / 4000 * 360;
     }
+    @Deprecated
     public void turretSpinTo(double turretTargetAngle)
     {
         turretTarget = Angles.normalizeDegrees(turretTargetAngle - turretAngle);
         double power = turretPID.update(turretTarget, 0, 1);
         turretMotor.setPower(power);
     }
+    @Deprecated
     public void turretSpinTo(double turretTargetAngle, double maxPower)
     {
         turretTarget = Angles.normalizeDegrees(turretTargetAngle - turretAngle);
         double power = turretPID.update(turretTarget, 0, maxPower);
         turretMotor.setPower(power);
     }
+    @Deprecated
     public void turretKeepToAngle(double turretTargetAngle, double heading, boolean back) // the target angle is field centric ig
     {
         turretTargetAngle += back ? 180 : 0;
@@ -343,6 +376,7 @@ public class OuttakeSubsystem
         double power = turretAbsolutePID.update(turretTarget, 0, 1);
         turretMotor.setPower(power);
     }
+    @Deprecated
     public void turretKeepToAngle(double turretTargetAngle, double heading) // the target angle is field centric ig
     {
         turretKeepToAngle(turretTargetAngle, heading, false);

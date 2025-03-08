@@ -491,7 +491,7 @@ public class Specimen7Auto extends LinearOpMode
                         hardware.drive.followTrajectorySplineHeading(trajectories.firstDepositWhileTurning);
                         if (delay(90))
                         {
-                            outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBarPos);
+                            outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPos);
                         }
                         if (delay(130))
                         {

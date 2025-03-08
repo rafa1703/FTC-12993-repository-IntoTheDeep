@@ -18,22 +18,27 @@ public class DriveBaseMotorDirection extends LinearOpMode
 {
     DriveBaseSubsystem driveBase;
     GeneralHardware hardware;
+    OuttakeSubsystem outtakeSubsystem;
     public static double
             FL = 0,
             FR = 0,
             BL = 0,
-            BR = 0;
+            BR = 0,
+            lift = 0;
     @Override
     public void runOpMode() throws InterruptedException
     {
-        //hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
-        driveBase = new DriveBaseSubsystem(hardwareMap);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        driveBase = new DriveBaseSubsystem(hardware);
+        outtakeSubsystem = new OuttakeSubsystem(hardware);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
         while (opModeIsActive())
         {
-            driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
-         //   driveBase.motorDirectionTest(FL, FR, BL, BR);
+
+//            driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+            driveBase.motorDirectionTest(FL, FR, BL, BR);
+            outtakeSubsystem.liftMotorRawControl(lift);
             telemetry.update();
         }
     }

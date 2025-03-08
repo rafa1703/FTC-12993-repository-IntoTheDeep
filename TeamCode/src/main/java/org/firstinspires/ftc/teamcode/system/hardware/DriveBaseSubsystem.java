@@ -22,23 +22,20 @@ public class DriveBaseSubsystem
             FR,
             BL,
             BR;
-    public ServoPika
-            leftPTOS,
-            rightPTOS;
+    ServoPika
+        ptoS;
 
 
     public enum PTOState
     {
-        OUT(0, 0),
-        IN(0,0);
+        OUT(0.23),
+        IN(0);
 
-        public final double  leftPos;
-        public final double rightPos;
+        public final double pos;
 
-        PTOState(double leftPos, double rightPos)
+        PTOState(double pos)
         {
-            this.leftPos = leftPos;
-            this.rightPos = rightPos;
+            this.pos = pos;
         }
     }
     // higher values of k means more adjustment.
@@ -75,6 +72,7 @@ public class DriveBaseSubsystem
         FR = hardware.FR;
         BL = hardware.BL;
         BR = hardware.BR;
+        ptoS = hardware.ptoS;
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     public DriveBaseSubsystem(HardwareMap hardwareMap)
@@ -104,8 +102,11 @@ public class DriveBaseSubsystem
     }
     public void PTOState(PTOState state)
     {
-        leftPTOS.setPosition(state.leftPos);
-        rightPTOS.setPosition(state.rightPos);
+        ptoS.setPosition(state.pos);
+    }
+    public void PTOSetPosition(double pos)
+    {
+        ptoS.setPosition(pos);
     }
 
     public static double adjustedJoystick(double x) {
@@ -129,7 +130,10 @@ public class DriveBaseSubsystem
         BR.setPower(backRightPower);
         BL.setPower(backLeftPower);
     }
-
+    public void ptoMotorsSetPower(double pow){
+        this.BL.setPower(pow);
+        this.BR.setPower(pow);
+    }
     public void motorDirectionTest(double FL, double FR, double BL, double BR){
         this.FL.setPower(FL);
         this.BL.setPower(BL);

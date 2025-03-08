@@ -23,9 +23,10 @@ public class OuttakeTest extends LinearOpMode
     //public static double clawPos = 0, wristPos = 0, pivotPos = 0, armPos = 0;
     //public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
 //    ..public static OuttakeSubsystem.OuttakeTurretState turretState = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
-    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
-    public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT.pos;
-    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
+//    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
+//    public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT.pos;
+//    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
+    public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -49,27 +50,32 @@ public class OuttakeTest extends LinearOpMode
             outtakeSubsystem.outtakeReads(true);
 //            outtakeSubsystem.turretRawControl(turretPos);
 
-            intakeSubsystem.armSetPos(armI);
-            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-            outtakeSubsystem.wristSetPos(wrist);
-            outtakeSubsystem.pivotSetPos(pivot);
-            outtakeSubsystem.armSetPos(armO);
-            outtakeSubsystem.clawState(claw);
+//            intakeSubsystem.armSetPos(armI);
+//            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+//            outtakeSubsystem.wristSetPos(wrist);
+            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
+            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
+            outtakeSubsystem.turretSpinToGains(turret);
+
+            telemetry.addData("Turret angle", outtakeSubsystem.turretTicksToAngle(outtakeSubsystem.turretIncrementalPosition));
+            telemetry.addData("Turret target", turret.angle);
+//            outtakeSubsystem.armSetPos(armO);
+//            outtakeSubsystem.clawState(claw);
 //            else outtakeSubsystem.turretSpinToTicks(turretState.angle);
-            telemetry.addData("Angle reducd", Angles.reduceDegrees(outtakeSubsystem.turretTicksToAngle(outtakeSubsystem.turretIncrementalPosition)));
-            telemetry.addData("Integral sum", outtakeSubsystem.turretPID.returnIntegralSum());
-            telemetry.addData("Turret position", outtakeSubsystem.turretIncrementalPosition);
-            //telemetry.addData("Turret target ticks", outtakeSubsystem.turretAngleToTicks(turretState.angle));
-            telemetry.addData("TUrret pos FL motor", hardware.FL.getCurrentPosition());
-            telemetry.addData("Turret vol", outtakeSubsystem.encoderVoltage());
-            telemetry.addData("Turret abs angle", outtakeSubsystem.turretAngle);
-            telemetry.addData("Turret wrapped angle", Angles.normalizeDegrees(outtakeSubsystem.turretAngle));
-            telemetry.addData("Turret position direct ", hardware.turretM.getCurrentPosition());
-            telemetry.addData("Turret intial offset", outtakeSubsystem.initialOffsetPosition);
-          //  telemetry.addData("Turret Target tick", outtakeSubsystem.turretAngleToTicks(turretPos));
-//            telemetry.addData("Turret target",outtakeSubsystem.turretAngleToTicks(turretPos));
-            telemetry.addData("Lift ", outtakeSubsystem.liftPosition);
-            telemetry.addData("br", hardware.BR.getCurrentPosition());
+//            telemetry.addData("Angle reducd", Angles.reduceDegrees(outtakeSubsystem.turretTicksToAngle(outtakeSubsystem.turretIncrementalPosition)));
+//            telemetry.addData("Integral sum", outtakeSubsystem.turretPID.returnIntegralSum());
+//            telemetry.addData("Turret position", outtakeSubsystem.turretIncrementalPosition);
+//            //telemetry.addData("Turret target ticks", outtakeSubsystem.turretAngleToTicks(turretState.angle));
+//            telemetry.addData("TUrret pos FL motor", hardware.FL.getCurrentPosition());
+//            telemetry.addData("Turret vol", outtakeSubsystem.encoderVoltage());
+//            telemetry.addData("Turret abs angle", outtakeSubsystem.turretAngle);
+//            telemetry.addData("Turret wrapped angle", Angles.normalizeDegrees(outtakeSubsystem.turretAngle));
+//            telemetry.addData("Turret position direct ", hardware.turretM.getCurrentPosition());
+//            telemetry.addData("Turret intial offset", outtakeSubsystem.initialOffsetPosition);
+//          //  telemetry.addData("Turret Target tick", outtakeSubsystem.turretAngleToTicks(turretPos));
+////            telemetry.addData("Turret target",outtakeSubsystem.turretAngleToTicks(turretPos));
+//            telemetry.addData("Lift ", outtakeSubsystem.liftPosition);
+//            telemetry.addData("br", hardware.BR.getCurrentPosition());
             telemetry.update();
             Thread.sleep(35);
         }

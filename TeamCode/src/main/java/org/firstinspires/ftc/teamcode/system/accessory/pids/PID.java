@@ -1,6 +1,8 @@
 package org.firstinspires.ftc.teamcode.system.accessory.pids;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.teamcode.gvf.utils.LowPassFilter;
+
 public class PID {
 
     ElapsedTime timer = new ElapsedTime();
@@ -16,6 +18,9 @@ public class PID {
     double Kf;
     double State;
     double Target;
+    double reference;
+    double lastReference;
+    LowPassFilter derivativeFilter = new LowPassFilter(0.8, 0);
 
 
     public PID(double Kp, double Ki, double Kd, double integralSumLimit, double Kf){
@@ -43,6 +48,39 @@ public class PID {
         output = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * target);
         if (output > maxOutput){ // basically cuts the PID so the motor can run at the max speed
             output = maxOutput;
+        }
+        lastError = error;
+        timer.reset(); // i didn't do this it will mess with the PIDs
+
+        return output;
+    }
+    public double updateImprovedControllers(double target, double state, double maxOutput) { // parameter of the method is the target,
+        // PID logic and then return the output
+        State = state;
+        Target = target;
+        error = target-state;
+        derivative = derivativeFilter.getValue(error-lastError) / timer.seconds();
+        integralSum = integralSum + (error * timer.seconds());
+        // set a limit on our integral sum
+        if (integralSum > integralSumLimit) {
+            integralSum = integralSumLimit;
+        }
+        if (integralSum < -integralSumLimit) {
+            integralSum = -integralSumLimit;
+        }
+        reference = Math.signum(error);
+
+        if (reference != lastReference) integralSum = 0;
+        lastReference = reference;
+
+        output = (Kp * error) + (Ki * integralSum) + (Kd * derivative) + (Kf * target);
+
+        if (output > maxOutput){ // basically cuts the PID so the motor can run at the max speed
+            output = maxOutput;
+        }
+        if (output < -maxOutput)
+        {
+            output = -maxOutput;
         }
         lastError = error;
         timer.reset(); // i didn't do this it will mess with the PIDs

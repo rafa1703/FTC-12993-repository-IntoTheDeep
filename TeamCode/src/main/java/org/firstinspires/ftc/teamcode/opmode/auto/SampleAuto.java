@@ -136,7 +136,7 @@ public class SampleAuto extends LinearOpMode
                         }
                         if (delay(40))
                         {
-                            outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
+                            outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBucketPos);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
                             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
@@ -200,7 +200,7 @@ public class SampleAuto extends LinearOpMode
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                             if (delay(180))
                             {
-                                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
+                                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBucketPos);
                                 if (delay(230))
                                 {
                                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
@@ -218,7 +218,7 @@ public class SampleAuto extends LinearOpMode
                                 }
                                 if (delay(300) && trajectories.hpDeposit.isFinished() &&
                                         outtakeSubsystem.turretReached(255) &&
-                                        outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBucketPos))
+                                        outtakeSubsystem.liftReached(outtakeSubsystem.liftHighBucketPos))
                                 {
                                     outtakeState = OuttakeState.DROP;
                                     resetTimer();
@@ -265,7 +265,7 @@ public class SampleAuto extends LinearOpMode
                     if (delay(120)) // sets up for the transfer
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
-                        outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftBasePos);
+                        outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftBasePos);
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
                         outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
                     }
@@ -324,7 +324,7 @@ public class SampleAuto extends LinearOpMode
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                             if (delay(180))
                             {
-                                outtakeSubsystem.liftToInternalPID(OuttakeSubsystem.liftHighBucketPos);
+                                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBucketPos);
                                 if (delay(230))
                                 {
                                     outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
@@ -351,7 +351,7 @@ public class SampleAuto extends LinearOpMode
                                 }
                                 if (delay(300) && depositTrajectory.isFinished() &&
                                         outtakeSubsystem.turretReached() &&
-                                        outtakeSubsystem.liftReached(OuttakeSubsystem.liftHighBucketPos))
+                                        outtakeSubsystem.liftReached(outtakeSubsystem.liftHighBucketPos))
                                 {
                                     outtakeState = OuttakeState.DROP;
                                     resetTimer();

@@ -10,8 +10,8 @@ public class LowPassFilter {
         this.lastValue = initialValue;
     }
 
-    public double getValue(double rawValue){
-        double newValue = lastValue + t * (rawValue - lastValue);
+    public double getValue(double v){
+        double newValue = lastValue + t * (v - lastValue);
         this.lastValue = newValue;
         return newValue;
     }

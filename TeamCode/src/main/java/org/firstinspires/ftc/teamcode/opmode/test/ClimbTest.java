@@ -17,8 +17,8 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 @TeleOp(name = "ClimbTest", group = "Test")
 public class ClimbTest extends LinearOpMode
 {
-    public static int climbTarget = 0;
-    public static double climbRPos = 0, climbLPos = 0;
+    public static double motorPowers = 0;
+    public static double ptoPos = 0, lockPos = 0;
     // in 2900
     // into the thing 440
     // hook onto other thing 100
@@ -31,19 +31,20 @@ public class ClimbTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        //hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
-        ServoImplEx climbR = hardwareMap.get(ServoImplEx.class, "climbrS");
-        ServoImplEx climbL = hardwareMap.get(ServoImplEx.class,"climblS");
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+
 //        intakeSubsystem = new IntakeSubsystem(hardware);
-//        outtakeSubsystem = new OuttakeSubsystem(hardware);
-//        driveBase = new DriveBaseSubsystem(hardware);
+        outtakeSubsystem = new OuttakeSubsystem(hardware);
+        driveBase = new DriveBaseSubsystem(hardware);
+
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         waitForStart();
 
         while (opModeIsActive())
         {
-            climbR.setPosition(climbRPos);
-            climbL.setPosition(climbLPos);
+            driveBase.ptoMotorsSetPower(motorPowers);
+            driveBase.PTOSetPosition(ptoPos);
+            outtakeSubsystem.lockSetPos(lockPos);
             telemetry.update();
         }
     }

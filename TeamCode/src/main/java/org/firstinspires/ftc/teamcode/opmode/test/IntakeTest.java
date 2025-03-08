@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -33,6 +34,7 @@ public class IntakeTest extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
+            intakeSubsystem.intakeSlideMotorRawControl(1);
             //outtakeSubsystem.turretSpinTo(180);
 //            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
 //            intakeSubsystem.armSetPos(armI);
@@ -43,8 +45,9 @@ public class IntakeTest extends LinearOpMode
 //            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
 //            outtakeSubsystem.clawState(claw);
 //            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
-            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-            intakeSubsystem.armSetPos(1);
+//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.MAX_LEFT);
+
+            telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Pos", intakeSubsystem.slidePosition);
             telemetry.addData("Distance", intakeSubsystem.getDistance());
             telemetry.addData("Colour", intakeSubsystem.getColorValue());
