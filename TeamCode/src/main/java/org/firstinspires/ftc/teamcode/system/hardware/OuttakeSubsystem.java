@@ -26,7 +26,7 @@ public class OuttakeSubsystem
     AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
     PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
-    PID turretAbsolutePID = new PID(0.025, 0.02, 0.0003, 15, 0);
+    PID turretAbsolutePID = new PID(0.022, 0.03, 0.0003, 10, 0);
     LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
@@ -47,7 +47,7 @@ public class OuttakeSubsystem
     public static final double // degree
             turretFrontAngle = 0,
             turretBackAngle = 180;
-    public final double turretThreshold = 2;
+    public final double turretThreshold = 0.75; // degrees, this is kinda low but the turret position
     private final double maxAngleAxon = 355;
     public int turretIncrementalPosition;
     public double initialOffsetPosition;
@@ -132,7 +132,7 @@ public class OuttakeSubsystem
         TRANSFER_FRONT(0.94),
         TRANSFER_BACK(0.32),
         HALF_TRANSFER(0),
-        SAMPLE(0.7),
+        SAMPLE(0.66),
         SPECIMEN_HIGH(0.93),
         SPECIMEN_HIGH_BACK(0.3),
         SPECIMEN_LOW(0.88),
@@ -155,7 +155,7 @@ public class OuttakeSubsystem
         TRANSFER_FRONT(0.6),
         TRANSFER_BACK(0.26),
         TRANSFER_FINISH(0),
-        SAMPLE(0.4),
+        SAMPLE(0.455),
         SAMPLE_DROP(0),
         SPECIMEN_HIGH(0.475),
         SPECIMEN_HIGH_BACK(0.3),

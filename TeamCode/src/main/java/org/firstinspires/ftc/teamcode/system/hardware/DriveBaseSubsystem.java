@@ -56,13 +56,13 @@ public class DriveBaseSubsystem
 //    x = 0.9, y = 0.845534
 
     // where the scaling centers around
-    public static double c = 1.7;
+    public static double c = 2.6;
     // how agressive the scaling is
     public static double m = 0.9;
     //variable for the drivebase speed toggle;
     boolean PowerToggled;
     double PowerBase = 1;
-    double PowerBaseTurn = 0.88;
+    double PowerBaseTurn = 0.8;
     double PowerStrafe = 1.1;
 
     Telemetry telemetry;

@@ -33,7 +33,7 @@ public class IntakeSubsystem
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
-    long colorValue;
+    double colorValue;
     GeneralHardware.Side side;
     double intakeSlidesFineAdjustTimer;
 
@@ -175,10 +175,7 @@ public class IntakeSubsystem
         slidePosition = intakeSlideMotor.getCurrentPosition();
         if (i2c)
         {
-            double redValue = colourSensor.getNormalizedColors().red;
-            double blueValue = colourSensor.getNormalizedColors().blue;
-            isRed = redValue > blueValue;
-            colorValue = colourSensor.alpha();
+            colorValue = colourSensor.getNormalizedColors().alpha;
             distance = distanceSensor.getDistance(DistanceUnit.INCH);
         }
     }
@@ -319,7 +316,7 @@ public class IntakeSubsystem
     public void intakeSlideMotorRawControl(double manualControlIntakeSlide)
     {
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
-        intakeSlideMotor.setPower(manualControlIntakeSlide * 0.75);
+        intakeSlideMotor.setPower(manualControlIntakeSlide);
     }
 
     public boolean colorLogic()
@@ -399,7 +396,7 @@ public class IntakeSubsystem
     }
     public boolean isSlidesAtBase()
     {
-        return slidePosition < 6; // this works as slide base is 0
+        return slidePosition < 8; // this works as slide base is 0
     }
 
     public double ticksToInchesSlidesMotor(double ticks){

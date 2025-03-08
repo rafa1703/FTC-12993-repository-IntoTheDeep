@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.test;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
@@ -34,23 +35,16 @@ public class IntakeTest extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
-            intakeSubsystem.intakeSlideMotorRawControl(1);
-            //outtakeSubsystem.turretSpinTo(180);
-//            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
-//            intakeSubsystem.armSetPos(armI);
-//            outtakeSubsystem.armSetPos(armO);
-//            outtakeSubsystem.wristSetPos(wrist);
-//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-//            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
-//            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
-//            outtakeSubsystem.clawState(claw);
-//            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
-//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.MAX_LEFT);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 
+            NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
             telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Pos", intakeSubsystem.slidePosition);
             telemetry.addData("Distance", intakeSubsystem.getDistance());
+            telemetry.addData("Color alpha(not normalized", hardware.colourSensor.alpha());
             telemetry.addData("Colour", intakeSubsystem.getColorValue());
+            telemetry.addData("Colour RGBA", "R: " + rgba.red+ " G: " +rgba.green + " B: " + rgba.blue + " A: "+ rgba.alpha);
             telemetry.addData("Pos hardware",hardware.intakeSlidesM.getCurrentPosition());
             telemetry.update();
 
