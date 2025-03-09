@@ -233,9 +233,9 @@ public class IntakeSubsystem
 
     public void intakeTurretBasedOnHeadingVel(double headingVel)
     {
-        double t = Math.min(1, Math.abs(headingVel / 130));
+        double t = Math.min(1, Math.abs(headingVel / 100));
+        t = Math.pow(t, 2); // this makes it only start moving at around 40%
         double i = interpolation(0, 60, t);
-        if (i < 1) i = 0;
         turretS.setPosition(STRAIGHT.pos + angleToServoTicks(i) * Math.signum(headingVel));
     }
 

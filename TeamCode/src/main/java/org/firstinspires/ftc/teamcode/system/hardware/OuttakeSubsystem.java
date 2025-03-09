@@ -224,6 +224,10 @@ public class OuttakeSubsystem
     {
         initialOffsetPosition = turretAngleToTicks(turretAngle());
     }
+    public void resetTurretPosition()
+    {
+
+    }
 
     public void outtakeReads()
     {

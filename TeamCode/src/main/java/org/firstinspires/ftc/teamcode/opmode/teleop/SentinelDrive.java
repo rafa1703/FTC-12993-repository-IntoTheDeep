@@ -39,10 +39,6 @@ public class SentinelDrive extends LinearOpMode
     // this matches the initial value in the intakeSubsystem
     IntakeSubsystem.IntakeFilter prevIntakeFilterState;
     LoopTime loopTime = new LoopTime();
-    boolean autoAlignSpecDeposit;
-    boolean autoAlignSampleDeposit;
-    boolean autoAlignHpDeposit;
-    boolean autoAlignSpecIntake;
 
     enum OuttakeState {
         READY,
@@ -79,7 +75,6 @@ public class SentinelDrive extends LinearOpMode
     ToggleRisingEdge secondToggleForTheDrop = new ToggleRisingEdge();
     ToggleRisingEdge toggleFineAdjustLift = new ToggleRisingEdge();
     ToggleRisingEdge toggleIntakeEdgeCase = new ToggleRisingEdge();
-    ToggleRisingEdge toggleOuttakeTurret = new ToggleRisingEdge();
     ToggleRisingEdge toggleAutoTransfer = new ToggleRisingEdge();
     ToggleRisingEdge intakeTurretModeToggle = new ToggleRisingEdge();
     ToggleRisingEdge bButtonToggle = new ToggleRisingEdge();
@@ -90,12 +85,11 @@ public class SentinelDrive extends LinearOpMode
     double colorValue;
     double sampleThreshold = 0.65;
     double intakeSlideTarget;
-    double intakeSlideTargetClimb = 17;
     double liftTarget;
     boolean intakeEdgeCase = false;
     boolean dropped = false;
     boolean isSampleLow = false, isSpecimenLow = false; // this start at high and remembers
-    boolean wasSpecLow = false, wasSampleLow = false;
+    boolean wasSpecLow = false;
     boolean isSample = false;
     boolean specOnLeft;
     boolean goToIntake = false;
@@ -103,18 +97,18 @@ public class SentinelDrive extends LinearOpMode
     boolean goToHPDeposit = false;
     boolean goToHPExtendoDeposit;
     boolean fineAdjustingLiftIntake = false;
-    double fineAdjustLiftIntakeCache;
-    boolean intakeTurretUsingPresets = false;
+    boolean intakeTurretUsingPresets = true;
     boolean fineAdjustingLiftSpec = false;
     int liftFineAdjustSpecLowCache;
     int liftFineAdjustSpecHighCache;
     double liftFineAdjustIntakeCache;
-    boolean transferFromFront;
     boolean autoTransfer;
     boolean intaked;
     boolean intakingFromBars;
-    boolean autoAlign = true;
-    boolean d2ControllerON = true;
+    boolean autoAlignSpecDeposit = true;
+    boolean autoAlignSampleDeposit = true;
+    boolean autoAlignHpDeposit = true;
+    boolean autoAlignSpecIntake = true;
 
     IMU imu;
     double angularVel, heading;
@@ -195,7 +189,7 @@ public class SentinelDrive extends LinearOpMode
             telemetry.addData("Side", hardware.side);
             telemetry.addData("Turret position", outtakeSubsystem.turretIncrementalPosition);
             telemetry.addData("Turret initial offset", outtakeSubsystem.initialOffsetPosition);
-            telemetry.addData("Auto align", autoAlign);
+//            telemetry.addData("Auto align", autoAlign);
             telemetry.addData("Go hp extendo", goToHPExtendoDeposit);
 //            telemetry.addData("Side after auto", SideAfterAuto.side);
 //            telemetry.addData("Go to intake", goToIntake);
@@ -289,10 +283,11 @@ public class SentinelDrive extends LinearOpMode
                     {
                         internalTimerReset();
                     }
-                    if (internalDelay(150))
+                    if (internalDelay(400))
                     {
-                        intakeSubsystem.intakeSpin(-1);
+                        intakeSubsystem.intakeSpin(-0.4);
                     }
+                    else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE); // this might unstransfer, so samples don't get stuck
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT);
                 }
                 else
@@ -333,7 +328,7 @@ public class SentinelDrive extends LinearOpMode
                        intakeTurretPresetsOrNot();
                     }
 
-                    if ((delay(700) && (colorValue >= sampleThreshold && colorValue < 0.78) || (colorValue > 0.9)) ||
+                    if ((delay(350) && (colorValue >= sampleThreshold && colorValue < 0.78) || (colorValue > 0.9)) ||
                         gamepad1.left_stick_button)
                     {
                             state = OuttakeState.AFTER_EXTENDO;
@@ -853,7 +848,7 @@ public class SentinelDrive extends LinearOpMode
                 {
                     if (delay(40))
                     {
-                        if (intaked ? autoAlignSpecDeposit : autoAlignSpecDeposit && delay(350))
+                        if (intaked ? autoAlignSpecDeposit : autoAlignSpecDeposit && delay(600))
                         {
                             if (isBetweenAngle(Angles.normalizeDegrees(heading), -60, 65)) //heading <= 45 && heading >= -45),
                             {
@@ -1075,13 +1070,14 @@ public class SentinelDrive extends LinearOpMode
 //                    intakeTurretUsingPresets = false; // removed this so i only have to toggle it off once
                     intakeEdgeCase = false;
                     intakingFromBars = false;
-                    autoAlign = true;
+                    // we want to remember auto aligns as they are different for each
                     outtakeSubsystem.liftMotorRawControl(0);
                     intakeSubsystem.intakeSlideMotorRawControl(0);
                     intakeSlideTarget = 0;
                     intakeArmToggle.OffsetTargetPosition = 0;
                     togglePivot.OffsetTargetPosition = 2;
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                     gamepad2.rumbleBlips(1);
                     gamepad1.rumbleBlips(1);
                     state = OuttakeState.READY;
@@ -1092,11 +1088,15 @@ public class SentinelDrive extends LinearOpMode
                 outtakeSubsystem.liftMotorRawControl(-1);
 
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
                 outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
                 outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
 
+                if (intakeSubsystem.isSlidesAtBase())
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
+                }
+                else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_TRANSFER);
                 if (delay(120))
                 {
                     outtakeKeepTurretBack();
@@ -1153,7 +1153,10 @@ public class SentinelDrive extends LinearOpMode
         }
         if (gamepad1.dpad_down)
         {
+            // this should work maybe actually no fck clue bro
+            hardware.BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // this is a little bit dodge but necessary
             outtakeSubsystem.cacheTurretInitialPosition();
+            hardware.BR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         }
     }
     public void hpExtendoToggle()
@@ -1165,9 +1168,24 @@ public class SentinelDrive extends LinearOpMode
     }
     public void toggleAutoAlign()
     {
-        if (autoAlignToggle.mode(gamepad1.x))
+        if (autoAlignToggle.mode(gamepad1.x)) // this is such a simplified way of doing this lol
         {
-            autoAlign = !autoAlign;
+            if (state == OuttakeState.HP_DEPOSIT)
+            {
+                autoAlignHpDeposit = !autoAlignHpDeposit;
+            }
+            else if (state == OuttakeState.SAMPLE_DEPOSIT)
+            {
+                autoAlignSampleDeposit = !autoAlignSampleDeposit;
+            }
+            else if (state == OuttakeState.SPECIMEN_DEPOSIT)
+            {
+                autoAlignSpecDeposit = !autoAlignSpecDeposit;
+            }
+            else if (state == OuttakeState.SPECIMEN_INTAKE)
+            {
+                autoAlignSpecIntake = !autoAlignSpecIntake;
+            }
         }
     }
     public void updateHeading()
@@ -1369,27 +1387,27 @@ public class SentinelDrive extends LinearOpMode
             autoTransfer = !autoTransfer;
         }
     }
-    public void selectDepositType(boolean goToSampleDeposit, boolean goToHPDeposit, boolean goToHPExtendoDeposit)
-    {
-        if (goToSampleDeposit)
-        {
-            this.goToSampleDeposit = true;
-            this.goToHPDeposit = false;
-            this.goToHPExtendoDeposit = false;
-        }
-        else if (goToHPDeposit)
-        {
-            this.goToSampleDeposit = false;
-            this.goToHPDeposit = true;
-            this.goToHPExtendoDeposit = false;
-        }
-        else if (goToHPExtendoDeposit)
-        {
-            this.goToSampleDeposit = false;
-            this.goToHPDeposit = false;
-            this.goToHPExtendoDeposit = true;
-        }
-    }
+//    public void selectDepositType(boolean goToSampleDeposit, boolean goToHPDeposit, boolean goToHPExtendoDeposit)
+//    {
+//        if (goToSampleDeposit)
+//        {
+//            this.goToSampleDeposit = true;
+//            this.goToHPDeposit = false;
+//            this.goToHPExtendoDeposit = false;
+//        }
+//        else if (goToHPDeposit)
+//        {
+//            this.goToSampleDeposit = false;
+//            this.goToHPDeposit = true;
+//            this.goToHPExtendoDeposit = false;
+//        }
+//        else if (goToHPExtendoDeposit)
+//        {
+//            this.goToSampleDeposit = false;
+//            this.goToHPDeposit = false;
+//            this.goToHPExtendoDeposit = true;
+//        }
+//    }
 //    @Deprecated
 //    public void turretSpinTo(double targetAngle, OuttakeSubsystem.OuttakeArmServoState armState, OuttakeSubsystem.OuttakeWristServoState wristState)
 //    { // this currently has power cutoff

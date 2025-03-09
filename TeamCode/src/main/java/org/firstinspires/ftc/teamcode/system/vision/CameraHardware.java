@@ -60,6 +60,10 @@ public class CameraHardware
     {
         limelight.pause();
     }
+    public void updatePythonInputs(double[] inputs)
+    {
+        limelight.updatePythonInputs(inputs);
+    }
     public double sampleAngle()
     {
         List<List<Double>> corners = latestResult.getColorResults().get(0).getTargetCorners();
