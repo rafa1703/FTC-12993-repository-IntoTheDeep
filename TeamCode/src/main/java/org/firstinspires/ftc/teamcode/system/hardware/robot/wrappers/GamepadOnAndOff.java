@@ -9,4 +9,9 @@ public class GamepadOnAndOff
     {
         this.gamepad = gamepad;
     }
+
+    public void a()
+    {
+
+    }
 }

@@ -466,7 +466,7 @@ public class OuttakeSubsystem
 
     public boolean liftAtBase() // as base is 0
     {
-        return liftPosition < 20;
+        return liftPosition < 8;
     }
 
     public double ticksToInchesSlidesMotor(double ticks)
