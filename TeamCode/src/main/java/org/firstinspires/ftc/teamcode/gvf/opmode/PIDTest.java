@@ -23,9 +23,27 @@ public class PIDTest extends LinearOpMode
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         intakeSubsystem = new IntakeSubsystem(hardware);
         hardware.drive.setRunMode(MecanumDrive.RunMode.P2P); // works exactly like p2p but with like the actual pose
-        hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
+//        hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));
+        hardware.drive.getLocalizer().setOffSet(new Pose(0, 0, Math.toRadians(0)));
         Pose targetPose = new Pose(0, 0, Math.toRadians(180));
         hardware.drive.setTargetPose(targetPose);
+        while (!isStarted())
+        {
+            TelemetryPacket packet = new TelemetryPacket();
+            Canvas fieldOverlay = packet.fieldOverlay();
+            Pose pose = hardware.drive.getPoseEstimate();
+
+            packet.put("x ", pose.getX());
+            packet.put("y ", pose.getY());
+            packet.put("heading (deg) ", Math.toDegrees(pose.getHeading()));
+
+            packet.put("x error ", Math.abs(targetPose.getX() - pose.getX()));
+            packet.put("y error ", Math.abs(targetPose.getY() - pose.getY()));
+            packet.put("heading error (deg) ", Math.toDegrees(Math.abs(pose.getHeading() - targetPose.getHeading())));
+            dashboard.sendTelemetryPacket(packet);
+
+            telemetry.update();
+        }
         waitForStart();
         while (opModeIsActive())
         {

@@ -28,22 +28,19 @@ public class SplineTest extends LinearOpMode
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
         hardware.drive.getLocalizer().setOffSet(new Pose(7.2, -62.5, Math.toRadians(90)));
         outtakeSubsystem = new OuttakeSubsystem(hardware);
-        while (!isStarted())
-        {
-            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-        }
         waitForStart();
 
         Trajectory spline = new TrajectoryBuilder() // spline heading, this was tuned in field
                 .addBezierSegment(
                         new Point(7.2, -62.5),
-                        new Point(7.2, -27.8)
+                        new Point(7.2, -38),
+                        new Point(-5, -38)
                 )
-                .addFinalPose(7.2, -27.8, Math.toRadians(90))
+                .addFinalPose(-5, -38, Math.toRadians(90))
                 .build();
         while(opModeIsActive())
         {
-            outtakeSubsystem.liftToInternalPIDTicks(700);
+
             hardware.drive.followTrajectorySplineHeading(spline);
             hardware.update();
 

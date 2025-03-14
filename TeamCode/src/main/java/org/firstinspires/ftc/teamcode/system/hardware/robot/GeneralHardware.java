@@ -145,20 +145,20 @@ public class GeneralHardware
         {
             pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
             //TODO: here we change the wheels offsets
-            // length 13.8 (0.5 = 6.9)
-            // y pod 6.9 - 3.5 = 3.4
+            // length 14 (0.5 = 7)
+            // y pod 7 - 2.6 = 4.4
             // width 14.5 (0.5 = 7.25)
-            // x pod 7.25 - 3.35 = 3.9
-            pinpoint.setOffsets(-100.33, 89);
+            // x pod 7.25 - 1 = -6.25
+            pinpoint.setOffsets(-158.75, 111.76);
             pinpoint.setEncoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD);
-            pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.FORWARD);
+            pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD, GoBildaPinpointDriver.EncoderDirection.REVERSED);
             pinpoint.resetPosAndIMU();
             localizerPinpoint = new LocalizerPinpoint(this);
             MecanumDrive.headingMultiplier = 1;
             drive = new MecanumDrive(this, MecanumDrive.RunMode.Vector);
             drive.setRunMode(MecanumDrive.RunMode.Vector);
 
-            limelight = hardwareMap.get(Limelight3A.class, "Limelight");
+            limelight = hardwareMap.get(Limelight3A.class, "limeLight");
 
             S = side == Side.Red ? 1 : -1;
             A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);

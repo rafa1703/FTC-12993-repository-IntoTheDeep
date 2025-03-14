@@ -31,8 +31,8 @@ public class MecanumDrive
         GVF
     }
 
-    public static PIDController TRANSLATIONAL_PID = new PIDController(0.12, 0.0008, 0.008);
-    public static PIDController HEADING_PID = new PIDController(1.1, 0.0008, 0.0034);
+    public static PIDController TRANSLATIONAL_PID = new PIDController(0.14, 0.0008, 0.008);
+    public static PIDController HEADING_PID = new PIDController(1.1, 0, 0.055);
     private MotorPika FL, FR, BL, BR;
     private RunMode runMode;
     private LocalizerPinpoint localizer;
@@ -71,7 +71,7 @@ public class MecanumDrive
         this.runMode = mode;
         this.voltageSupplier = hardware.voltageSupplier;
         localizer = hardware.localizerPinpoint;
-
+//        HEADING_PID.setIntegrationBounds(-0.);
         FL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         FR.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         BL.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);

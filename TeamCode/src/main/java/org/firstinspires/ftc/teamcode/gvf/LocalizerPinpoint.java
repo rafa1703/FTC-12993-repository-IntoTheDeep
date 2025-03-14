@@ -21,7 +21,7 @@ public class LocalizerPinpoint
 {
     public static boolean ENABLED = true;
     private Pose pose;
-    private Pose prevPose;
+    private Pose prevPose = new Pose();
     private GoBildaPinpointDriver localizer;
     private Vector velocity = new Vector();
     public Vector driveBaseVelocity = new Vector();
@@ -103,8 +103,7 @@ public class LocalizerPinpoint
                 pose2d == null ||
                 Double.isNaN(pose2d.getX(DistanceUnit.INCH)) ||
                 Double.isNaN(pose2d.getY(DistanceUnit.INCH)) ||
-                Double.isNaN(pose2d.getHeading(AngleUnit.RADIANS)) ||
-                        prevPose.getDistance(new Pose(pose2d)) > 10
+                Double.isNaN(pose2d.getHeading(AngleUnit.RADIANS))
         )
         {
             return;
