@@ -179,8 +179,12 @@ public class GeneralHardware
     }
     public void resetCacheHubs()
     {
-        chub.clearBulkCache();
-        ehub.clearBulkCache();
+//        chub.clearBulkCache();
+//        ehub.clearBulkCache();
+        for (LynxModule hub : hardwareMap.getAll(LynxModule.class))
+        {
+            hub.clearBulkCache();
+        }
     }
 
     public double getVoltage()

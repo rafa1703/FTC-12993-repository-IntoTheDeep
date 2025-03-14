@@ -93,13 +93,14 @@ public class LocalizerPinpoint
         return velocity;
     }
     public Vector getGlideDelta() {return driveBaseSVector;}
-    // Cyliis cooked hard on this so...
+
     public void update() {
         if(!ENABLED) return;
         localizer.update();
         // This fixes the pose
         Pose2D pose2d = localizer.getPosition();
         if ( // this should catch if the pinpoint like dies
+                pose2d == null ||
                 Double.isNaN(pose2d.getX(DistanceUnit.INCH)) ||
                 Double.isNaN(pose2d.getY(DistanceUnit.INCH)) ||
                 Double.isNaN(pose2d.getHeading(AngleUnit.RADIANS)) ||

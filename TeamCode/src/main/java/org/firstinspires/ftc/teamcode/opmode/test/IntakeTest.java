@@ -36,8 +36,8 @@ public class IntakeTest extends LinearOpMode
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-
+//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+//intakeSubsystem.intakeSlideMotorRawControl(1);
             NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
             telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Pos", intakeSubsystem.slidePosition);

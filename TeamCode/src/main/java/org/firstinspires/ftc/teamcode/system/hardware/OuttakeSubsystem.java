@@ -40,7 +40,8 @@ public class OuttakeSubsystem
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 6,
             liftHighBarPos = 12,
-            liftLowBarPos = 6,
+            liftHighBarBackPos = 4,
+            liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
     private final double liftThreshold = 8;
@@ -56,9 +57,8 @@ public class OuttakeSubsystem
     {
         TRANSFER_FRONT(0),
         TRANSFER_BACK(180),
+        TRANSFER_AURA(210),
         CLIMB_START(150),
-        ANGLE190(190),
-        ANGLE170(170),
         SPEC_DEPOSIT_BACK_AUTO(225);
 
         public final double angle;
@@ -113,7 +113,8 @@ public class OuttakeSubsystem
     {
         OPEN(0.8),
         CLOSE(0.63),
-        INTAKE(0.9);
+        INTAKE(0.9),
+        TRANSFER_FRONT(1);
 
         public final double pos;
 
@@ -129,12 +130,12 @@ public class OuttakeSubsystem
         READY(0),
         SPIN(0.55),
         STRAIGHT(0.65),
-        TRANSFER_FRONT(0.94),
+        TRANSFER_FRONT(0.945),
         TRANSFER_BACK(0.32),
-        HALF_TRANSFER(0),
+        TRANSFER_AURA(0.32),
         SAMPLE(0.66),
         SPECIMEN_HIGH(0.93),
-        SPECIMEN_HIGH_BACK(0.3),
+        SPECIMEN_HIGH_BACK(0.35),
         SPECIMEN_LOW(0.88),
         SPECIMEN_LOW_BACK(0.37),
         INTAKE(0.15),
@@ -152,13 +153,14 @@ public class OuttakeSubsystem
     {
         READY(0),
         SPIN(0.45),
-        TRANSFER_FRONT(0.6),
+        TRANSFER_FRONT(0.61),
         TRANSFER_BACK(0.26),
-        TRANSFER_FINISH(0),
+        TRANSFER_AURA(0.32),
         SAMPLE(0.455),
         SAMPLE_DROP(0),
         SPECIMEN_HIGH(0.475),
-        SPECIMEN_HIGH_BACK(0.3),
+        SPECIMEN_HIGH_BACK(0.2),
+        SPECIMEN_HIGH_BACK_FLICK(0.25),
         SPECIMEN_LOW(0.78),
         SPECIMEN_LOW_BACK(0.27),
         HP_DEPOSIT(0),
@@ -200,8 +202,6 @@ public class OuttakeSubsystem
         turretMotor = hardware.turretM;
         turretEncoder = hardware.turretEncoder;
         turretIncrementalEncoder = hardware.turretIncrementalEncoder;
-        hardware.BR.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER); // this is a little bit dodge but necessary
-        hardware.BR.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         outtakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
     }
 
@@ -214,19 +214,22 @@ public class OuttakeSubsystem
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
-        turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        turretMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         turretMotor.setZeroPowerBehaviour(DcMotor.ZeroPowerBehavior.BRAKE);
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         cacheTurretInitialPosition();
     }
 
     public void cacheTurretInitialPosition()
     {
-        initialOffsetPosition = turretAngleToTicks(turretAngle());
+        initialOffsetPosition = turretAngleToTicks((turretEncoder.getVoltage() / 3.224) * 360) + 1.5; // turretAngleToTicks(turretAngle());
     }
     public void resetTurretPosition()
     {
-
+        turretMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        cacheTurretInitialPosition();
+        turretMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void outtakeReads()
@@ -236,13 +239,13 @@ public class OuttakeSubsystem
     public void outtakeReads(boolean i2c)
     {
         liftPosition = liftMotor.getCurrentPosition();
-        turretIncrementalPosition = turretIncrementalEncoder.getCurrentPosition() + (int) initialOffsetPosition; // + initialOffsetPosition;//turretIncrementalEncoder.getCurrentPosition();// - initialOffsetPosition;
+        turretIncrementalPosition = turretMotor.getCurrentPosition() + (int) initialOffsetPosition; // + initialOffsetPosition;//turretIncrementalEncoder.getCurrentPosition();// - initialOffsetPosition;
         if (i2c) turretAngle = turretAngle();
     }
     /** returns the absolute angle **/
     public double turretAngle()
     {
-        return turretFilter.getValue(turretEncoder.getVoltage() / 3.225 * 360)  - 4;
+        return turretFilter.getValue((turretEncoder.getVoltage() / 3.225) * 360);
     }
     public double encoderVoltage()
     {
@@ -310,14 +313,14 @@ public class OuttakeSubsystem
     public void turretSpinTo(OuttakeTurretState state)
     {
         turretTarget = state.angle;
-        double pow = turretAbsolutePID.update(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
-        turretMotor.setPower(pow);
+        double pow = turretAbsolutePID.updateImprovedControllers(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
+        turretMotor.setPower(-pow);
     }
     public void turretSpinToGains(OuttakeTurretState state)
     {
         turretTarget = state.angle;
         double pow = turretAbsolutePID.updateImprovedControllers(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
-        turretMotor.setPower(pow);
+        turretMotor.setPower(-pow);
     }
 //    public void turretSpinToTicks(double angle)
 //    {
@@ -378,7 +381,7 @@ public class OuttakeSubsystem
         double diff = Angles.normalizeDegrees(turretTargetAngle - heading);
         turretTarget = Angles.normalizeDegrees(diff - turretAngle);
         double power = turretAbsolutePID.update(turretTarget, 0, 1);
-        turretMotor.setPower(power);
+        turretMotor.setPower(-power);
     }
     @Deprecated
     public void turretKeepToAngle(double turretTargetAngle, double heading) // the target angle is field centric ig

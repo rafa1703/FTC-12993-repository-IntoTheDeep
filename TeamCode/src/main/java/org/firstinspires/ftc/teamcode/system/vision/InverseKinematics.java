@@ -8,7 +8,7 @@ public class InverseKinematics
 {
     // this is assumed with the camera being perpendicular and scanning the sub
     private final double h1 = 9.84; // height of the camera mount
-    private final double h2 = 2; // height of the sample in the floor
+    private final double h2 = 1.5; // height of the sample in the floor
     private final double a1 = 345; // camera mounting angle
     /** Takes ty from the limelight as a parameter, and returns a magnitude **/
     public double distanceToSample(double ty)

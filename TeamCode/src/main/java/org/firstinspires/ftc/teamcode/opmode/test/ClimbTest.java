@@ -18,7 +18,9 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 public class ClimbTest extends LinearOpMode
 {
     public static double motorPowers = 0;
-    public static double ptoPos = 0, lockPos = 0;
+    public static OuttakeSubsystem.OuttakeLockServoState lock = OuttakeSubsystem.OuttakeLockServoState.OPEN;
+    public static double liftPow = 0, ptoPos = 0;
+    public static DriveBaseSubsystem.PTOState pto = DriveBaseSubsystem.PTOState.IN;
     // in 2900
     // into the thing 440
     // hook onto other thing 100
@@ -42,9 +44,11 @@ public class ClimbTest extends LinearOpMode
 
         while (opModeIsActive())
         {
+            driveBase.PTOState(pto);
             driveBase.ptoMotorsSetPower(motorPowers);
-            driveBase.PTOSetPosition(ptoPos);
-            outtakeSubsystem.lockSetPos(lockPos);
+//            driveBase.PTOSetPosition(ptoPos);
+            outtakeSubsystem.lockServoState(lock);
+            outtakeSubsystem.liftMotorRawControl(liftPow);
             telemetry.update();
         }
     }
