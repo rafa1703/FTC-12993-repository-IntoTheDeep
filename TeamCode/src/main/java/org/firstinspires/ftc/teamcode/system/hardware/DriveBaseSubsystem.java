@@ -56,13 +56,13 @@ public class DriveBaseSubsystem
 //    x = 0.9, y = 0.845534
 
     // where the scaling centers around
-    public static double c = 2.6;
+    public static double c = 2;
     // how agressive the scaling is
     public static double m = 0.9;
     //variable for the drivebase speed toggle;
     boolean PowerToggled;
     double PowerBase = 1;
-    double PowerBaseTurn = 0.8;
+    double PowerBaseTurn = 0.83;
     double PowerStrafe = 1.1;
 
     Telemetry telemetry;
@@ -125,11 +125,23 @@ public class DriveBaseSubsystem
         double frontRightPower = (-f*PowerBase - s*PowerStrafe - t*PowerBaseTurn) / denominator;
         double backRightPower = (-f*PowerBase + s*PowerStrafe - t*PowerBaseTurn) / denominator;
 
+//        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
+//        double frontLeftPower = (-LY * PowerBase + LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
+//        double backLeftPower = (-LY * PowerBase - LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
+//        double frontRightPower = (-LY * PowerBase - LX * PowerStrafe - RX * PowerBaseTurn) / denominator;
+//        double backRightPower = (-LY * PowerBase + LX * PowerStrafe - RX * PowerBaseTurn) / denominator;
+
+//        frontLeftPower = frontLeftPower;
+        backLeftPower = backLeftPower * 1.1;
+//        frontRightPower = Math.pow(frontRightPower, 2) * Math.signum(frontRightPower);
+        backRightPower = backRightPower * 1.1;
+
         FL.setPower(frontLeftPower);
         FR.setPower(frontRightPower);
         BR.setPower(backRightPower);
         BL.setPower(backLeftPower);
     }
+
     public void ptoMotorsSetPower(double pow){
         this.BL.setPower(pow);
         this.BR.setPower(pow);

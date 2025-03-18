@@ -23,20 +23,20 @@ public class OuttakeTest extends LinearOpMode
     //public static double clawPos = 0, wristPos = 0, pivotPos = 0, armPos = 0;
     //public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
 //    ..public static OuttakeSubsystem.OuttakeTurretState turretState = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
-    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
-    public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT.pos;
-    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
-    public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT;
+//    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
+    public static double armO = OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK.pos;
+    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.RIGHT.pos;
+    public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
+//    public static OuttakeSubsystem.OuttakePivotServoState pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN;
+    public static double claw = 0.8;
     @Override
     public void runOpMode() throws InterruptedException
     {
         telemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
-        hardware.FL.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        hardware.FL.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         intakeSubsystem = new IntakeSubsystem(hardware);
-        boolean cachedTurret = false;
         while (!isStarted())
         {
             hardware.resetCacheHubs();
@@ -54,26 +54,27 @@ public class OuttakeTest extends LinearOpMode
         waitForStart();
         while (opModeIsActive())
         {
-            if (!cachedTurret)
-            {
-                outtakeSubsystem.cacheTurretInitialPosition();
-                cachedTurret = true;
-            }
 
             hardware.resetCacheHubs();
             outtakeSubsystem.outtakeReads(true);
+            outtakeSubsystem.clawSetPos(claw);
+            outtakeSubsystem.pivotSetPos(pivot);
+            outtakeSubsystem.armSetPos(armO);
+            outtakeSubsystem.wristSetPos(wrist);
+            outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
+//            intakeSubsystem.armSetPos(armI);
 //            outtakeSubsystem.turretRawControl(turretPos);
             //outtakeSubsystem.liftMotorRawControl(1);
-            intakeSubsystem.armSetPos(armI);
-            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-            outtakeSubsystem.wristSetPos(wrist);
-            outtakeSubsystem.armSetPos(armO);
-            outtakeSubsystem.pivotSetPos(pivot);
-            outtakeSubsystem.clawState(claw);
-            if (gamepad1.a) intakeSubsystem.intakeSpin(0);
-            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-            intakeSubsystem.intakeSlideInternalPID(-2);
+//            intakeSubsystem.armSetPos(armI);
+//            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+//            outtakeSubsystem.wristSetPos(wrist);
+//            outtakeSubsystem.armSetPos(armO);
+//            outtakeSubsystem.pivotSetPos(pivot);
+//            outtakeSubsystem.clawState(claw);
+//            if (gamepad1.a) intakeSubsystem.intakeSpin(0);
+//            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+//            intakeSubsystem.intakeSlideInternalPID(-2);
 
 //            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
 //            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);

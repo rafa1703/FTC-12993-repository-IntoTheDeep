@@ -40,7 +40,7 @@ public class IntakeSubsystem
     public static final double // in inches, 24 max slides
             slideExtensionLimit = 26,
             slideTeleClose = 12,
-            slideTeleFar = 24,
+            slideTeleFar = 23.2,
             slideTeleBase = 0,
             slideTransfer = -5,
             slideAutoFar = 18.5,
@@ -71,11 +71,12 @@ public class IntakeSubsystem
         AURA_TRANSFER(0.545),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
+        HP_DEPOSIT(0.63),
         HALF_DOWN(0.9),
-        DOWN(0.94),
+        DOWN(0.945),
+        EXTENDO_DOWN(0.94), // this exists because the intake saggs on the slides
         BACK(0.95),
         IN(0.45),
-        EDGE_CASE(0.42),
         AROUND(0.5);
 
         public final double pos;
@@ -88,8 +89,8 @@ public class IntakeSubsystem
 
     public enum IntakeClipServoState
     {
-        HOLD(0),
-        OPEN(0);
+        HOLD(0.3),
+        OPEN(0.75);
 
         public final double pos;
 
@@ -102,13 +103,14 @@ public class IntakeSubsystem
 
     public enum IntakeTurretServoState
     {
-        TRANSFER(0.28),
-        MAX_LEFT(0.43),
-        LEFT(0.345),
-        STRAIGHT(0.26),
-        RIGHT(0.195),
-        MAX_RIGHT(0.13),
-        AROUND(0.83);
+        TRANSFER(0.28+0.075), // +0.075
+        MAX_LEFT(0.43+0.075),
+        LEFT(0.345+0.075),
+        STRAIGHT(0.355),
+        RIGHT(0.195+0.075),
+        MAX_RIGHT(0.13+0.075),
+        HP_DEPOSIT(0), // this is true max right, arm has to be up
+        AROUND(0.83+0.075);
 
         public final double pos;
 
@@ -176,7 +178,7 @@ public class IntakeSubsystem
         slidePosition = intakeSlideMotor.getCurrentPosition();
         if (i2c)
         {
-            colorValue = colourSensor.getNormalizedColors().alpha;
+            colorValue = colourSensor.alpha();
             distance = distanceSensor.getDistance(DistanceUnit.INCH);
         }
     }
@@ -229,13 +231,13 @@ public class IntakeSubsystem
 
     public void intakeTurretSetAngle(double angle)
     {
-        turretS.setPosition(angle * 0.002816901408); // 1 / 355
+        turretS.setPosition(angle * 0.002816901408 + 0.075); // 1 / 355, +0.075 offset to zero
     }
 
     public void intakeTurretBasedOnHeadingVel(double headingVel)
     {
         double t = Math.min(1, Math.abs(headingVel / 100));
-        t = Math.pow(t, 2); // this makes it only start moving at around 40%
+        t = Math.pow(t, 1.5); // this makes it only start moving at around 40%
         double i = interpolation(0, 60, t);
         turretS.setPosition(STRAIGHT.pos + angleToServoTicks(i) * Math.signum(headingVel));
     }
@@ -401,12 +403,12 @@ public class IntakeSubsystem
     }
 
     public double ticksToInchesSlidesMotor(double ticks){
-        return 24 * ticks / 611;
+        return 24 * (ticks / 611);
         //return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return 611 * inches / 24;
+        return 611 * (inches / 24);
         //return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/12 = 5
     }

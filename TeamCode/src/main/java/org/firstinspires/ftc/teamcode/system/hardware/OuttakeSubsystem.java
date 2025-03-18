@@ -38,9 +38,9 @@ public class OuttakeSubsystem
     public double
             liftMaxExtension = 22.5,
             liftHighBucketPos = 22.5,
-            liftLowBucketPos = 6,
-            liftHighBarPos = 12,
-            liftHighBarBackPos = 4,
+            liftLowBucketPos = 2,
+            liftHighBarPos = 14,
+            liftHighBarBackPos = 10,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
@@ -58,6 +58,7 @@ public class OuttakeSubsystem
         TRANSFER_FRONT(0),
         TRANSFER_BACK(180),
         TRANSFER_AURA(210),
+        HP_DROP_AUTO(-80),
         CLIMB_START(150),
         SPEC_DEPOSIT_BACK_AUTO(225);
 
@@ -127,7 +128,7 @@ public class OuttakeSubsystem
     public enum OuttakeArmServoState
     {
 
-        READY(0),
+        READY(0.2),
         SPIN(0.55),
         STRAIGHT(0.65),
         TRANSFER_FRONT(0.945),
@@ -135,7 +136,7 @@ public class OuttakeSubsystem
         TRANSFER_AURA(0.32),
         SAMPLE(0.66),
         SPECIMEN_HIGH(0.93),
-        SPECIMEN_HIGH_BACK(0.35),
+        SPECIMEN_HIGH_BACK(0.66),
         SPECIMEN_LOW(0.88),
         SPECIMEN_LOW_BACK(0.37),
         INTAKE(0.15),
@@ -152,19 +153,18 @@ public class OuttakeSubsystem
     public enum OuttakeWristServoState
     {
         READY(0),
-        SPIN(0.45),
-        TRANSFER_FRONT(0.61),
-        TRANSFER_BACK(0.26),
-        TRANSFER_AURA(0.32),
-        SAMPLE(0.455),
-        SAMPLE_DROP(0),
-        SPECIMEN_HIGH(0.475),
-        SPECIMEN_HIGH_BACK(0.2),
-        SPECIMEN_HIGH_BACK_FLICK(0.25),
-        SPECIMEN_LOW(0.78),
-        SPECIMEN_LOW_BACK(0.27),
-        HP_DEPOSIT(0),
-        INTAKE(0.45);
+        SPIN(0.59),
+        TRANSFER_FRONT(0.75),
+        TRANSFER_BACK(0.4), //+0.14
+        TRANSFER_AURA(0.36),
+        SAMPLE(0.595),
+        SPECIMEN_HIGH(0.615),
+        SPECIMEN_HIGH_BACK(0.9),
+        SPECIMEN_HIGH_BACK_FLICK(0.87),
+        SPECIMEN_LOW(0.91),
+        SPECIMEN_LOW_BACK(0.41),
+        HP_DEPOSIT(0.59),
+        INTAKE(0.59);
 
         public final double pos;
 
@@ -223,7 +223,9 @@ public class OuttakeSubsystem
 
     public void cacheTurretInitialPosition()
     {
-        initialOffsetPosition = turretAngleToTicks((turretEncoder.getVoltage() / 3.224) * 360) + 1.5; // turretAngleToTicks(turretAngle());
+        double angle = Angles.reduceDegrees((turretEncoder.getVoltage() / 3.225) * 360 + 180) ;
+        initialOffsetPosition = turretAngleToTicks(angle); // turretAngleToTicks(turretAngle());
+        if (angle >= 270 && angle <= 360) initialOffsetPosition = initialOffsetPosition - 4000;
     }
     public void resetTurretPosition()
     {
@@ -320,6 +322,12 @@ public class OuttakeSubsystem
     {
         turretTarget = state.angle;
         double pow = turretAbsolutePID.updateImprovedControllers(state.angle, turretTicksToAngle(turretIncrementalPosition), 1);
+        turretMotor.setPower(-pow);
+    }
+    public void turretSpinToGains(double angle)
+    {
+        turretTarget = angle;
+        double pow = turretAbsolutePID.updateImprovedControllers(angle, turretTicksToAngle(turretIncrementalPosition), 1);
         turretMotor.setPower(-pow);
     }
 //    public void turretSpinToTicks(double angle)
@@ -469,7 +477,7 @@ public class OuttakeSubsystem
 
     public boolean liftAtBase() // as base is 0
     {
-        return liftPosition < 8;
+        return liftPosition < 30;
     }
 
     public double ticksToInchesSlidesMotor(double ticks)

@@ -19,6 +19,7 @@ public class IntakeTest extends LinearOpMode
     GeneralHardware hardware;
     //public static double clawPos = 0, wristPos = 0, railPos = 0, armPos = 0;
    // public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
+    public static double clip;
     public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK.pos,
             wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK.pos,
             armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK.pos;
@@ -35,7 +36,10 @@ public class IntakeTest extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+            intakeSubsystem.intakeTurretSetPos(armO);
+//            intakeSubsystem.armSetPos(1);
+//            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+//            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);j
 //            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 //intakeSubsystem.intakeSlideMotorRawControl(1);
             NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
