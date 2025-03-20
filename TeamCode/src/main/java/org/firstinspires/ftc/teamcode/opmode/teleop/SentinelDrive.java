@@ -545,6 +545,7 @@ public class SentinelDrive extends LinearOpMode
                 }
                 hpExtendoToggle();
                 outtakeKeepTurretBack();
+                autoSampleOuttakeToggle(gamepad1.a);
                 extendoReturnFromBarsToggle(gamepad1.left_bumper || gamepad2.y);
                 auraTransferToggle(gamepad2.dpad_right);
                 metaTransferToggle(gamepad2.dpad_left);
@@ -877,8 +878,8 @@ public class SentinelDrive extends LinearOpMode
 
                         intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT);
 
-                        if (intakeSubsystem.isSlidesAtBase() || delay(1200)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT);
-                        else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_TRANSFER);
+                        if (intakeSubsystem.isSlidesAtBase() && delay(300) || delay(1200)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT);
+                        else intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT);
                         intakeSubsystem.intakeSlideInternalPID(-3);
 
                         if (autoAlignHpDeposit)
@@ -1036,7 +1037,8 @@ public class SentinelDrive extends LinearOpMode
 //                                OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
                         if (delay(200))
                         {
-                            outtakeSubsystem.pivotSetPosByOrder(togglePivot.OffsetTargetPosition);
+                            if (metaTransferEdgeCase) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT_UP);
+                            else outtakeSubsystem.pivotSetPosByOrder(togglePivot.OffsetTargetPosition);
                         }
 
                     }
@@ -1200,7 +1202,7 @@ public class SentinelDrive extends LinearOpMode
                     {
                         state = OuttakeState.HP_DEPOSIT;
                         intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT); // this makes sure arm is up
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_TRANSFER); // this makes sure arm is up
                         dropped = false;
                         toggleRisingEdge.mode(gamepad1.right_bumper);
                         gamepad1.rumbleBlips(1);
@@ -1264,18 +1266,10 @@ public class SentinelDrive extends LinearOpMode
 
                 if (autoAlignSpecDepositBack)
                 {
-                    if (delay(200))
+                    if (delay(200)) // keep back for 200ms to improve transfer
                     {
-                        if (isBetweenAngle(Angles.reduceDegrees(heading), 180, 270)) //heading <= 45 && heading >= -45),
-                        {
-                            outtakeSubsystem.turretKeepToAngleTicks(0, heading);
-                            turretAngleCached = false;
-                        } else if (!turretAngleCached)
-                        {
-                            turretLastAngle = outtakeSubsystem.turretTicksToAngle(outtakeSubsystem.turretIncrementalPosition);
-                            turretAngleCached = true;
-                        }
-                        else outtakeSubsystem.turretSpinToGains(turretLastAngle);
+                       outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
+
                     } else outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                 }
                 else outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
@@ -1289,16 +1283,18 @@ public class SentinelDrive extends LinearOpMode
                             outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarBackStaticPos);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_STATIC);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_STATIC);
+                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
                         }
                         else
                         {
                             outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarBackKineticPos);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_KINETIC);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_KINETIC);
+                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
                         }
-                        specSideLogic(gamepad1.dpad_left || gamepad2.dpad_left, gamepad1.dpad_right || gamepad2.right_bumper);
-                        if (specOnLeft) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
-                        else outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+//                        specSideLogic(gamepad1.dpad_left || gamepad2.dpad_left, gamepad1.dpad_right || gamepad2.right_bumper);
+//                        if (specOnLeft) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
+//                        else outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
 
                         if (toggleRisingEdge.mode(gamepad1.right_bumper))
                         {

@@ -37,10 +37,10 @@ public class OuttakeSubsystem
     public double
             liftMaxExtension = 22.5,
             liftHighBucketPos = 22.5,
-            liftLowBucketPos = 2,
+            liftLowBucketPos = 5,
             liftHighBarPos = 14,
             liftHighBarBackStaticPos = 10,
-            liftHighBarBackKineticPos = 11,
+            liftHighBarBackKineticPos = 18,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
@@ -60,7 +60,7 @@ public class OuttakeSubsystem
         TRANSFER_META(145),
         HP_DROP_AUTO(-80),
         CLIMB_START(150),
-        SPEC_DEPOSIT_BACK_AUTO(225);
+        SPEC_DEPOSIT_BACK(245);
 
         public final double angle;
         OuttakeTurretState(double angle)
@@ -112,9 +112,9 @@ public class OuttakeSubsystem
     }
     public enum OuttakeClawServoState
     {
-        OPEN(0.8),
-        CLOSE(0.61),
-        INTAKE(0.9),
+        OPEN(0.82),
+        CLOSE(0.55),
+        INTAKE(0.92),
         TRANSFER_FRONT(0.99);
 
         public final double pos;
@@ -138,7 +138,7 @@ public class OuttakeSubsystem
         SAMPLE(0.66),
         SPECIMEN_HIGH(0.93),
         SPECIMEN_HIGH_BACK_STATIC(0.66),
-        SPECIMEN_HIGH_BACK_KINETIC(0.8),
+        SPECIMEN_HIGH_BACK_KINETIC(1),
         SPECIMEN_LOW(0.88),
         SPECIMEN_LOW_BACK(0.37),
         INTAKE(0.15),
@@ -163,7 +163,7 @@ public class OuttakeSubsystem
         SAMPLE(0.595),
         SPECIMEN_HIGH(0.615),
         SPECIMEN_HIGH_BACK_STATIC(0.9),
-        SPECIMEN_HIGH_BACK_KINETIC(0.83),
+        SPECIMEN_HIGH_BACK_KINETIC(0.7),
         SPECIMEN_HIGH_BACK_FLICK(0.8),
         SPECIMEN_LOW(0.91),
         SPECIMEN_LOW_BACK(0.41),

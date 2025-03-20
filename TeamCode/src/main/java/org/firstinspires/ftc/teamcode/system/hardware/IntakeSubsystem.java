@@ -72,11 +72,11 @@ public class IntakeSubsystem
         TRANSFER_META(0.68),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
-        HP_DEPOSIT(0.63),
+        HP_DEPOSIT(0.41),
         HALF_DOWN(0.9),
         AURA_DOWN(0.93),
-        DOWN(0.96),
-        EXTENDO_DOWN(0.96), // this exists because the intake saggs on the slides
+        DOWN(0.95),
+        EXTENDO_DOWN(0.95), // this exists because the intake saggs on the slides
         BACK(0.95),
         IN(0.45),
         AROUND(0.5);
@@ -111,7 +111,7 @@ public class IntakeSubsystem
         STRAIGHT(0.37),
         RIGHT(0.27),
         MAX_RIGHT(0.21),
-        HP_DEPOSIT(0), // this is true max right, arm has to be up
+        HP_DEPOSIT(0.54), // this is true max right, arm has to be up
         AROUND(0.94);
 
         public final double pos;
