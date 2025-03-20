@@ -13,14 +13,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
-import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.opmode.auto.paths.SpecAutoPath;
-import org.firstinspires.ftc.teamcode.opmode.teleop.SentinelDrive;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDown;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleUpOrDownCircular;
-import org.firstinspires.ftc.teamcode.system.accessory.math.Angles;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -636,8 +633,8 @@ public class Specimen7Auto extends LinearOpMode
                         }
                         if (delay(130))
                         {
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK);
+                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_STATIC);
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_STATIC);
                         }
                         break;
                     case 3:
@@ -674,8 +671,8 @@ public class Specimen7Auto extends LinearOpMode
                             }
                             if (internalDelay(160))
                             {
-                                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK);
-                                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK);
+                                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_STATIC);
+                                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_STATIC);
                                 outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
                             }
                         }

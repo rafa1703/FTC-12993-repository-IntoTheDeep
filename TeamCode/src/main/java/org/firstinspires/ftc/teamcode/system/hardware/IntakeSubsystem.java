@@ -68,13 +68,15 @@ public class IntakeSubsystem
         TRANSFER_BACK(0.48),
         TRANSFER_FRONT(0.58),
         HALF_TRANSFER(0.8),
-        AURA_TRANSFER(0.545),
+        AURA_TRANSFER(0.52),
+        TRANSFER_META(0.68),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
         HP_DEPOSIT(0.63),
         HALF_DOWN(0.9),
-        DOWN(0.945),
-        EXTENDO_DOWN(0.94), // this exists because the intake saggs on the slides
+        AURA_DOWN(0.93),
+        DOWN(0.96),
+        EXTENDO_DOWN(0.96), // this exists because the intake saggs on the slides
         BACK(0.95),
         IN(0.45),
         AROUND(0.5);
@@ -103,14 +105,14 @@ public class IntakeSubsystem
 
     public enum IntakeTurretServoState
     {
-        TRANSFER(0.28+0.075), // +0.075
-        MAX_LEFT(0.43+0.075),
-        LEFT(0.345+0.075),
-        STRAIGHT(0.355),
-        RIGHT(0.195+0.075),
-        MAX_RIGHT(0.13+0.075),
+        TRANSFER_META(0.79),
+        MAX_LEFT(0.53),
+        LEFT(0.45),
+        STRAIGHT(0.37),
+        RIGHT(0.27),
+        MAX_RIGHT(0.21),
         HP_DEPOSIT(0), // this is true max right, arm has to be up
-        AROUND(0.83+0.075);
+        AROUND(0.94);
 
         public final double pos;
 

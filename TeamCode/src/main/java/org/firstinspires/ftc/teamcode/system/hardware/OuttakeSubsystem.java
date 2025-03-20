@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
 import org.firstinspires.ftc.teamcode.gvf.utils.LowPassFilter;
@@ -40,7 +39,8 @@ public class OuttakeSubsystem
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 2,
             liftHighBarPos = 14,
-            liftHighBarBackPos = 10,
+            liftHighBarBackStaticPos = 10,
+            liftHighBarBackKineticPos = 11,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
@@ -57,7 +57,7 @@ public class OuttakeSubsystem
     {
         TRANSFER_FRONT(0),
         TRANSFER_BACK(180),
-        TRANSFER_AURA(210),
+        TRANSFER_META(145),
         HP_DROP_AUTO(-80),
         CLIMB_START(150),
         SPEC_DEPOSIT_BACK_AUTO(225);
@@ -113,9 +113,9 @@ public class OuttakeSubsystem
     public enum OuttakeClawServoState
     {
         OPEN(0.8),
-        CLOSE(0.63),
+        CLOSE(0.61),
         INTAKE(0.9),
-        TRANSFER_FRONT(1);
+        TRANSFER_FRONT(0.99);
 
         public final double pos;
 
@@ -133,10 +133,12 @@ public class OuttakeSubsystem
         STRAIGHT(0.65),
         TRANSFER_FRONT(0.945),
         TRANSFER_BACK(0.32),
-        TRANSFER_AURA(0.32),
+        TRANSFER_AURA(0.37),
+        TRANSFER_META(0.2),
         SAMPLE(0.66),
         SPECIMEN_HIGH(0.93),
-        SPECIMEN_HIGH_BACK(0.66),
+        SPECIMEN_HIGH_BACK_STATIC(0.66),
+        SPECIMEN_HIGH_BACK_KINETIC(0.8),
         SPECIMEN_LOW(0.88),
         SPECIMEN_LOW_BACK(0.37),
         INTAKE(0.15),
@@ -157,10 +159,12 @@ public class OuttakeSubsystem
         TRANSFER_FRONT(0.75),
         TRANSFER_BACK(0.4), //+0.14
         TRANSFER_AURA(0.36),
+        TRANSFER_META(0.55),
         SAMPLE(0.595),
         SPECIMEN_HIGH(0.615),
-        SPECIMEN_HIGH_BACK(0.9),
-        SPECIMEN_HIGH_BACK_FLICK(0.87),
+        SPECIMEN_HIGH_BACK_STATIC(0.9),
+        SPECIMEN_HIGH_BACK_KINETIC(0.83),
+        SPECIMEN_HIGH_BACK_FLICK(0.8),
         SPECIMEN_LOW(0.91),
         SPECIMEN_LOW_BACK(0.41),
         HP_DEPOSIT(0.59),

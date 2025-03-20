@@ -56,10 +56,10 @@ public class SpecAutoPath
                         new Point(0, -28),
                         new Point(0, -54),
                         new Point(36, -37),
-                        new Point(36, -62.5)
+                        new Point(36, -63)
                 )
                 .addFinalSpeed(0.5)
-                .addFinalPose(36, -62.5, Math.toRadians(90))
+                .addFinalPose(36, -63, Math.toRadians(90))
                 .build();
 
         hpToSubIntake = new TrajectoryBuilder() // spline heading
@@ -117,10 +117,10 @@ public class SpecAutoPath
         secondSample = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(49, -52),
-                        new Point(54, -52)
+                        new Point(57, -52)
 
                 )
-                .addFinalPose(54, -52, Math.toRadians(90))
+                .addFinalPose(57, -52, Math.toRadians(90))
                 .build();
         thirdSample = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(

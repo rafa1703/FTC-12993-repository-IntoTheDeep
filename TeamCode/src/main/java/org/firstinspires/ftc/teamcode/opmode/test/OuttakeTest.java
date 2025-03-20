@@ -24,11 +24,12 @@ public class OuttakeTest extends LinearOpMode
     //public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
 //    ..public static OuttakeSubsystem.OuttakeTurretState turretState = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
 //    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
-    public static double armO = OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK.pos;
-    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.RIGHT.pos;
+    public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_META.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_META.pos;
+    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_META.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
+    public static double turretI = IntakeSubsystem.IntakeTurretServoState.TRANSFER_META.pos;
     public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
 //    public static OuttakeSubsystem.OuttakePivotServoState pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN;
-    public static double claw = 0.8;
+    public static double claw = 1;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -41,6 +42,7 @@ public class OuttakeTest extends LinearOpMode
         {
             hardware.resetCacheHubs();
             outtakeSubsystem.outtakeReads(true);
+            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
 //            telemetry.addData("Turret abs angle", outtakeSubsystem.turretAngle);
 //            telemetry.addData("Turret abs voltage", outtakeSubsystem.encoderVoltage());
@@ -61,8 +63,9 @@ public class OuttakeTest extends LinearOpMode
             outtakeSubsystem.pivotSetPos(pivot);
             outtakeSubsystem.armSetPos(armO);
             outtakeSubsystem.wristSetPos(wrist);
-            outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
-//            intakeSubsystem.armSetPos(armI);
+            outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_META);
+            intakeSubsystem.armSetPos(armI);
+            intakeSubsystem.intakeTurretSetPos(turretI);
 //            outtakeSubsystem.turretRawControl(turretPos);
             //outtakeSubsystem.liftMotorRawControl(1);
 //            intakeSubsystem.armSetPos(armI);

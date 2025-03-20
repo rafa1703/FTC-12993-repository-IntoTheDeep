@@ -33,7 +33,7 @@ public class GVFLogic
         // TODO i think if i tune this better i can run a normal predictive thing
         double CORRECTION_DIS = 8; // this should probably be closer to half a tile
         double SAVING_THROW_DIS = 5; // this should be way less
-        double SLOWDOWN_DIS = 34; // this maybe has to be interpolated based on how much to slow down
+        double SLOWDOWN_DIS = 12; // this maybe has to be interpolated based on how much to slow down
 
         double directPursuitThreshold = 1;
         // going from above now should not break anything and improve cycle times
