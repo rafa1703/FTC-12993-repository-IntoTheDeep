@@ -89,7 +89,7 @@ public class Specimen7Auto extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.Vector);
         hardware.drive.getLocalizer().setOffSet(trajectories.farStartPose);
         intakeSubsystem = new IntakeSubsystem(hardware);

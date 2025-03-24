@@ -1,14 +1,11 @@
 package org.firstinspires.ftc.teamcode.gvf.opmode;
 
-import static org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware.S;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.gvf.trajectories.BezierCurveTrajectorySegment;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.TrajectoryBuilder;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
@@ -25,7 +22,7 @@ public class SplineTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         hardware.drive.getLocalizer().setOffSet(new Pose(7.2, -62.5, Math.toRadians(90)));
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         waitForStart();

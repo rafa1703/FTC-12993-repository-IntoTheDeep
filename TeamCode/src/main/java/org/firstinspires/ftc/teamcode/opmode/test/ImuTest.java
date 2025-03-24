@@ -24,7 +24,7 @@ public class ImuTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         driveBase = new DriveBaseSubsystem(hardware);

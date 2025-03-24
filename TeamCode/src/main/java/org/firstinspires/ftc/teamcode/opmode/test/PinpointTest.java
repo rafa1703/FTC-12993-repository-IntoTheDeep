@@ -23,7 +23,7 @@ public class PinpointTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
         drive = new DriveBaseSubsystem(hardware);
         pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         pinpoint.setOffsets(inToMM(6.25), inToMM(-3.35));

@@ -2,7 +2,6 @@ package org.firstinspires.ftc.teamcode.gvf.opmode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -10,7 +9,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
-import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
 @TeleOp(group = "Tuning")
@@ -21,7 +19,7 @@ public class LateralMultiplierTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
 
         hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
         hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));

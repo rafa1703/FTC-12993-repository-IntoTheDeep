@@ -6,7 +6,6 @@ import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.gvf.Localizer;
 import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
@@ -20,7 +19,7 @@ public class GlidingTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         hardware.drive.setRunMode(MecanumDrive.RunMode.Vector);
         hardware.drive.setTargetVector(new Vector(1, 0));
         waitForStart();

@@ -20,7 +20,7 @@ public class ServoTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         intakeSubsystem = new IntakeSubsystem(hardware);
 

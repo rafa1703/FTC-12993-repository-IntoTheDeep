@@ -4,10 +4,8 @@ package org.firstinspires.ftc.teamcode.gvf.opmode;
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.VoltageSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
@@ -38,7 +36,7 @@ public class DecelTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         dash = FtcDashboard.getInstance();
 
         telemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());

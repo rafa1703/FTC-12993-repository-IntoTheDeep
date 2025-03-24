@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PIDR;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.complexUslessShit.IHardware;
 
 public class MotorFoda implements IHardware
 {

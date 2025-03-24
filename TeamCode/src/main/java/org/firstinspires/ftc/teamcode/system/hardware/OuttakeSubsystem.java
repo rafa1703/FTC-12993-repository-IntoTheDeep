@@ -37,9 +37,9 @@ public class OuttakeSubsystem
     public double
             liftMaxExtension = 22.5,
             liftHighBucketPos = 22.5,
-            liftLowBucketPos = 5,
+            liftLowBucketPos = 9,
             liftHighBarPos = 14,
-            liftHighBarBackStaticPos = 10,
+            liftHighBarBackStaticPos = 11.5,
             liftHighBarBackKineticPos = 18,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
@@ -113,7 +113,7 @@ public class OuttakeSubsystem
     public enum OuttakeClawServoState
     {
         OPEN(0.82),
-        CLOSE(0.55),
+        CLOSE(0.52),
         INTAKE(0.92),
         TRANSFER_FRONT(0.99);
 
@@ -128,21 +128,21 @@ public class OuttakeSubsystem
     public enum OuttakeArmServoState
     {
 
-        READY(0.2),
-        SPIN(0.55),
-        STRAIGHT(0.65),
-        TRANSFER_FRONT(0.945),
-        TRANSFER_BACK(0.32),
-        TRANSFER_AURA(0.37),
-        TRANSFER_META(0.2),
-        SAMPLE(0.66),
-        SPECIMEN_HIGH(0.93),
-        SPECIMEN_HIGH_BACK_STATIC(0.66),
+        READY(0.24),
+        SPIN(0.59),
+        STRAIGHT(0.65), // +0.04
+        TRANSFER_FRONT(0.985),
+        TRANSFER_BACK(0.34),
+        TRANSFER_AURA(0.39),
+        TRANSFER_META(0.24),
+        SAMPLE(0.70),
+        SPECIMEN_HIGH(0.97),
+        SPECIMEN_HIGH_BACK_STATIC(0.70),
         SPECIMEN_HIGH_BACK_KINETIC(1),
-        SPECIMEN_LOW(0.88),
-        SPECIMEN_LOW_BACK(0.37),
-        INTAKE(0.15),
-        HP_DEPOSIT(0.05);
+        SPECIMEN_LOW(0.92),
+        SPECIMEN_LOW_BACK(0.41),
+        INTAKE(0.12),
+        HP_DEPOSIT(0.15);
 
         public final double pos;
 
@@ -158,7 +158,7 @@ public class OuttakeSubsystem
         SPIN(0.59),
         TRANSFER_FRONT(0.75),
         TRANSFER_BACK(0.4), //+0.14
-        TRANSFER_AURA(0.36),
+        TRANSFER_AURA(0.34),
         TRANSFER_META(0.55),
         SAMPLE(0.595),
         SPECIMEN_HIGH(0.615),
@@ -168,7 +168,7 @@ public class OuttakeSubsystem
         SPECIMEN_LOW(0.91),
         SPECIMEN_LOW_BACK(0.41),
         HP_DEPOSIT(0.59),
-        INTAKE(0.59);
+        INTAKE(0.57);
 
         public final double pos;
 

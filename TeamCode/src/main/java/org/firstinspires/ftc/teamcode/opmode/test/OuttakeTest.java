@@ -5,9 +5,7 @@ import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 
-import org.firstinspires.ftc.teamcode.system.accessory.math.Angles;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -34,7 +32,7 @@ public class OuttakeTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         telemetry = new MultipleTelemetry(telemetry, dash.getTelemetry());
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
 
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         intakeSubsystem = new IntakeSubsystem(hardware);

@@ -2,15 +2,12 @@ package org.firstinspires.ftc.teamcode.gvf.opmode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
-import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
-import org.firstinspires.ftc.teamcode.system.accessory.math.Angles;
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 
@@ -23,7 +20,7 @@ public class LocalizationTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         drive = new DriveBaseSubsystem(hardware);
        //hardware.drive.getLocalizer().setOffSet(new Pose(7.2, -62.5, Math.toRadians(90)));
         hardware.drive.getLocalizer().setOffSet(new Pose(0, 0, Math.toRadians(0)));

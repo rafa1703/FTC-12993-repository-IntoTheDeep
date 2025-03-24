@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.complexUslessShit.IHardware;
 
 public class ColorSensorFoda implements IHardware
 {

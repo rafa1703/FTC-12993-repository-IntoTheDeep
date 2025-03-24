@@ -8,10 +8,12 @@ import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.firstinspires.ftc.teamcode.system.accessory.ToggleRisingEdge;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
 import org.firstinspires.ftc.teamcode.system.vision.InverseKinematics;
 
 @TeleOp(group = "Test")
@@ -23,14 +25,15 @@ public class LimeLightTest extends LinearOpMode
     InverseKinematics kinematics = new InverseKinematics();
     ToggleRisingEdge toggle = new ToggleRisingEdge();
     LLResult result;
+    CameraHardware cameraHardware;
     boolean foundSample;
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
         intakeSubsystem = new IntakeSubsystem(hardware);
         lime = hardwareMap.get(Limelight3A.class, "limeLight");
-
+        cameraHardware = new CameraHardware(lime);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         lime.pipelineSwitch(0);
         lime.setPollRateHz(40);
@@ -51,11 +54,12 @@ public class LimeLightTest extends LinearOpMode
             {
                 lime.captureSnapshot("sub");
             }
-            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 
             Vector sampleDis;
             result = lime.getLatestResult();
             sampleDis = kinematics.distanceToSample(result.getTy(), result.getTx());
+            Pose lukaPose = cameraHardware.ro2GoatMath(lime);
 //            if (result != null)
 //            {
 //                if (result.isValid())
@@ -77,11 +81,14 @@ public class LimeLightTest extends LinearOpMode
             {
                 telemetry.addData("Results", "Tx: " + result.getTx() + " Ty: " + result.getTy());
                 telemetry.addData("Result is valid", result.isValid());
+                telemetry.addData("Sample ang", cameraHardware.sampleAngle(result));
+                telemetry.addData("Sample ang 3 points", cameraHardware.sampleAngle3points(result));
             }
             if (sampleDis != null)
             {
                 telemetry.addData("Distance x:", sampleDis.getX() + " y: " + sampleDis.getY());
                 telemetry.addData("Distance mag", sampleDis.getMagnitude());
+                telemetry.addData("Luka pose", lukaPose);
             }
 
             telemetry.update();

@@ -200,8 +200,9 @@ public class MecanumDrive
 
             FL.setPower((powerVector.getX() - powerVector.getY() - powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() - powerVector.getY() - powerVector.getZ()));
             FR.setPower((powerVector.getX() + powerVector.getY() + powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() + powerVector.getY() + powerVector.getZ()));
-            BL.setPower((powerVector.getX() + powerVector.getY() - powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() + powerVector.getY() - powerVector.getZ()));
-            BR.setPower((powerVector.getX() - powerVector.getY() + powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() - powerVector.getY() + powerVector.getZ()));
+            BL.setPower(1.1 * (powerVector.getX() + powerVector.getY() - powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() + powerVector.getY() - powerVector.getZ()));
+            BR.setPower(1.1 * (powerVector.getX() - powerVector.getY() + powerVector.getZ()) * (1 - actualKs) + actualKs * Math.signum(powerVector.getX() - powerVector.getY() + powerVector.getZ()));
+
         }
     }
 
@@ -272,13 +273,23 @@ public class MecanumDrive
             return localizer.getPoseEstimate().getDistance(currentPath.get(currentPath.size() - 1).toPose()) <= tolerance;*/
         return localizer.getPoseEstimate().getDistance(targetPose) <= tolerance;
     }
+    public boolean reachedTargetAndHeading(double tolerance)
+    {
+        if (runMode == RunMode.Vector) return false;
+        /*if (runMode == RunMode.PP)
+            return localizer.getPoseEstimate().getDistance(currentPath.get(currentPath.size() - 1).toPose()) <= tolerance;*/
+        return localizer.getPoseEstimate().getDistance(targetPose) <= tolerance && reachedHeading(tolerance);
+    }
 
     public boolean reachedHeading(double tolerance)
     {
-        if (runMode == RunMode.Vector) return false; // for now PP will be caught here
-        if (runMode == RunMode.PP) return false;
         return Math.abs(normalizeRadians(targetPose.getHeading() - localizer.getHeading())) <= tolerance;
     }
+    public boolean headingReached(double targetHeading, double tolerance)
+    {
+        return Math.abs(normalizeRadians(targetHeading - localizer.getHeading())) <= tolerance;
+    }
+
 
     public boolean stopped()
     {

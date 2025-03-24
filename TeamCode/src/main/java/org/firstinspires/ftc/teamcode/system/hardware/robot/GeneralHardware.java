@@ -58,9 +58,14 @@ public class GeneralHardware
 
     public enum Side
     {
-        Red, Blue
+        RED, BLUE
     }
     public final Side side;
+//    public enum Auto
+//    {
+//        SPEC, SAMPLE, NOT_AUTO
+//    }
+//    public final Auto autoType;
     public static double S, A; // s is the side multiplier and a is the angle multiplier
 
     LynxModule chub, ehub;
@@ -160,8 +165,8 @@ public class GeneralHardware
 
             limelight = hardwareMap.get(Limelight3A.class, "limeLight");
 
-            S = side == Side.Red ? 1 : -1;
-            A = side == Side.Red ? Math.toRadians(0) : Math.toRadians(180);
+            S = side == Side.RED ? 1 : -1;
+            A = side == Side.RED ? Math.toRadians(0) : Math.toRadians(180);
         }
     }
     @Deprecated

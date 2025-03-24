@@ -16,80 +16,80 @@ public class SampleAutoPath
             submersibleIntake, forthDeposit,
             submersibleIntakeSecond, fifthDeposit,
             parkTrajectory;
-    public Pose closeStartPose = new Pose(-34, -62.5, Math.toRadians(90));
+    public Pose closeStartPose = new Pose(-39, -62.5, Math.toRadians(0));
     public SampleAutoPath()
     {
         preloadTrajectory = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
-                        new Point(-34, -62.5),
-                        new Point(-57, -62.5)
+                .addBezierSegment(0.27,
+                        new Point(-39, -62.5),
+                        new Point(-50, -62.5)
                 )
-                .addFinalPose(-57, -62.5, Math.toRadians(0))
+                .addFinalPose(-50, -62.5, Math.toRadians(0))
                 .build();
 
         hpIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-57, -62.5),
-                        new Point(8.5, -62.5)
+                        new Point(-57, -61.5),
+                        new Point(12, -61.5)
                 )
-                .addFinalPose(8.5, -62.5, Math.toRadians(0))
+                .addFinalPose(12, -61.5, Math.toRadians(0))
                 .build();
 
         hpDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(8.5, -62.5),
-                        new Point(-59, -54)
+                        new Point(10, -62.5),
+                        new Point(-57, -55)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(75))
+                .addFinalPose(-57, -55, Math.toRadians(75))
                 .build();
 
         firstIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-59, -54),
-                        new Point(-57, -53)
+                        new Point(-58, -55),
+                        new Point(-27, -33)
                 )
-                .addFinalPose(-57, -53, Math.toRadians(75))
+                .addFinalPose(-27, -33, Math.toRadians(155))
                 .build();
 
         firstDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
-                        new Point(-57, -53),
-                        new Point(-59, -54)
+                .addBezierSegment(1,
+                        new Point(-61, -51.2),
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(83))
+                .addFinalPose(-57, -53, Math.toRadians(112))
                 .build();
 
         secondIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-59, -54),
-                        new Point(-61, -52)
+                        new Point(-52.5, -53),
+                        new Point(-43.2, -49)
 
                 )
-                .addFinalPose(-61, -52, Math.toRadians(90))
+                .addFinalPose(-43.2, -49, Math.toRadians(115))
                 .build();
 
         secondDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
-                        new Point(-62, -50),
-                        new Point(-62, -54)
+                .addBezierSegment(0.7,
+                        new Point(-43.8, -52),
+                        new Point(-58, -54)
                 )
-                .addFinalPose(-62, -54, Math.toRadians(90))
+                .addFinalPose(-58, -54, Math.toRadians(132))
                 .build();
 
         thirdIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-62, -54),
-                        new Point(-60, -50)
+                        new Point(-59.5, -54),
+                        new Point(-48, -42)
                 )
-                .addFinalPose(-60, -50, Math.toRadians(100))
+                .addFinalPose(-48, -42, Math.toRadians(135))
                 .build();
 
         thirdDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.6,
                         new Point(-60, -50),
-                        new Point(-62, -54)
+                        new Point(-59, -54)
                 )
-                .addFinalPose(-62, -54, Math.toRadians(90))
+                .addFinalPose(-59, -54, Math.toRadians(90))
                 .build();
 
         // idk if we will use this

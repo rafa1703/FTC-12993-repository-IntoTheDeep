@@ -21,7 +21,7 @@ public class LocalizationTestGVF extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         drive = new DriveBaseSubsystem(hardware);
         LocalizerCustomVel localizer = new LocalizerCustomVel(hardware);
         waitForStart();

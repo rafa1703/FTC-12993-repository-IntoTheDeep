@@ -1,24 +1,22 @@
-package org.firstinspires.ftc.teamcode.system.hardware.robot;
+package org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.complexUslessShit;
 
 import androidx.annotation.GuardedBy;
 
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.IHardware;
-
 import java.util.ArrayList;
 
-public class ReadThread
+public class WriteThread
 {
     private final Object lock = new Object();
     @GuardedBy("lock")
     Thread thread;
     ArrayList<IHardware> list = new ArrayList<>();
-    public ReadThread(ArrayList<IHardware> list)
+    public WriteThread(ArrayList<IHardware> list)
     {
         this.list = list;
     }
-    public ReadThread(IHardware hardware)
+    public WriteThread(IHardware hardware)
     {
         list.add(hardware);
     }
@@ -33,11 +31,12 @@ public class ReadThread
                     for (IHardware hardware :
                             list)
                     {
-                        hardware.reads();
+                        hardware.writes();
                     }
                 }
             }
         });
         thread.start();
     }
+
 }

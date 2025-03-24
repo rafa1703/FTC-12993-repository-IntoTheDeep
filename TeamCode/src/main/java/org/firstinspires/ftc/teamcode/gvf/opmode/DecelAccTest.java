@@ -47,7 +47,7 @@ public class DecelAccTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         intakeSubsystem = new IntakeSubsystem(hardware);
 
         dash = FtcDashboard.getInstance();

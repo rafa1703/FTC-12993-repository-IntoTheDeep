@@ -75,8 +75,8 @@ public class IntakeSubsystem
         HP_DEPOSIT(0.41),
         HALF_DOWN(0.9),
         AURA_DOWN(0.93),
-        DOWN(0.95),
-        EXTENDO_DOWN(0.95), // this exists because the intake saggs on the slides
+        DOWN(1),
+        EXTENDO_DOWN(0.97), // this exists because the intake saggs on the slides
         BACK(0.95),
         IN(0.45),
         AROUND(0.5);
@@ -151,7 +151,7 @@ public class IntakeSubsystem
     }
     public IntakeSubsystem(HardwareMap hardware)
     {
-        side = GeneralHardware.Side.Red;
+        side = GeneralHardware.Side.RED;
 
         turretS = new ServoPika(hardware.get(ServoImplEx.class, "turretS"));
         armS = new ServoPika(hardware.get(ServoImplEx.class, "armS"));
@@ -331,10 +331,10 @@ public class IntakeSubsystem
             case SIDE_ONLY:
                 if (isYellow) return false;
                 else
-                    return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+                    return isRed ? side == GeneralHardware.Side.RED : side == GeneralHardware.Side.BLUE;
             case NEUTRAL:
                 return (isYellow) ||
-                        isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+                        isRed ? side == GeneralHardware.Side.RED : side == GeneralHardware.Side.BLUE;
             case YELLOW_ONLY:
                 return isYellow;
             default:
@@ -381,7 +381,7 @@ public class IntakeSubsystem
     public boolean isSample()
     {
         if (isYellow) return true;
-        else return isRed ? side == GeneralHardware.Side.Red : side == GeneralHardware.Side.Blue;
+        else return isRed ? side == GeneralHardware.Side.RED : side == GeneralHardware.Side.BLUE;
     }
     public double getColorValue()
     {

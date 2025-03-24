@@ -20,7 +20,7 @@ public class PIDTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.Red, true);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         intakeSubsystem = new IntakeSubsystem(hardware);
         hardware.drive.setRunMode(MecanumDrive.RunMode.P2P); // works exactly like p2p but with like the actual pose
 //        hardware.drive.getLocalizer().setPose(new Pose(0, 0, Math.toRadians(0)));

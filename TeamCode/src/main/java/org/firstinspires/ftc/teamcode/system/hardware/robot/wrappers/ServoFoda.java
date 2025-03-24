@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers;
 
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.complexUslessShit.IHardware;
+
 public class ServoFoda implements IHardware
 {
     public boolean ENABLED = true;

@@ -58,7 +58,7 @@ public class SpecAutoPath
                         new Point(36, -37),
                         new Point(36, -63)
                 )
-                .addFinalSpeed(0.5)
+                .addFinalSpeed(0.3)
                 .addFinalPose(36, -63, Math.toRadians(90))
                 .build();
 
@@ -105,30 +105,31 @@ public class SpecAutoPath
 //                .addFinalPose(48.5, -52, Math.toRadians(90))
 //                .build();
         subDropAndFirstSample = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.8,
                         new Point(0, -28.8),
                         new Point(0, -52),
-                        new Point(49, -52)
+                        new Point(54, -52)
                         //new Point(0, -26.8),
                 )
-                .addFinalPose(49, -52, Math.toRadians(90))
+                .addFinalSpeed(0.5)
+                .addFinalPose(54, -52, Math.toRadians(90))
                 .build();
 
         secondSample = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(49, -52),
-                        new Point(57, -52)
+                        new Point(53, -52),
+                        new Point(61.5, -52)
 
                 )
-                .addFinalPose(57, -52, Math.toRadians(90))
+                .addFinalPose(61.5, -52, Math.toRadians(90))
                 .build();
         thirdSample = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(54, -52),
-                        new Point(59, -52)
+                        new Point(60, -52),
+                        new Point(61, -52)
 
                 )
-                .addFinalPose(59, -52, Math.toRadians(90))
+                .addFinalPose(61, -52, Math.toRadians(90))
                 .build();
         thirdSampleToIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(

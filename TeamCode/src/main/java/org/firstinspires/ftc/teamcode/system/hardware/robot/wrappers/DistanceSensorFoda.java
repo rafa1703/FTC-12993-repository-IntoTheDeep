@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.complexUslessShit.IHardware;
 
 public class DistanceSensorFoda implements IHardware
 {
