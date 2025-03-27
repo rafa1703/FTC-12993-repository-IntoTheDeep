@@ -16,6 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
+import org.firstinspires.ftc.teamcode.system.accessory.supplier.TimedSupplier;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.CRServoPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
@@ -29,11 +30,14 @@ public class IntakeSubsystem
     CRServoPika intakeCS;
     MotorPika intakeSlideMotor;
     RevColorSensorV3 colourSensor;
+    TimedSupplier<Integer> colourSupplier;
     DistanceSensor distanceSensor;
+    TimedSupplier<Double> distanceSupplier;
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
     double colorValue;
+    double colourSensorDistance;
     GeneralHardware.Side side;
     double intakeSlidesFineAdjustTimer;
 
@@ -72,12 +76,12 @@ public class IntakeSubsystem
         TRANSFER_META(0.68),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
-        HP_DEPOSIT(0.41),
+        HP_DEPOSIT(0.3),
         HALF_DOWN(0.9),
         AURA_DOWN(0.93),
         DOWN(1),
         EXTENDO_DOWN(0.97), // this exists because the intake saggs on the slides
-        BACK(0.95),
+        BACK(0.98),
         IN(0.45),
         AROUND(0.5);
 
@@ -105,13 +109,13 @@ public class IntakeSubsystem
 
     public enum IntakeTurretServoState
     {
-        TRANSFER_META(0.79),
+        TRANSFER_META(0.797),
         MAX_LEFT(0.53),
         LEFT(0.45),
         STRAIGHT(0.37),
         RIGHT(0.27),
         MAX_RIGHT(0.21),
-        HP_DEPOSIT(0.54), // this is true max right, arm has to be up
+        HP_DEPOSIT(0.62),
         AROUND(0.94);
 
         public final double pos;
@@ -143,8 +147,10 @@ public class IntakeSubsystem
         intakeCS = hardware.intakeCS;
         clipS = hardware.clipS;
         armS = hardware.intakeArmS;
-        colourSensor = hardware.colourSensor; // no supplier as i want this to pool immediately and synchronously
+        colourSensor = hardware.colourSensor;
+        colourSupplier = new TimedSupplier<>(() -> colourSensor.alpha(), 40);
         distanceSensor = hardware.distanceSensor;
+        distanceSupplier = new TimedSupplier<>(() -> distanceSensor.getDistance(DistanceUnit.INCH), 40);
         intakeSlideMotor = hardware.intakeSlidesM;
 
         intakeHardwareSetUp(); // this can now be called from here because the objects initialize at hardware
@@ -177,11 +183,16 @@ public class IntakeSubsystem
 
     public void intakeReads(boolean i2c)
     {
+        intakeReads(i2c, false);
+    }
+    public void intakeReads(boolean i2c, boolean auto)
+    {
         slidePosition = intakeSlideMotor.getCurrentPosition();
         if (i2c)
         {
-            colorValue = colourSensor.alpha();
-            distance = distanceSensor.getDistance(DistanceUnit.INCH);
+            colorValue = colourSupplier.get();
+            colourSensorDistance = colourSensor.getDistance(DistanceUnit.INCH);
+            if (auto) distance = distanceSupplier.get();
         }
     }
 
@@ -353,6 +364,10 @@ public class IntakeSubsystem
     public double getDistance()
     {
         return distance;
+    }
+    public double getColourSensorDistance()
+    {
+        return colourSensorDistance;
     }
     public double armLength(double armAngle)
     {

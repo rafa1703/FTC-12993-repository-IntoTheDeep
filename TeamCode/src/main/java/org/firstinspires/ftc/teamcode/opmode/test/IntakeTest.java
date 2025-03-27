@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -36,13 +37,13 @@ public class IntakeTest extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
-            intakeSubsystem.intakeTurretSetPos(armO);
-//            intakeSubsystem.armSetPos(1);
-//            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-//            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);j
-//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-//intakeSubsystem.intakeSlideMotorRawControl(1);
+            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+
             NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
+            telemetry.addData("Colour sensor as distance", hardware.colourSensor.getDistance(DistanceUnit.INCH));
             telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("Pos", intakeSubsystem.slidePosition);
             telemetry.addData("Distance", intakeSubsystem.getDistance());

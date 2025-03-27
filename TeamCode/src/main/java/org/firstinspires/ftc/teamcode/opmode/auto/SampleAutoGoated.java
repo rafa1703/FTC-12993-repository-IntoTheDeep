@@ -1,8 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 
-import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideExtensionLimit;
-
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
@@ -14,15 +12,15 @@ import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.utils.DashboardUtil;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
-import org.firstinspires.ftc.teamcode.opmode.auto.paths.SampleAutoPath;
+import org.firstinspires.ftc.teamcode.opmode.auto.paths.SampleAutoPathNew;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
 import org.firstinspires.ftc.teamcode.system.vision.InverseKinematics;
 
-@Autonomous(name = "0+7", group = "Close")
-public class SampleAuto extends LinearOpMode
+@Autonomous(name = "0+7 turning intake", group = "Close")
+public class SampleAutoGoated extends LinearOpMode
 {
     enum autoState {
         PRELOAD_DEPOSIT,
@@ -48,7 +46,7 @@ public class SampleAuto extends LinearOpMode
     OuttakeState outtakeState = OuttakeState.READY;
     GeneralHardware hardware;
     FtcDashboard dashboard = FtcDashboard.getInstance();
-    SampleAutoPath trajectories = new SampleAutoPath();
+    SampleAutoPathNew trajectories = new SampleAutoPathNew();
     IntakeSubsystem intakeSubsystem;
     OuttakeSubsystem outtakeSubsystem;
     CameraHardware cameraHardware;
@@ -148,54 +146,31 @@ public class SampleAuto extends LinearOpMode
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
                             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+                            if (delay(400))
+                            {
+                                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                                intakeSubsystem.intakeSlideInternalPID(22);
+                            }
+                            if (delay(600)) intakeSubsystem.intakeTurretSetPos(0.58);
+                            else if (delay(200)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                         }
-
-                        if (delay(200)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                         break;
                     case DROP:
                         outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
                         if (delay(140))
                         {
                             state = autoState.INTAKE;
-                            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                             cycle += 2;
+                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                             resetTimer();
                             break;
                         }
                         break;
                 }
                 break;
-            case HP_INTAKE:
-                hardware.drive.followTrajectoryTangentially(trajectories.hpIntake, false);
-                if (delay(90))
-                {
-                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                    if (delay(120))
-                    {
-                        liftToBase();
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
-                        if (xPosition > -8) intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit);
-                        if (xPosition > 0)
-                        {
-                            intakeSubsystem.armSetPos(0.96);
-                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                        }
-                        if (delay(300)) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
-                        outtakeKeepTurretBack();
-                    }
-                    if ((intakeSubsystem.getColorValue() > sampleThreshold && delay(240)) || delay(1800))
-                    {
-                        state = autoState.DEPOSIT;
-                        outtakeState = OuttakeState.TRANSFER_START;
-                        resetTimer();
-                        break;
-                    }
-                }
-                break;
             case INTAKE:
                 Trajectory intakeTrajectory = null;
+                double slideTarget;
                 switch (cycle)
                 {
                     case 2:
@@ -210,40 +185,14 @@ public class SampleAuto extends LinearOpMode
                 }
                 if (intakeTrajectory != null)
                 {
-                    hardware.drive.followTrajectorySplineHeading(intakeTrajectory);
+                    if (delay(100))
+                        hardware.drive.followTrajectorySplineHeading(intakeTrajectory);
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                     if (delay(40))
                     {
                         outtakeKeepTurretBack();
-//                        intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
-                        if (cycle == 2)
-                        {
-                            if (hardware.drive.stopped() && delay(300))
-                                intakeSubsystem.intakeSlideInternalPID(21);
-                            else if (delay(0)) intakeSubsystem.intakeSlideInternalPID(15);
-
-                            intakeSubsystem.intakeTurretSetPos(0.26);
-//                            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
-//                            intakeSubsystem.intakeTurretSetPos(0.3164788732);
-                        }
-                        else if (cycle == 3)
-                        {
-                          intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.LEFT);
-//                            intakeSubsystem.intakeTurretSetPos(0.40);
-//                            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-                            if (hardware.drive.stopped() && delay(300))
-                                intakeSubsystem.intakeSlideInternalPID(21.5);
-                            else if (delay(0)) intakeSubsystem.intakeSlideInternalPID(10);
-                        }
-                        else
-                        {
-//                            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.LEFT);
-                            intakeSubsystem.intakeTurretSetPos(0.435);
-                            if (hardware.drive.stopped() && delay(300))
-                                intakeSubsystem.intakeSlideInternalPID(19);
-                            else if (delay(0)) intakeSubsystem.intakeSlideInternalPID(10);
-                        }
-
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                        intakeSubsystem.intakeSlideInternalPID(21);
+                        intakeSubsystem.intakeTurretSetPos(0.58);
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
 
                     }
@@ -332,6 +281,10 @@ public class SampleAuto extends LinearOpMode
                                     outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
                                     outtakeSubsystem.turretKeepToAngleTicks(135, headingAngleDeg);
                                     intakeSubsystem.intakeSpin(0);
+
+                                    intakeSubsystem.intakeSlideInternalPID(21);
+                                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                                    if (delay(500)) intakeSubsystem.intakeTurretSetPos(0.58);
                                 }
                                 else if (delay(130))
                                 {
@@ -351,6 +304,10 @@ public class SampleAuto extends LinearOpMode
                         {
                             state = cycle >= 4 ? autoState.INTAKE_SUB : autoState.INTAKE;
                             outtakeSubsystem.liftMotorRawControl(0);
+                            if (cycle < 4)
+                            {
+                                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                            }
                             cycle++;
                             resetTimer();
                             break;
@@ -402,7 +359,7 @@ public class SampleAuto extends LinearOpMode
 //                        }
 //                        else if (delay(90)) intakeSubsystem.intakeSlideInternalPID(slideCachedTarget);
 //                    }
-                    hardware.drive.followTrajectoryTangentially(subIntakeTrajectory,false);
+                    hardware.drive.followTrajectorySplineHeading(subIntakeTrajectory);
                     if(delay(300))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);

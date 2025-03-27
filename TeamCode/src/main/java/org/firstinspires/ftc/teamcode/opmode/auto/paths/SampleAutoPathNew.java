@@ -5,7 +5,7 @@ import org.firstinspires.ftc.teamcode.gvf.trajectories.TrajectoryBuilder;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.opencv.core.Point;
 
-public class SampleAutoPath
+public class SampleAutoPathNew
 {
     public Trajectory
             preloadTrajectory, // preload deposit
@@ -18,15 +18,15 @@ public class SampleAutoPath
             submersibleIntakeThird, sixthDeposit,
             submersibleIntakeForth, seventhDeposit,
             parkTrajectory;
-    public Pose closeStartPose = new Pose(-39, -62.5, Math.toRadians(0));
-    public SampleAutoPath()
+    public Pose closeStartPose = new Pose(-39, -62.5, Math.toRadians(90));
+    public SampleAutoPathNew()
     {
         preloadTrajectory = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.5, // 0.4 works but there we wait until the trajectory ended
+                .addBezierSegment(0.7, // 0.4 works but there we wait until the trajectory ended
                         new Point(-39, -62.5),
-                        new Point(-61, -52)
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-60, -54, Math.toRadians(75))
+                .addFinalPose(-57, -53, Math.toRadians(62))
                 .build();
 //                preloadTrajectory = new TrajectoryBuilder() // spline heading
 //            .addBezierSegment(0.27,
@@ -54,51 +54,50 @@ public class SampleAutoPath
 
         firstIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-58, -55),
-                        new Point(-61, -50)
+                        new Point(-57, -53),
+                        new Point(-57.1, -52.9)
                 )
-                .addFinalPose(-61, -50, Math.toRadians(69.7))
+                .addFinalPose(-57.1, -52.9, Math.toRadians(70))
                 .build();
 
         firstDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(1,
-                        new Point(-61, -51.2),
-                        new Point(-57.2, -53)
+                .addBezierSegment(
+                        new Point(-57, -52.9),
+                        new Point(-57.1, -53)
                 )
-                .addFinalPose(-57.2, -53, Math.toRadians(112))
+                .addFinalPose(-57.1, -53, Math.toRadians(70))
                 .build();
 
         secondIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-52.5, -53),
-                        new Point(-43.2, -47)
-
+                        new Point(-57, -54),
+                        new Point(-57.1, -54)
                 )
-                .addFinalPose(-43.2, -47, Math.toRadians(117))
+                .addFinalPose(-57.1, -54, Math.toRadians(90))
                 .build();
 
         secondDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.45,
-                        new Point(-43.8, -52),
-                        new Point(-58, -54)
+                .addBezierSegment(0.8,
+                        new Point(-57.1, -53),
+                        new Point(-60, -52.7)
                 )
-                .addFinalPose(-58, -54, Math.toRadians(132))
+                .addFinalPose(-60, -52.7, Math.toRadians(90))
                 .build();
 
         thirdIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
-                        new Point(-59.5, -54),
-                        new Point(-48, -41)
+                        new Point(-57.1, -53),
+                        new Point(-60, -53)
                 )
-                .addFinalPose(-48, -41, Math.toRadians(135))
+                .addFinalPose(-60, -53, Math.toRadians(100))
                 .build();
 
         thirdDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.4,
-                        new Point(-60, -50),
-                        new Point(-59, -54)
+                .addBezierSegment(
+                        new Point(-57.1, -55.1),
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(90))
+                .addFinalPose(-57, -53, Math.toRadians(65))
                 .build();
 
         // idk if we will use this
@@ -108,7 +107,7 @@ public class SampleAutoPath
 //                        new Point(-48, -9),
                         new Point(-41, -17)
                 )
-                .addFinalPose(-41, -17, Math.toRadians(25))
+                .addFinalPose(-41, -17, Math.toRadians(35))
                 .build();
 
 

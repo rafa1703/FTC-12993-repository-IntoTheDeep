@@ -25,7 +25,7 @@ public class OuttakeSubsystem
     AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
     PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
-    PID turretAbsolutePID = new PID(0.022, 0.03, 0.0003, 10, 0);
+    PID turretAbsolutePID = new PID(0.02, 0.03, 0.0003, 10, 0);
     LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
@@ -39,8 +39,8 @@ public class OuttakeSubsystem
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 9,
             liftHighBarPos = 14,
-            liftHighBarBackStaticPos = 11.5,
-            liftHighBarBackKineticPos = 18,
+            liftHighBarBackStaticPos = 10.5,
+            liftHighBarBackKineticPos = 17,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
@@ -60,7 +60,7 @@ public class OuttakeSubsystem
         TRANSFER_META(145),
         HP_DROP_AUTO(-80),
         CLIMB_START(150),
-        SPEC_DEPOSIT_BACK(245);
+        SPEC_DEPOSIT_BACK(260);
 
         public final double angle;
         OuttakeTurretState(double angle)
@@ -138,7 +138,7 @@ public class OuttakeSubsystem
         SAMPLE(0.70),
         SPECIMEN_HIGH(0.97),
         SPECIMEN_HIGH_BACK_STATIC(0.70),
-        SPECIMEN_HIGH_BACK_KINETIC(1),
+        SPECIMEN_HIGH_BACK_KINETIC(0.8),
         SPECIMEN_LOW(0.92),
         SPECIMEN_LOW_BACK(0.41),
         INTAKE(0.12),
@@ -155,20 +155,20 @@ public class OuttakeSubsystem
     public enum OuttakeWristServoState
     {
         READY(0),
-        SPIN(0.59),
-        TRANSFER_FRONT(0.75),
-        TRANSFER_BACK(0.4), //+0.14
-        TRANSFER_AURA(0.34),
-        TRANSFER_META(0.55),
-        SAMPLE(0.595),
-        SPECIMEN_HIGH(0.615),
-        SPECIMEN_HIGH_BACK_STATIC(0.9),
-        SPECIMEN_HIGH_BACK_KINETIC(0.7),
-        SPECIMEN_HIGH_BACK_FLICK(0.8),
-        SPECIMEN_LOW(0.91),
-        SPECIMEN_LOW_BACK(0.41),
-        HP_DEPOSIT(0.59),
-        INTAKE(0.57);
+        SPIN(0.54),
+        TRANSFER_FRONT(0.7),
+        TRANSFER_BACK(0.35), //-0.05
+        TRANSFER_AURA(0.29),
+        TRANSFER_META(0.5),
+        SAMPLE(0.545),
+        SPECIMEN_HIGH(0.565),
+        SPECIMEN_HIGH_BACK_STATIC(0.85),
+        SPECIMEN_HIGH_BACK_KINETIC(0.55),
+        SPECIMEN_HIGH_BACK_FLICK(0.75),
+        SPECIMEN_LOW(0.86),
+        SPECIMEN_LOW_BACK(0.36),
+        HP_DEPOSIT(0.54),
+        INTAKE(0.53);
 
         public final double pos;
 
@@ -227,7 +227,7 @@ public class OuttakeSubsystem
 
     public void cacheTurretInitialPosition()
     {
-        double angle = Angles.reduceDegrees((turretEncoder.getVoltage() / 3.225) * 360 + 180) ;
+        double angle = Angles.reduceDegrees((turretEncoder.getVoltage() / 3.225) * 360 + 180);
         initialOffsetPosition = turretAngleToTicks(angle); // turretAngleToTicks(turretAngle());
         if (angle >= 270 && angle <= 360) initialOffsetPosition = initialOffsetPosition - 4000;
     }

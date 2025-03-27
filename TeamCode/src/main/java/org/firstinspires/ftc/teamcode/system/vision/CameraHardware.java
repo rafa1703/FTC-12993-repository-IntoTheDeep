@@ -18,6 +18,20 @@ import java.util.List;
 
 public class CameraHardware
 {
+    public enum PipelineType
+    {
+        RED(0),
+        BLUE(1),
+        YELLOW(2),
+        RED_YELLOW(3),
+        BLUE_YELLOW(4);
+
+        public final int pipelineIndex;
+        PipelineType(int pipelineIndex)
+        {
+            this.pipelineIndex = pipelineIndex;
+        }
+    }
     private Limelight3A limelight;
     private LLResult latestResult = null;
     public CameraHardware(GeneralHardware hardware)
@@ -43,6 +57,10 @@ public class CameraHardware
         if (hardware.side == GeneralHardware.Side.RED)
             limelight.pipelineSwitch(0);
         else  limelight.pipelineSwitch(1);
+    }
+    public void pipelineSwitch(PipelineType type)
+    {
+        limelight.pipelineSwitch(type.pipelineIndex);
     }
     public void deleteSnapshot()
     {
