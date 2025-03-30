@@ -95,8 +95,8 @@ public class IntakeSubsystem
 
     public enum IntakeClipServoState
     {
-        HOLD(0.3),
-        OPEN(0.75);
+        HOLD(0.52),
+        OPEN(0.2);
 
         public final double pos;
 

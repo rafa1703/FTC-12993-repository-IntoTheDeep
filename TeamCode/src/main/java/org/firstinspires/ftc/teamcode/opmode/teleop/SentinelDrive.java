@@ -729,7 +729,6 @@ public class  SentinelDrive extends LinearOpMode
                     if (delay(200))
                     {
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_META);
-
                     }
                     if (delay(300)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.TRANSFER_META);
                 }
@@ -1197,7 +1196,7 @@ public class  SentinelDrive extends LinearOpMode
             case SPECIMEN_DEPOSIT_BACK2:
                 liftHeightLogic(gamepad2.x, gamepad2.a);
                 //presetChaining(false, gamepad1LeftTrigger(),  gamepad1RightTrigger(), gamepad1.a);
-                toggleAutoAlign();
+
                 specSideLogic(gamepad2.dpad_left, gamepad2.dpad_right);
                 if (!dropped)
                 {

@@ -47,11 +47,12 @@ public class SubIntakeTest extends LinearOpMode
     public void runOpMode() throws InterruptedException
     {
         hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
-        hardware.drive.getLocalizer().setOffSet(new Pose(0, 0, Math.toRadians(90)));
+        hardware.drive.getLocalizer().setOffSet(new Pose(0, 0, Math.toRadians(0)));
 
-        hardware.drive.setRunMode(MecanumDrive.RunMode.PID);
+        hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
         intakeSubsystem = new IntakeSubsystem(hardware);
         cameraHardware = new CameraHardware(hardware);
+        cameraHardware.pipelineSwitch(CameraHardware.PipelineType.YELLOW);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         GlobalTimer = new ElapsedTime(System.nanoTime());
         hardware.limelight.start();
@@ -66,9 +67,10 @@ public class SubIntakeTest extends LinearOpMode
                     if (foundSample && delay(100))
                     {
                         state = SUB_INTAKE.BEFORE_INTAKE;
-                        Vector offsetVector = new Vector(0, -xOffset); // x is passed in y because the robot is at heading 90 for it to be x
-                        offsetVector = offsetVector.rotated(Math.toRadians(90 - result.getTxNC()) * -1);
-                        drivePose = new Pose(offsetVector.getX(), offsetVector.getY(), Math.toRadians(90 - result.getTxNC())); // sampleDis.getX() + xOffset
+//                        Vector offsetVector = new Vector(0, -xOffset); // x is passed in y because the robot is at heading 90 for it to be x
+//                        offsetVector = offsetVector.rotated(Math.toRadians(90 - result.getTxNC()) * -1);
+//                        drivePose = new Pose(offsetVector.getX(), offsetVector.getY(), Math.toRadians(90 - result.getTxNC())); // sampleDis.getX() + xOffset
+                        drivePose = new Pose(0, sampleDis.getX() - 5, Math.toRadians(0));
                         hardware.drive.setTargetPose(drivePose);
                         resetTimer();
                         break;
@@ -79,7 +81,7 @@ public class SubIntakeTest extends LinearOpMode
                     if (result == null) break;
 
                     foundSample = true;
-                    sampleDis = kinematics.distanceToSample(result.getTy(), result.getTx());
+                    sampleDis = InverseKinematics.distanceToSample(result.getTy(), result.getTx());
                     slideTarget = sampleDis.getY() - 7;
                     telemetry.addData("TX and TY", result.getTxNC() + result.getTyNC());
                     break;

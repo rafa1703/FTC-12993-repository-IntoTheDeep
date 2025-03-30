@@ -28,8 +28,8 @@ public class DriveBaseSubsystem
 
     public enum PTOState
     {
-        OUT(0.8),
-        IN(1);
+        OUT(0.83),
+        IN(0.63);
 
         public final double pos;
 

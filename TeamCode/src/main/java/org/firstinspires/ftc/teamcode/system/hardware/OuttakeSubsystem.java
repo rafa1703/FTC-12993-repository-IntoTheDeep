@@ -155,20 +155,20 @@ public class OuttakeSubsystem
     public enum OuttakeWristServoState
     {
         READY(0),
-        SPIN(0.54),
-        TRANSFER_FRONT(0.7),
-        TRANSFER_BACK(0.35), //-0.05
-        TRANSFER_AURA(0.29),
-        TRANSFER_META(0.5),
-        SAMPLE(0.545),
-        SPECIMEN_HIGH(0.565),
-        SPECIMEN_HIGH_BACK_STATIC(0.85),
-        SPECIMEN_HIGH_BACK_KINETIC(0.55),
-        SPECIMEN_HIGH_BACK_FLICK(0.75),
-        SPECIMEN_LOW(0.86),
-        SPECIMEN_LOW_BACK(0.36),
-        HP_DEPOSIT(0.54),
-        INTAKE(0.53);
+        SPIN(0.59),
+        TRANSFER_FRONT(0.75),
+        TRANSFER_BACK(0.4), //+0.05
+        TRANSFER_AURA(0.34),
+        TRANSFER_META(0.55),
+        SAMPLE(0.595),
+        SPECIMEN_HIGH(0.615),
+        SPECIMEN_HIGH_BACK_STATIC(0.9),
+        SPECIMEN_HIGH_BACK_KINETIC(0.6),
+        SPECIMEN_HIGH_BACK_FLICK(0.8),
+        SPECIMEN_LOW(0.91),
+        SPECIMEN_LOW_BACK(0.41),
+        HP_DEPOSIT(0.59),
+        INTAKE(0.58);
 
         public final double pos;
 
@@ -227,7 +227,7 @@ public class OuttakeSubsystem
 
     public void cacheTurretInitialPosition()
     {
-        double angle = Angles.reduceDegrees((turretEncoder.getVoltage() / 3.225) * 360 + 180);
+        double angle = Angles.reduceDegrees((turretEncoder.getVoltage() / 3.225) * 360);
         initialOffsetPosition = turretAngleToTicks(angle); // turretAngleToTicks(turretAngle());
         if (angle >= 270 && angle <= 360) initialOffsetPosition = initialOffsetPosition - 4000;
     }

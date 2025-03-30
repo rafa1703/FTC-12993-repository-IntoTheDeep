@@ -22,8 +22,8 @@ public class CameraHardware
     {
         RED(0),
         BLUE(1),
-        YELLOW(2),
-        RED_YELLOW(3),
+        YELLOW(3),
+        RED_YELLOW(2),
         BLUE_YELLOW(4);
 
         public final int pipelineIndex;
@@ -66,10 +66,11 @@ public class CameraHardware
     {
         limelight.deleteSnapshots();
     }
-    public void captureSnapshot(String name)
+    public boolean captureSnapshot(String name)
     {
-        limelight.captureSnapshot(name);
+        return limelight.captureSnapshot(name);
     }
+    //        limelight.getLatestResult().getDetectorResults().get().getClassName()
     public LLResult getLatestResult()
     {
         latestResult = limelight.getLatestResult();
@@ -158,13 +159,17 @@ public class CameraHardware
 //
 //        } catch (Exception e) {}
 //    }
+    public Pose ro2GoatMath()
+    {
+        return ro2GoatMath(limelight);
+    }
     public Pose ro2GoatMath(Limelight3A limelight)
     {
         LLResult result = limelight.getLatestResult();
 
         double targetHeight = 1.5;
         double cameraHeight = 9.84;
-        double mountingAngle = -7;
+        double mountingAngle = -9.35;
 
         try{
             if(result.isValid()) {

@@ -7,14 +7,14 @@ import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 public class InverseKinematics
 {
     // this is assumed with the camera being perpendicular and scanning the sub
-    private final double h1 = 9.84; // height of the camera mount
-    private final double h2 = 1.5; // height of the sample in the floor
-    private final double a1 = -7; // camera mounting angle
+    private static final double h1 = 9.84; // height of the camera mount
+    private static final double h2 = 1.5; // height of the sample in the floor
+    private static final double a1 = -9.35; // camera mounting angle
     /** Takes ty from the limelight as a parameter, and returns a magnitude **/
     public double distanceToSample(double ty)
     {
         double Ty = Math.toRadians(ty);
-        return (h2 - h1) / Math.tan(Math.toRadians(-15) + Ty);
+        return (h2 - h1) / Math.tan(Math.toRadians(a1) + Ty);
     }
     public double horizontalDistanceToSample(double ty, double tx)
     {
@@ -22,14 +22,14 @@ public class InverseKinematics
         double c = y / Math.cos(Math.toRadians(tx));
         return Math.sin(Math.toRadians(tx)) * c;
     }
-    public Vector distanceToSample(double ty, double tx)
+    public static Vector distanceToSample(double ty, double tx)
     {
         double Ty = Math.toRadians(ty);
         double y = (h2 - h1) / Math.tan(Math.toRadians(a1) + Ty);
         double Tx = Math.toRadians(tx);
         double c = y / Math.cos(Tx);
         double x = Math.sin(Tx) * c;
-        return new Vector(x, y);
+        return new Vector(Math.abs(x) * Math.signum(tx), y);
     }
     public Pose samplePos(double ty, double tx, Pose robotPose)
     {

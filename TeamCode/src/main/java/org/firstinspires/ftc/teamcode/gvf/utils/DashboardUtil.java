@@ -26,6 +26,9 @@ public class DashboardUtil
         }
         canvas.strokePolyline(xPoints, yPoints);
     }
+    public static void drawPose(Canvas canvas, Pose2d pose) {
+        canvas.fillCircle(pose.getX(), pose.getY(), 2);
+    }
 
     public static void drawSampledPath(Canvas canvas, Trajectory path) {
         if (path == null) return;

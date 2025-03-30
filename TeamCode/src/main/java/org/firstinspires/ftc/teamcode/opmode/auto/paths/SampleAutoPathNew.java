@@ -17,6 +17,7 @@ public class SampleAutoPathNew
             submersibleIntakeSecond, fifthDeposit,
             submersibleIntakeThird, sixthDeposit,
             submersibleIntakeForth, seventhDeposit,
+            submersibleIntakeFifth, eighthDeposit,
             parkTrajectory;
     public Pose closeStartPose = new Pose(-39, -62.5, Math.toRadians(90));
     public SampleAutoPathNew()
@@ -105,9 +106,9 @@ public class SampleAutoPathNew
                 .addBezierSegment(
                         new Point(-62, -64),
 //                        new Point(-48, -9),
-                        new Point(-41, -17)
+                        new Point(-28, -10)
                 )
-                .addFinalPose(-41, -17, Math.toRadians(35))
+                .addFinalPose(-28, -10, Math.toRadians(0))
                 .build();
 
 
@@ -121,60 +122,77 @@ public class SampleAutoPathNew
 //                .build();
 
         forthDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.7,
                         new Point(-22, -11),
                         new Point(-48, -9),
-                        new Point(-59, -54)
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(90))
+                .addFinalPose(-57, -53, Math.toRadians(90))
                 .build();
         submersibleIntakeSecond = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(-62, -64),
-                        new Point(-48, -9),
-                        new Point(-22, -11)
+//                        new Point(-48, -9),
+                        new Point(-28, -10)
                 )
-                .addFinalPose(-22, -11, Math.toRadians(0))
+                .addFinalPose(-28, -10, Math.toRadians(0))
                 .build();
         fifthDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.7,
                         new Point(-22, -11),
                         new Point(-48, -9),
-                        new Point(-59, -54)
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(90))
+                .addFinalPose(-57, -53, Math.toRadians(90))
                 .build();
         submersibleIntakeThird = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(-62, -64),
-                        new Point(-48, -9),
-                        new Point(-22, -11)
+//                        new Point(-48, -9),
+                        new Point(-28, -10)
                 )
-                .addFinalPose(-22, -11, Math.toRadians(0))
+                .addFinalPose(-28, -10, Math.toRadians(0))
                 .build();
         sixthDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.7,
                         new Point(-22, -11),
                         new Point(-48, -9),
-                        new Point(-59, -54)
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(90))
+                .addFinalPose(-57, -53, Math.toRadians(90))
                 .build();
         submersibleIntakeForth = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(-62, -64),
-                        new Point(-48, -9),
-                        new Point(-22, -11)
+//                        new Point(-48, -9),
+                        new Point(-28, -10)
                 )
-                .addFinalPose(-22, -11, Math.toRadians(0))
+                .addFinalPose(-28, -10, Math.toRadians(0))
                 .build();
         seventhDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(
+                .addBezierSegment(0.7,
                         new Point(-22, -11),
                         new Point(-48, -9),
-                        new Point(-59, -54)
+                        new Point(-57, -53)
                 )
-                .addFinalPose(-59, -54, Math.toRadians(90))
+                .addFinalPose(-57, -53, Math.toRadians(90))
+                .build();
+        submersibleIntakeFifth = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(
+                        new Point(-62, -64),
+//                        new Point(-48, -9),
+                        new Point(-28, -10)
+                )
+                .addFinalPose(-28, -10, Math.toRadians(0))
+                .build();
+        // wtf is eighth
+        eighthDeposit = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(0.7,
+                        new Point(-22, -11),
+                        new Point(-48, -9),
+                        new Point(-57, -53)
+                )
+                .addFinalPose(-57, -53, Math.toRadians(90))
                 .build();
         parkTrajectory = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
