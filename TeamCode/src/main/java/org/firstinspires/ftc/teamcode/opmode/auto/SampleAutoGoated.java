@@ -226,7 +226,7 @@ public class SampleAutoGoated extends LinearOpMode
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
                         outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
-                        if (delay(200)) liftToBase();
+                        if (delay(200)) liftToBase(-0.5);
                         if (delay(300))
                         {
                             outtakeKeepTurretBack();
@@ -324,7 +324,7 @@ public class SampleAutoGoated extends LinearOpMode
                                 {
                                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                                 }
-                                if (delay(650) && depositTrajectory.isFinished() && outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition) > 23.5)
+                                if (delay(650) && depositTrajectory.isFinished() && outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition) > 26.5)
                                 {
                                     outtakeState = OuttakeState.DROP;
                                     resetTimer();
@@ -397,7 +397,7 @@ public class SampleAutoGoated extends LinearOpMode
                             switch (subIntakeState)
                             {
                                 case IDLE:
-                                    if (internalDelay(100)) {
+                                    if (internalDelay(50)) {
                                         subIntakeState = SubIntakeState.CAMERA_DETECTION;
                                         internalTimerReset();
                                     }
@@ -425,16 +425,24 @@ public class SampleAutoGoated extends LinearOpMode
                                         }
                                     }
                                     // we store a pose to move to and a intake slide target
-                                    sampleDis = new Vector(sampleDis.getX(), pureYdis - 11);
-                                    double finalHeading = Math.toRadians(0) - Math.toRadians(result.getTx());
-                                    Vector offSetVector = new Vector(0, 5);
+                                    sampleDis = new Vector(sampleDis.getX(), pureYdis);
+                                    sampleDis = new Vector(sampleDis.getX(),
+                                            (
+                                                    sampleDis.getY() / 1 //Math.cos(Math.toRadians(result.getTxNC()))
+                                            ) - 12 // "technically" arm offset?
+                                    );
+                                    double finalHeading = Math.toRadians(0) - Math.toRadians(result.getTxNC());
+                                    Vector offSetVector = new Vector(4.5, 5);
                                     offSetVector = offSetVector.rotated(-finalHeading);
                                     intakePose = new Pose(
                                             subIntakeTrajectory.getFinalPose().getX() + offSetVector.getX(),
                                             subIntakeTrajectory.getFinalPose().getY() + offSetVector.getY(),
                                             finalHeading);
 
-
+                                    double removeDisFromSlides = intakePose.getX() - subIntakeTrajectory.getFinalPose().getX();
+                                    sampleDis = new Vector(sampleDis.getX(), sampleDis.getY() - removeDisFromSlides);
+                                    if (sampleDis.getY() < 6) sampleDis = new Vector(sampleDis.getX(), sampleDis.getY() - 1); // the detection is a little bit iffy when is close
+                                    if (sampleDis.getY() < 0) sampleDis = new Vector(sampleDis.getX(), 1);
                                     //- ro2Pose.getHeading() -  Math.toRadians(4.2) * Math.signum(ro2Pose.getHeading())); //new Vector(5.5, -4).getAngle());
 //                                    intakePose = new Pose(
 //                                            subIntakeTrajectory.getFinalPose().getX() + 0, // this need to be minus as - - = +
@@ -459,8 +467,8 @@ public class SampleAutoGoated extends LinearOpMode
                                     intakeSubsystem.intakeSlideInternalPID(sampleDis.getY());
                                     if (internalDelay(300))
                                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
-                                    if ((hardware.drive.reachedTarget(1) && intakeSubsystem.slideOverPosition(sampleDis.getY() * 0.9))
-                                            || internalDelay(2000))
+                                    if (((hardware.drive.reachedTargetAndHeading(1) && intakeSubsystem.slideOverPosition(sampleDis.getY() * 0.9))
+                                            || internalDelay(700)))
                                     {
                                         subIntakeState = SubIntakeState.INTAKE;
                                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
@@ -469,24 +477,24 @@ public class SampleAutoGoated extends LinearOpMode
                                     break;
                                 case INTAKE:
                                     if (internalDelay(90)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                                    if (internalDelay(500)) intakeSubsystem.intakeSlideInternalPID(sampleDis.getY() + 2);
-                                    if (internalDelay(1000)) subIntakeState = SubIntakeState.MISSED;
+                                    if (internalDelay(300)) intakeSubsystem.intakeSlideInternalPID(sampleDis.getY() + 5);
+                                    if (internalDelay(900)) subIntakeState = SubIntakeState.MISSED;
                                     break;
                                 case MISSED:
-                                    if (internalDelay(600)) intakeSubsystem.intakeSlideInternalPID(23.2);
-                                    else intakeSubsystem.intakeSlideInternalPID(sampleDis.getY() + 9);
+                                    intakeSubsystem.intakeSlideInternalPID(sampleDis.getY() + 7);
                                     break;
                             }
                         }
                         liftToBase();
                         outtakeKeepTurretBack();
                     }
-                    if ((intakeSubsystem.getColorValue() > 1100 && delay(150)) || delay(7000))
+                    if ((intakeSubsystem.getColorValue() > 1100 && delay(150)) || delay(4500))
                     {
                         state = autoState.DEPOSIT;
                         outtakeState = OuttakeState.TRANSFER_START;
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
                         stopped = false;
+//                        if (!intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL)) throw new RuntimeException("Wrong colour");
 //                        sampleDis = null;
 //                        intakePose = null;
 //                        result = null;
@@ -572,8 +580,8 @@ public class SampleAutoGoated extends LinearOpMode
     }
     public void liftToMaxHeight()
     {
-        if (outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition) > 25)
-            outtakeSubsystem.liftToInternalPID(26.1);
+        if (outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition) > 28)
+            outtakeSubsystem.liftToInternalPID(26.1); // max heigh 26.1
         else outtakeSubsystem.liftMotorRawControl(1);
     }
     public void liftToBase()

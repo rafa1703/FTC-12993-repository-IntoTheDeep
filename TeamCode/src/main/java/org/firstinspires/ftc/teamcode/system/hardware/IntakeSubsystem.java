@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -133,6 +134,14 @@ public class IntakeSubsystem
         YELLOW_ONLY,
         OFF // intakes everything
     }
+    public enum SampleColour
+    {
+        RED,
+        BLUE,
+        YELLOW
+    }
+
+
 
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
@@ -334,7 +343,49 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         intakeSlideMotor.setPower(manualControlIntakeSlide);
     }
+    public double distance(double r1, double g1, double b1, double r2, double g2, double b2) {
+        return Math.sqrt((r1 - r2)*(r1 - r2) + (b1 - b2)*(b1 - b2) + (g1 - g2)*(g1 - g2));
+    }
 
+    public boolean checkColour(IntakeFilter filter) {
+
+//        double red = colourSensor.red();
+//        double green = colourSensor.green();
+//        double blue = colourSensor.blue();
+//
+//        double redError = distance(red, green, blue, 255, 0, 0);
+//        double yellowError = distance(red, green, blue, 255, 255, 0);
+//        double blueError = distance(red, green, blue, 0, 0, 255);
+//
+//        if (redError < yellowError && redError < blueError) return "red";
+//        if (yellowError < redError && yellowError < blueError) return "yellow";
+//        if(blueError < redError && blueError < yellowError)return "blue";
+//        return "null";
+
+        final float[] hsvValues = new float[3];
+
+        android.graphics.Color.colorToHSV(colourSensor.getNormalizedColors().toColor(), hsvValues);
+        SampleColour colourOfSample;
+        if(hsvValues[0] < 60 )
+        {
+            colourOfSample = SampleColour.RED;
+        } else if(hsvValues[0] > 120)
+        {
+            colourOfSample = SampleColour.BLUE;
+        } else colourOfSample = SampleColour.YELLOW;
+        switch (filter)
+        {
+            case SIDE_ONLY:
+                return side == GeneralHardware.Side.RED ? colourOfSample == SampleColour.RED : colourOfSample == SampleColour.BLUE;
+            case NEUTRAL:
+                return colourOfSample == SampleColour.YELLOW ||
+                        side == GeneralHardware.Side.RED ? colourOfSample == SampleColour.RED : colourOfSample == SampleColour.BLUE;
+            case YELLOW_ONLY:
+                return colourOfSample == SampleColour.YELLOW;
+            default: // catches filter == off
+                return true;
+        }
+    }
     public boolean colorLogic()
     {
         switch (intakeFilter)

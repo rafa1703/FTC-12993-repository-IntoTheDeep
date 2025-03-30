@@ -106,9 +106,9 @@ public class SampleAutoPathNew
                 .addBezierSegment(
                         new Point(-62, -64),
 //                        new Point(-48, -9),
-                        new Point(-28, -10)
+                        new Point(-30, -10)
                 )
-                .addFinalPose(-28, -10, Math.toRadians(0))
+                .addFinalPose(-30, -10, Math.toRadians(0))
                 .build();
 
 
@@ -133,9 +133,9 @@ public class SampleAutoPathNew
                 .addBezierSegment(
                         new Point(-62, -64),
 //                        new Point(-48, -9),
-                        new Point(-28, -10)
+                        new Point(-30, -10)
                 )
-                .addFinalPose(-28, -10, Math.toRadians(0))
+                .addFinalPose(-30, -10, Math.toRadians(0))
                 .build();
         fifthDeposit = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(0.7,
