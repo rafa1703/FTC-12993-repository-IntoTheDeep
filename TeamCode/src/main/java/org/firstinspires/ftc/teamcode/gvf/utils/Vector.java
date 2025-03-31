@@ -41,6 +41,21 @@ public class Vector {
         return new Vector(Math.cos(t1)*Math.cos(t2)*m, Math.sin(t1)*Math.cos(t2)*m, Math.sin(t2)*m);
     }
 
+    public void setY(double y)
+    {
+        this.y = y;
+    }
+
+    public void setX(double x)
+    {
+        this.x = x;
+    }
+
+    public void setZ(double z)
+    {
+        this.z = z;
+    }
+
     public double getX() {
         return x;
     }

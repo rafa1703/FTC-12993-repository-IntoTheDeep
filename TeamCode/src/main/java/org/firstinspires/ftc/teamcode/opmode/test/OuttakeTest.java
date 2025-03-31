@@ -83,7 +83,7 @@ public class OuttakeTest extends LinearOpMode
 
             telemetry.addData("Turret angle", outtakeSubsystem.turretTicksToAngle(outtakeSubsystem.turretIncrementalPosition));
             telemetry.addData("Turret pos", outtakeSubsystem.turretIncrementalPosition);
-            telemetry.addData("Lift pos", outtakeSubsystem.liftPosition);
+            telemetry.addData("Lift pos", outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition));
             telemetry.addData("Turret target", turret.angle);
 //            outtakeSubsystem.armSetPos(armO);
 //            outtakeSubsystem.clawState(claw);

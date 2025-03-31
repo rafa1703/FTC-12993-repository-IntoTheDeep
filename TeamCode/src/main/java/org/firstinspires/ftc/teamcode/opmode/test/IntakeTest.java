@@ -25,13 +25,14 @@ public class IntakeTest extends LinearOpMode
     public static double clip;
     public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK.pos,
             wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK.pos,
-            armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK.pos;
+            armI = IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT.pos,
+            turretI = IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT.pos;
     public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
     public static double pto = 0.5;
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.BLUE);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         drive = new DriveBaseSubsystem(hardware);
@@ -41,9 +42,16 @@ public class IntakeTest extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
-            drive.PTOSetPosition(pto);
+//            drive.PTOSetPosition(pto);
 
-
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+            telemetry.addData("Filter NEUTRAL", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL));
+            telemetry.addData("Filter SIDE ONLY", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.SIDE_ONLY));
+            telemetry.addData("Filter YELLOW", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.YELLOW_ONLY));
+            telemetry.addData("Filter OFF", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.OFF));
 //            NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
 //            telemetry.addData("Colour sensor as distance", hardware.colourSensor.getDistance(DistanceUnit.INCH));
 //            telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));

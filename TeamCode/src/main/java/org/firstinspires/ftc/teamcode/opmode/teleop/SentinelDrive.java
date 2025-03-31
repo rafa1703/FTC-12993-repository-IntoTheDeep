@@ -898,7 +898,7 @@ public class  SentinelDrive extends LinearOpMode
 
                     if (delay(420) && toggleRisingEdge.mode(gamepad1.right_bumper))
                     {
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                        intakeSubsystem.intakeSpin(-0.3);
                         secondToggleForTheDrop.mode(gamepad1.right_bumper);
                         intakeSlideTarget = 0;
                         intakeSlideSubBtn.OffsetTargetPosition = 0;
@@ -1635,8 +1635,8 @@ public class  SentinelDrive extends LinearOpMode
 
     public void liftToMaxHeight()// WAY FASTER THAN INTERNAL PID
     {
-        if (outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition) > 24.5)
-            outtakeSubsystem.liftToInternalPID(26.1);
+        if (outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition) > 31)
+            outtakeSubsystem.liftToInternalPID(32.45); // max heigh 26.1
         else outtakeSubsystem.liftMotorRawControl(1);
     }
 

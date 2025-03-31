@@ -16,10 +16,11 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
 import org.firstinspires.ftc.teamcode.system.vision.InverseKinematics;
 
+import java.util.ArrayList;
+
 @TeleOp(group = "Test")
 public class LimeLightTest extends LinearOpMode
 {
-    Limelight3A lime;
     IntakeSubsystem intakeSubsystem;
     GeneralHardware hardware;
     InverseKinematics kinematics = new InverseKinematics();
@@ -30,36 +31,30 @@ public class LimeLightTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED, true);
         intakeSubsystem = new IntakeSubsystem(hardware);
-        lime = hardwareMap.get(Limelight3A.class, "limeLight");
-        cameraHardware = new CameraHardware(lime);
+        cameraHardware = new CameraHardware(hardware);
+        cameraHardware.pipelineSwitch(CameraHardware.PipelineType.DETECTOR_YELLOW);
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
-        lime.pipelineSwitch(0);
-        lime.setPollRateHz(40);
-
+        cameraHardware.start();
         waitForStart();
-        lime.start();
+
         while (opModeIsActive())
         {
-            LLStatus status = lime.getStatus();
-            telemetry.addData("Name", "%s",
-                    status.getName());
-            telemetry.addData("LL", "Temp: %.1fC, CPU: %.1f%%, FPS: %d",
-                    status.getTemp(), status.getCpu(), (int) status.getFps());
-            telemetry.addData("Pipeline", "Index: %d, Type: %s",
-                    status.getPipelineIndex(), status.getPipelineType());
+
+
 
             if (toggle.mode(gamepad1.a))
             {
-                lime.captureSnapshot("sub");
+                cameraHardware.captureSnapshot("sub");
             }
 //            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 
             Vector sampleDis;
-            result = lime.getLatestResult();
-            sampleDis = kinematics.distanceToSample(result.getTy(), result.getTx());
-            Pose lukaPose = cameraHardware.ro2GoatMath(lime);
+            result = cameraHardware.getLatestResult();
+            sampleDis = InverseKinematics.distanceToSample(result.getTy(), result.getTx());
+            Pose lukaPose = cameraHardware.ro2GoatMath();
+            double ang = cameraHardware.sampleAngleRotatedRect(result);
 //            if (result != null)
 //            {
 //                if (result.isValid())
@@ -81,8 +76,21 @@ public class LimeLightTest extends LinearOpMode
             {
                 telemetry.addData("Results", "Tx: " + result.getTx() + " Ty: " + result.getTy());
                 telemetry.addData("Result is valid", result.isValid());
+//                telemetry.addData("Sample ang interpolation", cameraHardware.sampleAngleRatioAndInterpolation(result.getDetectorResults().get(0)));
+
+                ArrayList<CameraHardware.Sample> samples = cameraHardware.sampleQuery(result, new Pose());
+                int i=0;
+                for (CameraHardware.Sample sample : samples)
+                {
+                    telemetry.addData("Sample " + i + ": ", sample.distanceToCrossHair);
+                }
+//                telemetry.addData("Sample ang ratio", cameraHardware.sampleAngleRatioAndInterpolation(result)[1]);
+//                telemetry.addData("Sample ang ratio", cameraHardware.sampleAngleRatio(result));
+                telemetry.addData("Sample ang rotated rect", ang);
                 telemetry.addData("Sample ang", cameraHardware.sampleAngle(result));
                 telemetry.addData("Sample ang 3 points", cameraHardware.sampleAngle3points(result));
+
+
             }
             if (sampleDis != null)
             {

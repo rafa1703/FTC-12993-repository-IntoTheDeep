@@ -38,6 +38,10 @@ public class Pose
     {
         this(0, 0, 0, defaultTolerance);
     }
+    public Pose(Pose pose)
+    {
+        this(pose.getX(), pose.getY(), pose.getHeading(), pose.tolerance);
+    }
 
     public Pose(Pose2d pose2d)
     {

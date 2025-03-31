@@ -1,19 +1,27 @@
 package org.firstinspires.ftc.teamcode.system.vision;
 
+import androidx.annotation.NonNull;
+
+import com.arcrobotics.ftclib.util.InterpLUT;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.LLResultTypes;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
+import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.opencv.core.Core;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.imgproc.Imgproc;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class CameraHardware
@@ -24,7 +32,8 @@ public class CameraHardware
         BLUE(1),
         YELLOW(3),
         RED_YELLOW(2),
-        BLUE_YELLOW(4);
+        BLUE_YELLOW(4),
+        DETECTOR_YELLOW(7);
 
         public final int pipelineIndex;
         PipelineType(int pipelineIndex)
@@ -34,6 +43,8 @@ public class CameraHardware
     }
     private Limelight3A limelight;
     private LLResult latestResult = null;
+    private InterpLUT interpLUT = new InterpLUT();
+    private double lowerBound, upperBound;
     public CameraHardware(GeneralHardware hardware)
     {
         this.limelight = hardware.limelight;
@@ -45,11 +56,6 @@ public class CameraHardware
         hardwareSetUp(hardware);
         limelight.pipelineSwitch(pipelineIndex);
     }
-    public CameraHardware(Limelight3A limelight)
-    {
-        this.limelight = limelight;
-        limelight.pipelineSwitch(0);
-    }
 
     public void hardwareSetUp(GeneralHardware hardware)
     {
@@ -57,6 +63,13 @@ public class CameraHardware
         if (hardware.side == GeneralHardware.Side.RED)
             limelight.pipelineSwitch(0);
         else  limelight.pipelineSwitch(1);
+
+        lowerBound = 0.77;
+        upperBound = 1.8;
+        interpLUT.add(lowerBound, 90);
+        interpLUT.add((lowerBound + upperBound) / 2, 45);
+        interpLUT.add(upperBound, 0);
+        interpLUT.createLUT();
     }
     public void pipelineSwitch(PipelineType type)
     {
@@ -159,6 +172,28 @@ public class CameraHardware
 //
 //        } catch (Exception e) {}
 //    }
+    public Pose ro2GoatMath(LLResultTypes.DetectorResult result)
+    {
+        double targetHeight = 1.5;
+        double cameraHeight = 9.84;
+        double mountingAngle = -9.35;
+
+        try{
+            if(result != null) {
+                double ty = result.getTargetXDegreesNoCrosshair();
+                double tx = result.getTargetYDegreesNoCrosshair();
+
+                double distanceOY = calculateDistanceOY(targetHeight, cameraHeight, ty, mountingAngle);
+                double distanceOX = distanceOY * Math.abs(Math.tan(Math.toRadians(tx)));
+
+                double h = Math.atan(distanceOX / distanceOY) * Math.signum(ty); // *Math.signum(tx) - Math.toRadians(5)
+                return new Pose(distanceOX * Math.signum(tx), distanceOY, 0);
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
     public Pose ro2GoatMath()
     {
         return ro2GoatMath(limelight);
@@ -214,6 +249,110 @@ public class CameraHardware
         double slope = (b.y - a.y) / (b.x - a.x);
         return Math.toDegrees(Math.atan(slope));
     }
+    public double sampleAngleRatio(LLResult result)
+    {
+        if (result.getDetectorResults().isEmpty()) return Double.NaN;
+        List<List<Double>> corners = result.getDetectorResults().get(0).getTargetCorners();
+        Point[] cornerPoints = {
+                new Point(corners.get(0).get(0), corners.get(0).get(1)),
+                new Point(corners.get(1).get(0), corners.get(1).get(1)),
+                new Point(corners.get(2).get(0), corners.get(2).get(1)),
+                new Point(corners.get(3).get(0), corners.get(3).get(1))
+        };
+
+        MatOfPoint2f matOfPoint = new MatOfPoint2f();
+        matOfPoint.fromArray(cornerPoints);
+        RotatedRect rotatedRect = Imgproc.minAreaRect(matOfPoint);
+        Rect boundingRect = rotatedRect.boundingRect();
+        return (1 - (((double) boundingRect.width / boundingRect.height)  / (3.5 / 1.5))) * 90; // ratio 2.33
+//        return rotatedRect.angle;
+    }
+    public double sampleAngleRatioAndInterpolation(LLResultTypes.DetectorResult result)
+    {
+        if (result == null) return Double.NaN;
+        List<List<Double>> corners = result.getTargetCorners();
+        Point[] cornerPoints = {
+                new Point(corners.get(0).get(0), corners.get(0).get(1)),
+                new Point(corners.get(1).get(0), corners.get(1).get(1)),
+                new Point(corners.get(2).get(0), corners.get(2).get(1)),
+                new Point(corners.get(3).get(0), corners.get(3).get(1))
+        };
+
+        MatOfPoint2f matOfPoint = new MatOfPoint2f();
+        matOfPoint.fromArray(cornerPoints);
+        RotatedRect rotatedRect = Imgproc.minAreaRect(matOfPoint);
+        Rect boundingRect = rotatedRect.boundingRect();
+        double ratio = (double) boundingRect.width / boundingRect.height;
+        if (ratio < lowerBound) return interpLUT.get(lowerBound - 0.01);
+        if (ratio > upperBound) return interpLUT.get(upperBound - 0.01);
+        return interpLUT.get(ratio);
+    }
+    private double interpolation(double p1, double p2, double t)
+    {
+        return (1 - t) * p1 + t * p2;
+    }
+    public double sampleAngleRotatedRect(LLResult result)
+    {
+        if (result.getDetectorResults().isEmpty()) return Double.NaN;
+        MatOfPoint2f matOfPoint = getMatOfPoint2f(result);
+        RotatedRect rotatedRect = Imgproc.minAreaRect(matOfPoint);
+        if ((double) rotatedRect.boundingRect().width / rotatedRect.boundingRect().height < 1.3) return 0;
+        if (rotatedRect.boundingRect().width < rotatedRect.boundingRect().height) return rotatedRect.angle + 180;
+        else return rotatedRect.angle + 90;
+//        return rotatedRect.angle;
+    }
+
+    @NonNull
+    private static MatOfPoint2f getMatOfPoint2f(LLResult result)
+    {
+        List<List<Double>> corners = result.getDetectorResults().get(0).getTargetCorners();
+        Point[] cornerPoints = {
+                new Point(corners.get(0).get(0), corners.get(0).get(1)),
+                new Point(corners.get(1).get(0), corners.get(1).get(1)),
+                new Point(corners.get(2).get(0), corners.get(2).get(1)),
+                new Point(corners.get(3).get(0), corners.get(3).get(1))
+        };
+
+        MatOfPoint2f matOfPoint = new MatOfPoint2f();
+        matOfPoint.fromArray(cornerPoints);
+        return matOfPoint;
+    }
+    public ArrayList<Sample> sampleQuery(LLResult result, Pose robot)
+    {
+        if (result.getDetectorResults().isEmpty()) return null;
+        ArrayList<Sample> sampleList = new ArrayList<>();
+
+        for (LLResultTypes.DetectorResult dr : result.getDetectorResults())
+        {
+            double ang = sampleAngleRatioAndInterpolation(dr);
+            Pose robotToSample = ro2GoatMath(dr);
+            Vector s = new Vector(robotToSample.getX(), robotToSample.getY());
+
+            sampleList.add(new Sample(sampleColourByID(dr.getClassId()), ang, s, robotToSample.plus(robot),Math.abs(dr.getTargetXDegrees()) + Math.abs(dr.getTargetYDegrees()), dr)); // we store the abs angle to the crosshair, smaller value is the closer to the ideal intake point
+            sampleList.sort(Comparator.comparingDouble(s2 -> s2.distanceToCrossHair));
+        }
+        // sort samples ?
+        return sampleList;
+    }
+
+    //(s1, s2) -> Double.compare(s1.distanceToCrossHair, s2.distanceToCrossHair)
+    Comparator<Sample> sampleComparator = (sample, t1) -> Double.compare(sample.distanceToCrossHair, t1.distanceToCrossHair);
+    private double disBetweenTwoPoints(Point a, Point b)
+    {
+        return Math.sqrt(Math.pow(b.x - a.x, 2) + Math.pow(b.y - a.y, 2));
+    }
+    private IntakeSubsystem.SampleColour sampleColourByID(int id)
+    {
+        switch (id)
+        {
+            case 0:
+                return IntakeSubsystem.SampleColour.RED;
+            case 1:
+                return IntakeSubsystem.SampleColour.BLUE;
+            default:
+                return IntakeSubsystem.SampleColour.YELLOW;
+        }
+    }
 //    public double sampleAngleCvRect(LLResult result)
 //    {
 //        if (result.getColorResults().isEmpty()) return Double.NaN;
@@ -242,5 +381,25 @@ public class CameraHardware
         return Math.toDegrees(angle);
 
     }
+    public class Sample
+    {
+        public IntakeSubsystem.SampleColour colour;
+        public double angle;
+        public Vector vectorToDetectPose;
+        public Pose pose;
+        public LLResultTypes.DetectorResult detectorResult;
+        public double distanceToCrossHair;
 
+        public Sample(IntakeSubsystem.SampleColour colour, double angle, Vector vectorToDetectPose, Pose pose, double distanceToCrossHair, LLResultTypes.DetectorResult detectorResult)
+        {
+            this.colour = colour;
+            this.angle = angle;
+            this.vectorToDetectPose = vectorToDetectPose;
+            this.pose = pose;
+            this.distanceToCrossHair = distanceToCrossHair;
+            this.detectorResult = detectorResult;
+        }
+    }
 }
+
+

@@ -77,7 +77,7 @@ public class IntakeSubsystem
         TRANSFER_META(0.68),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
-        HP_DEPOSIT(0.3),
+        HP_DEPOSIT(0.445),
         HALF_DOWN(0.9),
         AURA_DOWN(0.93),
         DOWN(1),
@@ -116,7 +116,7 @@ public class IntakeSubsystem
         STRAIGHT(0.37),
         RIGHT(0.27),
         MAX_RIGHT(0.21),
-        HP_DEPOSIT(0.62),
+        HP_DEPOSIT(0.6),
         AROUND(0.94);
 
         public final double pos;
