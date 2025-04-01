@@ -43,9 +43,9 @@ public class IntakeSubsystem
     double intakeSlidesFineAdjustTimer;
 
     public static final double // in inches, 24 max slides
-            slideExtensionLimit = 26,
-            slideTeleClose = 12,
-            slideTeleFar = 23.2,
+            slideExtensionLimit = 33,
+            slideTeleClose = 16,
+            slideTeleFar = 33,
             slideTeleBase = 0,
             slideTransfer = -5,
             slideAutoFar = 18.5,
@@ -343,24 +343,8 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         intakeSlideMotor.setPower(manualControlIntakeSlide);
     }
-    public double distance(double r1, double g1, double b1, double r2, double g2, double b2) {
-        return Math.sqrt((r1 - r2)*(r1 - r2) + (b1 - b2)*(b1 - b2) + (g1 - g2)*(g1 - g2));
-    }
 
     public boolean checkColour(IntakeFilter filter) {
-
-//        double red = colourSensor.red();
-//        double green = colourSensor.green();
-//        double blue = colourSensor.blue();
-//
-//        double redError = distance(red, green, blue, 255, 0, 0);
-//        double yellowError = distance(red, green, blue, 255, 255, 0);
-//        double blueError = distance(red, green, blue, 0, 0, 255);
-//
-//        if (redError < yellowError && redError < blueError) return "red";
-//        if (yellowError < redError && yellowError < blueError) return "yellow";
-//        if(blueError < redError && blueError < yellowError)return "blue";
-//        return "null";
 
         final float[] hsvValues = new float[3];
 
@@ -427,8 +411,8 @@ public class IntakeSubsystem
     }
     public Vector armPosIn2dPlane(double armAngle)
     {
-        double y =  6.5 / Math.cos(Math.toRadians(Math.abs(armAngle)));
-        double x = 6.5 / Math.sin(Math.toRadians(Math.abs(armAngle)));
+        double y =  7 / Math.sin(Math.toRadians(Math.abs(armAngle)));
+        double x = 7 / Math.cos(Math.toRadians(Math.abs(armAngle)));
         return new Vector(x, y);
     }
     public void intakeInverseKinematics(Pose robot, Pose sample)
@@ -471,12 +455,12 @@ public class IntakeSubsystem
     }
 
     public double ticksToInchesSlidesMotor(double ticks){
-        return 24 * (ticks / 611);
+        return 33 * (ticks / 600);
         //return ((1.005007874 * 2 * Math.PI) / (TICKS_PER_BAREMOTOR * 5.6428571429)) * ticks;
     }
 
     public double inchesToTicksSlidesMotor (double inches){
-        return 611 * (inches / 24);
+        return 600 * (inches / 33);
         //return ((TICKS_PER_BAREMOTOR * 5.6428571429)/(1.005007874 * 2 * Math.PI)) * inches; //ticks per inches
         // ratio is 70/12 = 5
     }

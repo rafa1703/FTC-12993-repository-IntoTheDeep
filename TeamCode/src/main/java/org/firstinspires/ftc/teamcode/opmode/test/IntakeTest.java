@@ -44,10 +44,12 @@ public class IntakeTest extends LinearOpMode
             outtakeSubsystem.outtakeReads(true);
 //            drive.PTOSetPosition(pto);
 
-            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+//            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+//            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+//            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+
+//            intakeSubsystem.intakeSlideInternalPID(23.2);
             telemetry.addData("Filter NEUTRAL", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL));
             telemetry.addData("Filter SIDE ONLY", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.SIDE_ONLY));
             telemetry.addData("Filter YELLOW", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.YELLOW_ONLY));
@@ -55,7 +57,8 @@ public class IntakeTest extends LinearOpMode
 //            NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
 //            telemetry.addData("Colour sensor as distance", hardware.colourSensor.getDistance(DistanceUnit.INCH));
 //            telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
-//            telemetry.addData("Pos", intakeSubsystem.slidePosition);
+            telemetry.addData("Pos", intakeSubsystem.slidePosition);
+            telemetry.addData("Slide dis", intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition));
 //            telemetry.addData("Distance", intakeSubsystem.getDistance());
 //            telemetry.addData("Color alpha(not normalized", hardware.colourSensor.alpha());
 //            telemetry.addData("Colour", intakeSubsystem.getColorValue());

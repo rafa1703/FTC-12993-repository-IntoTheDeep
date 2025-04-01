@@ -283,8 +283,8 @@ public class CameraHardware
         RotatedRect rotatedRect = Imgproc.minAreaRect(matOfPoint);
         Rect boundingRect = rotatedRect.boundingRect();
         double ratio = (double) boundingRect.width / boundingRect.height;
-        if (ratio < lowerBound) return interpLUT.get(lowerBound - 0.01);
-        if (ratio > upperBound) return interpLUT.get(upperBound - 0.01);
+        if (ratio < lowerBound) return 90;// interpLUT.get(lowerBound + 0.01);
+        if (ratio > upperBound) return 0; //interpLUT.get(upperBound - 0.01);
         return interpLUT.get(ratio);
     }
     private double interpolation(double p1, double p2, double t)
@@ -329,7 +329,7 @@ public class CameraHardware
             Vector s = new Vector(robotToSample.getX(), robotToSample.getY());
 
             sampleList.add(new Sample(sampleColourByID(dr.getClassId()), ang, s, robotToSample.plus(robot),Math.abs(dr.getTargetXDegrees()) + Math.abs(dr.getTargetYDegrees()), dr)); // we store the abs angle to the crosshair, smaller value is the closer to the ideal intake point
-            sampleList.sort(Comparator.comparingDouble(s2 -> s2.distanceToCrossHair));
+            sampleList.sort(Comparator.comparingDouble(s2 -> s2.angle));
         }
         // sort samples ?
         return sampleList;

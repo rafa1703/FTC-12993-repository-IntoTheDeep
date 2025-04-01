@@ -156,19 +156,19 @@ public class OuttakeSubsystem
     {
         READY(0),
         SPIN(0.59),
-        TRANSFER_FRONT(0.75),
-        TRANSFER_BACK(0.4), //+0.05
-        TRANSFER_AURA(0.34),
-        TRANSFER_META(0.55),
-        SAMPLE(0.595),
-        SPECIMEN_HIGH(0.615),
-        SPECIMEN_HIGH_BACK_STATIC(0.9),
-        SPECIMEN_HIGH_BACK_KINETIC(0.6),
-        SPECIMEN_HIGH_BACK_FLICK(0.8),
-        SPECIMEN_LOW(0.91),
-        SPECIMEN_LOW_BACK(0.41),
-        HP_DEPOSIT(0.59),
-        INTAKE(0.58);
+        TRANSFER_FRONT(0.63),
+        TRANSFER_BACK(0.28), //-0.12
+        TRANSFER_AURA(0.22),
+        TRANSFER_META(0.43),
+        SAMPLE(0.475),
+        SPECIMEN_HIGH(0.495),
+        SPECIMEN_HIGH_BACK_STATIC(0.78),
+        SPECIMEN_HIGH_BACK_KINETIC(0.48),
+        SPECIMEN_HIGH_BACK_FLICK(0.68),
+        SPECIMEN_LOW(0.79),
+        SPECIMEN_LOW_BACK(0.29),
+        HP_DEPOSIT(0.47),
+        INTAKE(0.46);
 
         public final double pos;
 

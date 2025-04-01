@@ -55,6 +55,7 @@ public class LimeLightTest extends LinearOpMode
             sampleDis = InverseKinematics.distanceToSample(result.getTy(), result.getTx());
             Pose lukaPose = cameraHardware.ro2GoatMath();
             double ang = cameraHardware.sampleAngleRotatedRect(result);
+            cameraHardware.deleteSnapshot();
 //            if (result != null)
 //            {
 //                if (result.isValid())
