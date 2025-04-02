@@ -329,7 +329,7 @@ public class CameraHardware
             Vector s = new Vector(robotToSample.getX(), robotToSample.getY());
 
             sampleList.add(new Sample(sampleColourByID(dr.getClassId()), ang, s, robotToSample.plus(robot),Math.abs(dr.getTargetXDegrees()) + Math.abs(dr.getTargetYDegrees()), dr)); // we store the abs angle to the crosshair, smaller value is the closer to the ideal intake point
-            sampleList.sort(Comparator.comparingDouble(s2 -> s2.angle));
+            sampleList.sort(Comparator.comparingDouble(s2 -> s2.detectorResult.getTargetYDegrees()));
         }
         // sort samples ?
         return sampleList;
@@ -398,6 +398,14 @@ public class CameraHardware
             this.pose = pose;
             this.distanceToCrossHair = distanceToCrossHair;
             this.detectorResult = detectorResult;
+        }
+
+        @NonNull
+        @Override
+        public String toString()
+        {
+            return "Colour: " + colour + " Angle: " + angle + " Pose: " + " Vector: " + vectorToDetectPose.toString()
+                    + " TyNc: " + detectorResult.getTargetXDegreesNoCrosshair() + " TxNc: " + detectorResult.getTargetXDegreesNoCrosshair();
         }
     }
 }

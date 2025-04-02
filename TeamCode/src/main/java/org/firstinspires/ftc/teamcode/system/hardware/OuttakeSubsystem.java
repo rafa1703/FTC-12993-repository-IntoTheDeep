@@ -135,7 +135,7 @@ public class OuttakeSubsystem
         TRANSFER_BACK(0.34),
         TRANSFER_AURA(0.39),
         TRANSFER_META(0.24),
-        SAMPLE(0.70),
+        SAMPLE(0.65),
         SPECIMEN_HIGH(0.97),
         SPECIMEN_HIGH_BACK_STATIC(0.70),
         SPECIMEN_HIGH_BACK_KINETIC(0.8),
@@ -155,20 +155,20 @@ public class OuttakeSubsystem
     public enum OuttakeWristServoState
     {
         READY(0),
-        SPIN(0.59),
-        TRANSFER_FRONT(0.63),
-        TRANSFER_BACK(0.28), //-0.12
-        TRANSFER_AURA(0.22),
-        TRANSFER_META(0.43),
-        SAMPLE(0.475),
-        SPECIMEN_HIGH(0.495),
-        SPECIMEN_HIGH_BACK_STATIC(0.78),
-        SPECIMEN_HIGH_BACK_KINETIC(0.48),
-        SPECIMEN_HIGH_BACK_FLICK(0.68),
-        SPECIMEN_LOW(0.79),
-        SPECIMEN_LOW_BACK(0.29),
-        HP_DEPOSIT(0.47),
-        INTAKE(0.46);
+        SPIN(0.55),
+        TRANSFER_FRONT(0.59),
+        TRANSFER_BACK(0.24), //-0.16
+        TRANSFER_AURA(0.18),
+        TRANSFER_META(0.39),
+        SAMPLE(0.49), // 435
+        SPECIMEN_HIGH(0.455),
+        SPECIMEN_HIGH_BACK_STATIC(0.74),
+        SPECIMEN_HIGH_BACK_KINETIC(0.44),
+        SPECIMEN_HIGH_BACK_FLICK(0.64),
+        SPECIMEN_LOW(0.75),
+        SPECIMEN_LOW_BACK(0.25),
+        HP_DEPOSIT(0.43),
+        INTAKE(0.42);
 
         public final double pos;
 

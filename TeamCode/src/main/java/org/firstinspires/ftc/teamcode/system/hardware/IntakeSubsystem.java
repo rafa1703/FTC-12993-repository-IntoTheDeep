@@ -44,6 +44,9 @@ public class IntakeSubsystem
 
     public static final double // in inches, 24 max slides
             slideExtensionLimit = 33,
+            slideTeleSubClose = 10,
+            slideTeleSubMid = 18,
+            slideTeleSubFar = 33,
             slideTeleClose = 16,
             slideTeleFar = 33,
             slideTeleBase = 0,
@@ -259,7 +262,7 @@ public class IntakeSubsystem
     public void intakeTurretBasedOnHeadingVel(double headingVel)
     {
         double t = Math.min(1, Math.abs(headingVel / 100));
-        t = Math.pow(t, 1.5); // this makes it only start moving at around 40%
+        //t = Math.pow(t, 1.5); // this makes it only start moving at around 40%
         double i = interpolation(0, 60, t);
         turretS.setPosition(STRAIGHT.pos + angleToServoTicks(i) * Math.signum(headingVel));
     }
