@@ -38,7 +38,7 @@ public class OuttakeSubsystem
             liftMaxExtension = 22.5,
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 9,
-            liftHighBarPos = 14,
+            liftHighBarPos = 18,
             liftHighBarBackStaticPos = 10.5,
             liftHighBarBackKineticPos = 17,
             liftLowBarPos = 0,
@@ -58,9 +58,9 @@ public class OuttakeSubsystem
         TRANSFER_FRONT(0),
         TRANSFER_BACK(180),
         TRANSFER_META(145),
-        HP_DROP_AUTO(-80),
+        HP_DROP_AUTO(-90),
         CLIMB_START(150),
-        SPEC_DEPOSIT_BACK(260);
+        SPEC_DEPOSIT_BACK(245);
 
         public final double angle;
         OuttakeTurretState(double angle)
@@ -137,6 +137,8 @@ public class OuttakeSubsystem
         TRANSFER_META(0.24),
         SAMPLE(0.65),
         SPECIMEN_HIGH(0.97),
+        SPECIMEN_HIGH_AUTO_READY(0.6),
+        SPECIMEN_HIGH_AUTO_SCORE(0.95),
         SPECIMEN_HIGH_BACK_STATIC(0.70),
         SPECIMEN_HIGH_BACK_KINETIC(0.8),
         SPECIMEN_LOW(0.92),
@@ -161,7 +163,9 @@ public class OuttakeSubsystem
         TRANSFER_AURA(0.18),
         TRANSFER_META(0.39),
         SAMPLE(0.49), // 435
-        SPECIMEN_HIGH(0.455),
+        SAMPLE_DROP(0.3),
+        SPECIMEN_HIGH(0.55),
+        SPECIMEN_HIGH_AUTO(0.45),
         SPECIMEN_HIGH_BACK_STATIC(0.74),
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),

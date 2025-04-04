@@ -2,13 +2,18 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 
 import static com.sun.tools.doclint.Entity.le;
 
+import static org.firstinspires.ftc.teamcode.gvf.MecanumDrive.HEADING_PID;
+import static org.firstinspires.ftc.teamcode.system.hardware.Globals.angleWrap;
+
 import com.acmerobotics.dashboard.config.Config;
+import com.arcrobotics.ftclib.controller.PIDController;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
@@ -113,7 +118,38 @@ public class DriveBaseSubsystem
         double y = Math.pow(c-x,m);
         return Math.pow(x,y);
     }
+    public static PID HEADING_PID = new PID(0.9, 0, 0.04    , 0, 0);
+    public void driveWithPIDHeadingLock(double LY, double LX, double targetHeading, double heading) {
 
+        double headingDiff = angleWrap(targetHeading - heading);
+
+        double t = -HEADING_PID.update(headingDiff, 0, 1); // kinda dodge to import this but like what ever
+        double f = LY < 0? -adjustedJoystick(Math.abs(LY)):adjustedJoystick(Math.abs(LY));
+        double s = LX < 0? -adjustedJoystick(Math.abs(LX)):adjustedJoystick(Math.abs(LX));
+//        double t = RX < 0? -adjustedJoystick(Math.abs(RX)):adjustedJoystick(Math.abs(RX));
+
+        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(t), 1);
+        double frontLeftPower = (-f*PowerBase + s*PowerStrafe + t) / denominator;
+        double backLeftPower = (-f*PowerBase - s*PowerStrafe + t) / denominator;
+        double frontRightPower = (-f*PowerBase - s*PowerStrafe - t) / denominator;
+        double backRightPower = (-f*PowerBase + s*PowerStrafe - t) / denominator;
+
+//        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
+//        double frontLeftPower = (-LY * PowerBase + LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
+//        double backLeftPower = (-LY * PowerBase - LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
+//        double frontRightPower = (-LY * PowerBase - LX * PowerStrafe - RX * PowerBaseTurn) / denominator;
+//        double backRightPower = (-LY * PowerBase + LX * PowerStrafe - RX * PowerBaseTurn) / denominator;
+
+//        frontLeftPower = frontLeftPower;
+        backLeftPower = backLeftPower * 1.1;
+//        frontRightPower = Math.pow(frontRightPower, 2) * Math.signum(frontRightPower);
+        backRightPower = backRightPower * 1.1;
+
+        FL.setPower(frontLeftPower);
+        FR.setPower(frontRightPower);
+        BR.setPower(backRightPower);
+        BL.setPower(backLeftPower);
+    }
     public void drive(double LY, double LX, double RX) {
         double f = LY < 0? -adjustedJoystick(Math.abs(LY)):adjustedJoystick(Math.abs(LY));
         double s = LX < 0? -adjustedJoystick(Math.abs(LX)):adjustedJoystick(Math.abs(LX));

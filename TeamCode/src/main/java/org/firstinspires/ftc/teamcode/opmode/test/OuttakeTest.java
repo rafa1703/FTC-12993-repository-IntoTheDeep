@@ -27,7 +27,7 @@ public class OuttakeTest extends LinearOpMode
     public static double turretI = IntakeSubsystem.IntakeTurretServoState.STRAIGHT.pos;
     public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK;
 //    public static OuttakeSubsystem.OuttakePivotServoState pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN;
-    public static double claw = 0.88;
+    public static double claw = 0.88, lift = 0;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -56,12 +56,14 @@ public class OuttakeTest extends LinearOpMode
 
             hardware.resetCacheHubs();
             outtakeSubsystem.outtakeReads(true);
-            outtakeSubsystem.clawSetPos(1);
+            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
+
 //            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
-//            outtakeSubsystem.clawSetPos(claw);
-//            outtakeSubsystem.pivotSetPos(pivot);
-//            outtakeSubsystem.armSetPos(armO);
-//            outtakeSubsystem.wristSetPos(wrist);
+            outtakeSubsystem.clawSetPos(claw);
+            outtakeSubsystem.pivotSetPos(pivot);
+            outtakeSubsystem.armSetPos(armO);
+            outtakeSubsystem.wristSetPos(wrist);
+            outtakeSubsystem.liftToInternalPID(lift);
 //            outtakeSubsystem.turretSpinToGains(turret);
 //            intakeSubsystem.armSetPos(armI);
 //            intakeSubsystem.intakeTurretSetPos(turretI);

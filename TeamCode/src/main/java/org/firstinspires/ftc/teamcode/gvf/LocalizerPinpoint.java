@@ -64,7 +64,10 @@ public class LocalizerPinpoint
         this.setOffSet(pose.getX(), pose.getY(), pose.getHeading());
     }
 
-
+    public void resetPoseAndHeading()
+    {
+        localizer.resetPosAndIMU();
+    }
     public Pose getPoseEstimate() {
         return pose;
     }

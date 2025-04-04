@@ -84,7 +84,7 @@ public class SampleAutoGoated extends LinearOpMode
     double intakeSubTarget = 8;
     double slideCachedTarget;
     boolean cachedSlideTarget, cachedPoseTarget;
-    double intakeSlideTarget = 29;
+    double intakeSlideTarget = 29.5;
 
     Pose intakePose = null;
     LLResult result = null;
@@ -187,7 +187,7 @@ public class SampleAutoGoated extends LinearOpMode
                             if (delay(400))
                             {
                                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                                intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget + 1);
+                                intakeSubsystem.intakeSlideInternalPID(intakeSlideTarget + 2);
                             }
                             if (delay(410)) outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SAMPLE); // arm go later so we don't like hit the bucket
                             if (delay(600)) intakeSubsystem.intakeTurretSetPos(0.58);
@@ -425,10 +425,12 @@ public class SampleAutoGoated extends LinearOpMode
                                     cameraHardware.captureSnapshot("Auto");
                                     ArrayList<CameraHardware.Sample> samples = cameraHardware.sampleQuery(result, hardware.drive.getPoseEstimate());
 
-                                    CameraHardware.Sample intakeSample = sortSmallestAngSample(samples);
+                                    CameraHardware.Sample intakeSample = sortSmallestAngSample(samples, subIntakeTrajectory.getFinalPose());
                                     calculateExtendoAndPose(intakeSample, subIntakeTrajectory);
 
                                     subIntakeState = SubIntakeState.ALIGN;
+
+
                                     internalTimerReset();
                                     break;
                                 case ALIGN: // align always runs now
@@ -447,7 +449,7 @@ public class SampleAutoGoated extends LinearOpMode
                                     }
                                     break;
                                 case INTAKE:
-                                    if (intakeSubsystem.getColourSensorDistance() < 0.3)
+                                    if (intakeSubsystem.getColorValue() > 950)
                                     {
                                         if (true)
                                         {
@@ -498,7 +500,7 @@ public class SampleAutoGoated extends LinearOpMode
                                         if (heading > 0) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.LEFT);
                                         else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
                                     }
-                                    if (internalDelay(1200))
+                                    if (internalDelay(1200) || intakeSubsystem.getColorValue() > 950)
                                     {
                                         if (intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL) || true)
                                         {
@@ -565,7 +567,7 @@ public class SampleAutoGoated extends LinearOpMode
     {
         sampleDis = intakeSample.vectorToDetectPose; // new Vector(ro2Pose.getX(), ro2Pose.getY()); // InverseKinematics.distanceToSample(result.getTyNC(), result.getTxNC());
         // we store a pose to move to and a intake slide target
-        sampleDis.setY(sampleDis.getY() - 8); // arm offset
+        sampleDis.setY(sampleDis.getY() - 6); // arm offset
         double finalHeading = Math.toRadians(0) - Math.toRadians(result.getTxNC());
         Vector offSetVector = new Vector(-2.5, 2); // as center of rotation of the robot is not the camera
         offSetVector = offSetVector.rotated(-finalHeading);
@@ -573,24 +575,33 @@ public class SampleAutoGoated extends LinearOpMode
                 subIntakeTrajectory.getFinalPose().getX() - offSetVector.getX(),
                 subIntakeTrajectory.getFinalPose().getY() + offSetVector.getY(),
                 subIntakeTrajectory.getFinalPose().getHeading() + finalHeading);
+        double maxSlide = 33 - 8;
+        double maxDriveForward = Math.abs(intakePose.getX() - (-20)); // at -22 we hit the sub
+        if (sampleDis.getY() > maxSlide)
+        {
 
+            if (sampleDis.getY() - maxSlide - maxDriveForward > maxSlide) throw new RuntimeException("how much to move forward" + (sampleDis.getY() - maxSlide - maxDriveForward) + " Ydis: " + sampleDis.getY());
+            intakePose.plus(new Pose(sampleDis.getY() - maxSlide + 2, 0, 0));
+        }
         double removeDisFromSlides = intakePose.getX() - subIntakeTrajectory.getFinalPose().getX();
         sampleDis.setY(sampleDis.getY() - removeDisFromSlides); // = new Vector(sampleDis.getX(), sampleDis.getY() - removeDisFromSlides);
     }
 
-    private CameraHardware.Sample sortSmallestAngSample(ArrayList<CameraHardware.Sample> samples)
+    private CameraHardware.Sample sortSmallestAngSample(ArrayList<CameraHardware.Sample> samples,Pose detectionPose)
     {
         CameraHardware.Sample intakeSample = null;
+        double maxSlide = 33 - 8;
         double minAng = 91;
         for (CameraHardware.Sample sample : samples)
         {
-            if (sample.angle < minAng)
+            if (sample.angle < minAng && Math.abs(detectionPose.getX() - (-20)) + maxSlide > sample.vectorToDetectPose.getY())
             {
                 intakeSample = sample;
                 minAng = sample.angle;
             }
         }
         if (intakeSample == null) intakeSample = samples.get(0);
+        pureYdis = intakeSample.vectorToDetectPose.getY();
         return intakeSample;
     }
 

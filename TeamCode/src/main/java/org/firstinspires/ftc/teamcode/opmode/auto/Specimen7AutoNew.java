@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.opmode.auto;
 
 
+import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideExtensionLimit;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTransfer;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -35,7 +37,8 @@ public class Specimen7AutoNew extends LinearOpMode
         PRELOAD_DEPOSIT,
         SUB_INTAKE,
         SUB_TO_HP,
-        INTAKE_AND_DROP,
+        PRELOADS_INTAKE,
+        PRELOADS_DROP,
         INTAKE,
         DEPOSIT_DRIVE,
         DROP,
@@ -54,6 +57,7 @@ public class Specimen7AutoNew extends LinearOpMode
     {
         TRANSFER_START,
         TRANSFER_END,
+        SAMPLE_THROW,
         SUB_DROP,
         SAMPLE_PICKUP,
         SAMPLE_DROP,
@@ -100,7 +104,7 @@ public class Specimen7AutoNew extends LinearOpMode
         GlobalTimer = new ElapsedTime(System.nanoTime());
         globalTimer = GlobalTimer.milliseconds();
         hardware.limelight.close();
-
+        telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
         intakeSubsystem.intakeFilter = IntakeSubsystem.IntakeFilter.SIDE_ONLY;
         resetTimer();
 
@@ -145,7 +149,7 @@ public class Specimen7AutoNew extends LinearOpMode
         while (opModeIsActive())
         {
             globalTimer = GlobalTimer.milliseconds();
-            intakeSubsystem.intakeReads(true); // we dont need the color sensor in this auto
+            intakeSubsystem.intakeReads(true, state == autoState.PRELOAD_DEPOSIT || state == autoState.SUB_INTAKE); // we dont need the color sensor in this auto
             outtakeSubsystem.outtakeReads();
 
             TelemetryPacket packet = new TelemetryPacket();
@@ -167,12 +171,12 @@ public class Specimen7AutoNew extends LinearOpMode
             telemetry.addData("Outtake State", outtakeState);
             telemetry.addData("Pickup cycle", pickupCycle);
             telemetry.addData("Cycle", cycle);
-            telemetry.addLine();
-            telemetry.addData("Pickup state", pickupState);
             telemetry.addData("Distance", intakeSubsystem.getDistance());
-            telemetry.addData("Colour", colourValue);
-
-            telemetry.addData("HeadingPosition", headingPosition);
+            telemetry.addLine();
+//            telemetry.addData("Distance", intakeSubsystem.getDistance());
+//            telemetry.addData("Colour", colourValue);
+//
+//            telemetry.addData("HeadingPosition", headingPosition);
             telemetry.addData("Pose", hardware.drive.getPoseEstimate());
             telemetry.update();
         }
@@ -182,160 +186,26 @@ public class Specimen7AutoNew extends LinearOpMode
         switch (state)
         {
             case PRELOAD_DEPOSIT:
-                switch (outtakeState)
-                {
-                    case READY:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
-                        outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPos);
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
-                        outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-                        outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        if ((intakeSubsystem.isDistance(1.7) && delay(200)) || delay(2000))
-                        {
-                            outtakeState = OuttakeState.DROP;
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.TRANSFER_FRONT);
-                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                    case DROP:
-                        colourValue = intakeSubsystem.getColorValue(); // we attempt intake in this case
-                        intakeSubsystem.intakeSlideInternalPID(armDown ? 11 : 4);
-                        if (intakeSubsystem.slideOverPosition(2))
-                        {
-                            armDown = true;
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                        }
-
-                        if ((colourValue >= 850) || delay(1300))
-                        {
-                            state = autoState.SUB_TO_HP;
-                            outtakeState = OuttakeState.TRANSFER_START;
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                }
+                preloadOuttakeState();
                 break;
             case SUB_TO_HP:
                 hardware.drive.followTrajectorySplineHeading(trajectories.subToHpAndIntake);
-                switch (outtakeState)
-                {
-                    case TRANSFER_START:
-                        if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
-                        {
-                            intakeClipHoldLogicWithoutPowerCutout(slideTransfer, 10); // this controls the intake slides and the clip
-                        } else if (delay(120)) intakeSubsystem.intakeSlideMotorRawControl(-1);
-
-                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        if (yPosition + Math.max(0, intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition)) + 6.5 < -26 || delay(650))
-                        {
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT);
-                            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT);
-                        }
-                        if (delay(400))
-                        {
-                            outtakeSubsystem.liftToInternalPID(0);
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-                        }
-                        if (intakeSubsystem.isSlidesAtBase() && delay(550) || delay(2000))
-                        {
-                            outtakeState = OuttakeState.READY; // drop to hp from the side, skipping transfering
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                    case READY:
-                        outtakeSubsystem.liftToInternalPID(0);
-                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                        if (trajectories.subToHpAndIntake.isFinished() && delay(200))
-                        {
-                            outtakeState = OuttakeState.INTAKE;
-                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                    case INTAKE:
-                        if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-
-                        if (delay(450))
-                        {
-                            state = autoState.SUB_INTAKE; // we change the state here
-                            outtakeState = OuttakeState.READY;
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                }
+                subToHpOuttakeState();
                 break;
             case SUB_INTAKE:
                 if (delay(100)) hardware.drive.followTrajectorySplineHeading(trajectories.hpToSubIntake);
-                switch (outtakeState)
-                {
-                    case READY:
-                        if (delay(0))
-                        {
-                            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-                            outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPos);
-                            if (delay(200))
-                            {
-                                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
-                                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
-                                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
-                                outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                            }
-                        }
-                        if (trajectories.hpToSubIntake.isFinished() || intakeSubsystem.isDistance(1.7) && delay(220) || delay(2000))
-                        {
-                            outtakeState = OuttakeState.DROP;
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                            internalTimerReset(); // we need to use the internal timer as the trajectory is timed out
-                            armDown = false;
-                            break;
-                        }
-                        break;
-                    case DROP:
-                        colourValue = intakeSubsystem.getColorValue(); // we attempt intake in this case
-                        intakeSubsystem.intakeSlideInternalPID(armDown ? 16 : 4);
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                        if (intakeSubsystem.slideOverPosition(2))
-                        {
-                            armDown = true;
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                        }
-
-                        if (colourValue > 900 || delay(2200))
-                        {
-                            state = autoState.INTAKE_AND_DROP;
-                            pickupState = PickupState.TRANSFER_START;
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                }
+                subIntakeOuttakeState();
                 break;
-            case INTAKE_AND_DROP:
+            case PRELOADS_INTAKE:
                 Trajectory pickupTrajectory = null;
                 switch (pickupCycle)
                 {
-                    case 0:
                     case 1:
-                        pickupTrajectory = trajectories.subDropAndFirstSample;
+                        pickupTrajectory = trajectories.firstSample;
                         break;
                     case 2:
-                        pickupTrajectory = trajectories.secondSample;
+                        if (delay(150))
+                            pickupTrajectory = trajectories.secondSample;
                         break;
                     case 3:
                         pickupTrajectory = trajectories.thirdSample;
@@ -343,123 +213,46 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 if (pickupTrajectory != null) hardware.drive.followTrajectorySplineHeading(pickupTrajectory);
 
-                switch (pickupState)
+                colourValue = intakeSubsystem.getColorValue();
+
+                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                outtakeSubsystem.liftToInternalPID(0);
+                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+
+                if (delay(20)) extendIntakeSlides(pickupCycle);
+//                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.MAX_RIGHT);
+                if (delay(60)) intakeSubsystem.intakeTurretSetPos(0.16);
+                outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
+                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
+                if (delay(1500) || (colourValue > 400 && delay(500)))
                 {
-                    case TRANSFER_START:
-                        if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
-                        {
-                            intakeClipHoldLogicWithoutPowerCutout(slideTransfer, 10); // this controls the intake slides and the clip
-                        } else if (delay(120)) intakeSubsystem.intakeSlideMotorRawControl(-1);
+                    state = autoState.PRELOADS_DROP;
+                    pickupState = PickupState.SAMPLE_THROW;
+                    resetTimer();
+                    break;
+                }
 
-                        outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        if (yPosition + intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) + 6.5 < -26)
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT);
-                        if (delay(200))
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT);
-                        intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-                        if (yPosition < -35)
-                        {
-                            if (delay(50))
-                            {
-                                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
-                                outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
-                                outtakeSubsystem.liftToInternalPID(0);
-                            }
-                        }
-                        if (intakeSubsystem.isSlidesAtBase() && outtakeSubsystem.liftAtBase() && delay(300) || delay(900))
-                        {
-                            pickupState = PickupState.TRANSFER_END;
-                            resetTimer();
-                            break;
-                        }
+                break;
+            case PRELOADS_DROP:
+                Trajectory preloadDropTrajectory = null;
+                switch (pickupCycle)
+                {
+                    case 0:
+                        preloadDropTrajectory = trajectories.subDrop;
                         break;
-                    case TRANSFER_END:
-                        if (delay(400))
-                        {
-                            pickupState = PickupState.SAMPLE_DROP;
-                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-                            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
-                            intakeSubsystem.intakeSlideMotorRawControl(0);
-                            outtakeSubsystem.liftMotorRawControl(0);
-                            resetTimer();
-                            break;
-                        }
-                        if (delay(80))
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                        }
-                        if (delay(100))
-                        {
-                            intakeSubsystem.intakeSlideMotorRawControl(0);
-                        }
-                        if (delay(150))
-                        {
-                            intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                        }
+                    case 1:
+                        preloadDropTrajectory = trajectories.firstSample;
                         break;
-                    case SUB_DROP:
-                        intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.AURA_TRANSFER);
-                        intakeSubsystem.intakeSlideInternalPID(17);
-
-                        if (delay(100))
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-//                        outtakeSubsystem.liftToInternalPID(0);
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        if (delay(100))
-                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-                        if (xPosition > 48 && false)
-                        {
-                            pickupState = PickupState.SAMPLE_PICKUP;
-//                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.TRANSFER_FRONT);
-                            resetTimer();
-                            break;
-                        }
+                    case 2:
+                        preloadDropTrajectory = trajectories.secondSample;
                         break;
-                    case SAMPLE_PICKUP:
-                        colourValue = intakeSubsystem.getColorValue();
-                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                        outtakeSubsystem.liftToInternalPID(0);
-                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                        if (delay(20)) intakeSubsystem.intakeSlideInternalPID(18.7);
-                        if (intakeSubsystem.slideOverPosition(16.5))
-                        {
-                            if (pickupCycle > 2)
-                                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.MAX_RIGHT);
-                            else
-                                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.MAX_LEFT);
-                        } else
-                        {
-                            if (pickupCycle > 2)
-                                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
-                            else
-                                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.LEFT);
-                        }
-                        if (delay(1500) || (colourValue > 800 && delay(200)))
-                        {
-                            pickupState = PickupState.TRANSFER_START;
-                            resetTimer();
-                            break;
-                        }
-                        break;
-                    case SAMPLE_DROP:
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                        if (delay(500))
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.TRANSFER_FRONT);
-                        }
-                        if (delay(600))
-                        {
-                            if (pickupCycle == 3) state = autoState.INTAKE;
-                            pickupState = PickupState.SAMPLE_PICKUP;
-                            pickupCycle++;
-                            resetTimer();
-                            break;
-                        }
+                    case 3:
+                        preloadDropTrajectory = trajectories.thirdSample;
                         break;
                 }
+                if (preloadDropTrajectory != null) hardware.drive.followTrajectorySplineHeading(preloadDropTrajectory);
+
+                preloadsDropOuttakeState();
                 break;
                 case INTAKE:
                 if (intakedSpec && delay(190) && hardware.drive.stopped())
@@ -469,106 +262,29 @@ public class Specimen7AutoNew extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                switch (cycle)
+                if (cycle == 2) outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
+                intakeTrajectory(cycle);
+                if (delay(140))
                 {
-                    case 2:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdSampleToIntake);
-                        if (trajectories.thirdSampleToIntake.isFinished() && hardware.drive.stopped())
-                        {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            state = autoState.DEPOSIT_DRIVE;
-                            intakedSpec = true;
-                            resetTimer();
-                        }
-                        break;
-                    case 3:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
-                        if (delay(40))
-                        {
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
-                            {
-                                intakeSubsystem.intakeSlideInternalPID(-2);
-                                state = autoState.DEPOSIT_DRIVE;
-                                break;
-                            }
-                        }
-                        break;
-                    case 4:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
-                        if (delay(40))
-                        {
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
-                            {
-                                intakeSubsystem.intakeSlideInternalPID(-2);
-                                state = autoState.DEPOSIT_DRIVE;
-                                break;
-                            }
-                        }
-                    case 5:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
-                        if (delay(40))
-                        {
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
-                            {
-                                intakeSubsystem.intakeSlideInternalPID(-2);
-                                state = autoState.DEPOSIT_DRIVE;
-                                break;
-                            }
-                        }
-                    case 6:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.forthIntake);
-                        if (delay(40))
-                        {
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
-                            {
-                                intakeSubsystem.intakeSlideInternalPID(-2);
-                                state = autoState.DEPOSIT_DRIVE;
-                                break;
-                            }
-                        }
-                    case 7:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.fifthIntake);
-                        if (delay(40))
-                        {
-                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-                            intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
-                            {
-                                intakeSubsystem.intakeSlideInternalPID(-2);
-                                state = autoState.DEPOSIT_DRIVE;
-                                break;
-                            }
-                        }
-                        break;
-                }
-
-                if (delay(40))
-                {
-                    if (delay(140))
+                    outtakeSubsystem.liftToInternalPID(0);
+                    if (cycle == 2)
                     {
-                        outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        if (cycle == 2)
-                        {
-                            outtakeSubsystem.liftToInternalPID(0);
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-                        } else
-                        {
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
-                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
-                        }
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                        outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+
+                    } else
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit);
+                        intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
+                        outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
+                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                     }
                 }
+
                 break;
             case DEPOSIT_DRIVE:
                 if (
@@ -576,69 +292,51 @@ public class Specimen7AutoNew extends LinearOpMode
                                 (cycle == 3 && trajectories.secondDeposit.isFinished()) ||
                                 (cycle == 4 && trajectories.thirdDeposit.isFinished()) ||
                                 (cycle == 5 && trajectories.forthDeposit.isFinished()) ||
-                                (cycle == 6 && trajectories.fifthDeposit.isFinished())) ||
-                                (delay(300) && intakeSubsystem.isDistance(2))
+                                (cycle == 6 && trajectories.fifthDeposit.isFinished())) && (internalDelay(600) && transferred)
                 )
                 {
                     state = autoState.DROP;
                     resetTimer();
                     break;
                 }
-                switch (cycle)
+                depositTrajectory(cycle);
+
+                if (!transferred)
                 {
-                    case 2:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.firstDepositWhileTurning);
-                        if (delay(90))
-                        {
-                            outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPos);
-                        }
-                        if (delay(130))
-                        {
-                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_STATIC);
-                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_STATIC);
-                        }
-                        break;
-                    case 3:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.secondDeposit);
-                        break;
-                    case 4:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.thirdDeposit);
-                        break;
-                    case 5:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
-                        break;
-                    case 6:
-                        hardware.drive.followTrajectorySplineHeading(trajectories.fifthDeposit);
-                        break;
-                }
-                if (cycle > 1)
-                {
-                    intakeSubsystem.intakeSlideInternalPID(-2);
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
-                    if (delay(40) && intakeSubsystem.isSlidesAtBase())
+                    intakeSubsystem.intakeSlideMotorRawControl(-1);
+                }
+                if (cycle == 2 || (delay(40) && intakeSubsystem.isSlidesAtBase()))
+                {
+                    outtakeSubsystem.liftToInternalPID(0);
+                    if (!transferred)
                     {
-                        if (!transferred)
+                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                        transferred = true;
+                        internalTimerReset();
+                    }
+                    else
+                    {
+                        if (internalDelay(200)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                        else if (internalDelay(130)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+
+                        if (internalDelay(160))
                         {
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                            transferred = true;
-                            internalTimerReset();
-                        }
-                        else
-                        {
-                            if (internalDelay(90))
+                            intakeSubsystem.intakeSlideMotorRawControl(0);
+                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_READY);
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_AUTO);
+                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
+                            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
+                            intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                            if (internalDelay(250))
                             {
-                                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_FINISH);
-                            }
-                            if (internalDelay(160))
-                            {
-                                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_STATIC);
-                                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_STATIC);
-                                outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
+                                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                             }
                         }
                     }
                 }
+
                 break;
             case DROP:
                 if (cycle < 2)
@@ -647,7 +345,7 @@ public class Specimen7AutoNew extends LinearOpMode
                     if (delay(60))
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                        state = cycle == 0 ? autoState.SUB_INTAKE : autoState.INTAKE_AND_DROP;
+                        state = cycle == 0 ? autoState.SUB_INTAKE : autoState.PRELOADS_INTAKE;
                         cycle++;
                         resetTimer();
                         break;
@@ -655,17 +353,21 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 else
                 {
-                    outtakeSubsystem.liftToInternalPID(20);
-                    if (outtakeSubsystem.liftReached(13))
+                    intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit);
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_SCORE);
+                    if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
+                    if (delay(400))
                     {
-                        outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                         state = autoState.INTAKE;
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
+                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                         cycle++;
+                        transferred = false;
                         resetTimer();
                         break;
                     }
                 }
-
                 break;
             case PARK:
                 if (trajectories.parkTrajectory.isFinished())
@@ -682,6 +384,403 @@ public class Specimen7AutoNew extends LinearOpMode
 
     }
 
+    private void preloadOuttakeState()
+    {
+        switch (outtakeState)
+        {
+            case READY:
+                hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
+                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPos);
+                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
+                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
+                outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+                outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                if ((intakeSubsystem.isDistance() && delay(200)) || delay(2000))
+                {
+                    outtakeState = OuttakeState.DROP;
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.TRANSFER_FRONT);
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    resetTimer();
+                    break;
+                }
+                break;
+            case DROP:
+                colourValue = intakeSubsystem.getColorValue(); // we attempt intake in this case
+                intakeSubsystem.intakeSlideInternalPID(armDown ? 11 : 4);
+                outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                if (intakeSubsystem.slideOverPosition(2))
+                {
+                    armDown = true;
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                }
+
+                if ((colourValue >= 850) || delay(1300))
+                {
+                    state = autoState.SUB_TO_HP;
+                    outtakeState = OuttakeState.TRANSFER_START;
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                    cycle++;
+                    resetTimer();
+                    break;
+                }
+                break;
+        }
+    }
+
+    private void subToHpOuttakeState()
+    {
+        switch (outtakeState)
+        {
+            case TRANSFER_START:
+                if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
+                {
+                    intakeClipHoldLogicWithoutPowerCutout(slideTransfer, 10); // this controls the intake slides and the clip
+                } else if (delay(120)) intakeSubsystem.intakeSlideMotorRawControl(-1);
+
+                outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                if (canSlidesComeBackWithoutHitting() || delay(650))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT);
+                    intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT);
+                }
+                if (delay(400))
+                {
+                    outtakeSubsystem.liftToInternalPID(0);
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                    outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+                }
+                if (intakeSubsystem.isSlidesAtBase() && delay(550) || delay(2000))
+                {
+                    outtakeState = OuttakeState.READY; // drop to hp from the side, skipping transfering
+                    resetTimer();
+                    break;
+                }
+                break;
+            case READY:
+                outtakeSubsystem.liftToInternalPID(0);
+                outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
+                if (trajectories.subToHpAndIntake.isFinished() && delay(200))
+                {
+                    outtakeState = OuttakeState.INTAKE;
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                    resetTimer();
+                    break;
+                }
+                break;
+            case INTAKE:
+                if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+
+                if (delay(450))
+                {
+                    state = autoState.SUB_INTAKE; // we change the state here
+                    outtakeState = OuttakeState.READY;
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                    resetTimer();
+                    break;
+                }
+                break;
+        }
+    }
+
+    private void subIntakeOuttakeState()
+    {
+        switch (outtakeState)
+        {
+            case READY:
+                if (delay(0))
+                {
+                    intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                    outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPos + 1);
+                    if (delay(200))
+                    {
+                        intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
+                        outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                    }
+                }
+                if (trajectories.hpToSubIntake.isFinished() || intakeSubsystem.isDistance() && delay(220) || delay(2000))
+                {
+                    outtakeState = OuttakeState.DROP;
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
+                    internalTimerReset(); // we need to use the internal timer as the trajectory is timed out
+                    armDown = false;
+                    break;
+                }
+                break;
+            case DROP:
+                colourValue = intakeSubsystem.getColorValue(); // we attempt intake in this case
+                intakeSubsystem.intakeSlideInternalPID(armDown ? 16 : 4);
+                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+                if (intakeSubsystem.slideOverPosition(2))
+                {
+                    armDown = true;
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                }
+
+                if (colourValue > 900 || delay(2200))
+                {
+                    state = autoState.PRELOADS_DROP;
+                    pickupState = PickupState.TRANSFER_START;
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
+                    cycle++;
+                    resetTimer();
+                    break;
+                }
+                break;
+        }
+    }
+
+    private void depositTrajectory(int cycle)
+    {
+        switch (cycle)
+        {
+            case 2:
+                if (delay(90))
+                {
+                    hardware.drive.followTrajectorySplineHeading(trajectories.firstDepositWhileTurning);
+                }
+                break;
+            case 3:
+                hardware.drive.followTrajectorySplineHeading(trajectories.secondDeposit);
+                break;
+            case 4:
+                hardware.drive.followTrajectorySplineHeading(trajectories.thirdDeposit);
+                break;
+            case 5:
+                hardware.drive.followTrajectorySplineHeading(trajectories.forthDeposit);
+                break;
+            case 6:
+                hardware.drive.followTrajectorySplineHeading(trajectories.fifthDeposit);
+                break;
+        }
+    }
+
+    private void intakeTrajectory(int cycle)
+    {
+        switch (cycle)
+        {
+            case 2:
+                if(delay(1000))
+                    hardware.drive.followTrajectorySplineHeading(trajectories.thirdSampleToIntake);
+                if (trajectories.thirdSampleToIntake.isFinished() && hardware.drive.stopped())
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                    state = autoState.DEPOSIT_DRIVE;
+                    intakedSpec = true;
+                    resetTimer();
+                }
+                break;
+            case 3:
+                hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
+                if (delay(40))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
+                    if (intakeSubsystem.getColorValue() > 400)
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        state = autoState.DEPOSIT_DRIVE;
+                        break;
+                    }
+                }
+                break;
+            case 4:
+                hardware.drive.followTrajectorySplineHeading(trajectories.secondIntake);
+                if (delay(40))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
+                    if (intakeSubsystem.getColorValue() > 800)
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        state = autoState.DEPOSIT_DRIVE;
+                        break;
+                    }
+                }
+            case 5:
+                hardware.drive.followTrajectorySplineHeading(trajectories.thirdIntake);
+                if (delay(40))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
+                    if (intakeSubsystem.getColorValue() > 800)
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        state = autoState.DEPOSIT_DRIVE;
+                        break;
+                    }
+                }
+            case 6:
+                hardware.drive.followTrajectorySplineHeading(trajectories.forthIntake);
+                if (delay(40))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
+                    if (intakeSubsystem.getColorValue() > 800)
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        state = autoState.DEPOSIT_DRIVE;
+                        break;
+                    }
+                }
+            case 7:
+                hardware.drive.followTrajectorySplineHeading(trajectories.fifthIntake);
+                if (delay(40))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
+                    if (intakeSubsystem.getColorValue() > 800)
+                    {
+                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        state = autoState.DEPOSIT_DRIVE;
+                        break;
+                    }
+                }
+                break;
+        }
+
+    }
+
+    private void preloadsDropOuttakeState()
+    {
+        switch (pickupState)
+        {
+            case SAMPLE_THROW:
+                outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
+
+                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.REALLY_SICK_THROW);
+                if (delay(20)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.AUTO_REALLY_SICK_THROW);
+
+                if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
+                {
+                    intakeSubsystem.intakeSlideInternalPID(0); // this controls the intake slides and the clip
+                } else if (delay(170)) intakeSubsystem.intakeSlideMotorRawControl(-0.7);
+
+                if (intakeSubsystem.getSlidePositionIn() < 11) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                if (intakeSubsystem.getSlidePositionIn() < 1)
+                {
+                    state = pickupCycle == 3 ? autoState.INTAKE : autoState.PRELOADS_INTAKE;
+                    pickupState = PickupState.SAMPLE_PICKUP;
+                    if (pickupCycle != 3) extendIntakeSlides(pickupCycle);
+                    else
+                    {
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                    }
+                    pickupCycle++;
+                    resetTimer();
+                    break;
+                }
+                break;
+            case TRANSFER_START:
+                if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
+                {
+                    intakeSubsystem.intakeSlideInternalPID(0); // this controls the intake slides and the clip
+                } else if (delay(120)) intakeSubsystem.intakeSlideMotorRawControl(-1);
+
+                outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                if (canSlidesComeBackWithoutHitting())
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT);
+                if (delay(200))
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT);
+                intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                if (yPosition < -35)
+                {
+                    if (delay(50))
+                    {
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
+                        outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
+                        outtakeSubsystem.liftToInternalPID(0);
+                    }
+                }
+                if (intakeSubsystem.isSlidesAtBase() && outtakeSubsystem.liftAtBase() && delay(300) || delay(900))
+                {
+                    pickupState = PickupState.TRANSFER_END;
+                    resetTimer();
+                    break;
+                }
+                break;
+            case TRANSFER_END:
+                if (delay(400))
+                {
+                    pickupState = PickupState.SAMPLE_DROP;
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
+                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
+                    intakeSubsystem.intakeSlideMotorRawControl(0);
+                    outtakeSubsystem.liftMotorRawControl(0);
+                    resetTimer();
+                    break;
+                }
+                if (delay(80))
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+                }
+                if (delay(230))
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    if (pickupCycle != 3)
+                        extendIntakeSlides(pickupCycle);
+                    else intakeSubsystem.intakeSlideInternalPID(0);
+                }
+                else if (delay(100))
+                {
+                    intakeSubsystem.intakeSlideMotorRawControl(0);
+                }
+                if (delay(150))
+                {
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                }
+                break;
+            case SAMPLE_DROP:
+                if (pickupCycle != 3)
+                {
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                    extendIntakeSlides(pickupCycle);
+                }
+                else
+                {
+                    intakeSubsystem.intakeSlideInternalPID(0);
+                    if (delay(500))
+                    {
+                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                    }
+                }
+                if (delay(300)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.MAX_RIGHT);
+                else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
+                if (delay(500))
+                {
+                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.TRANSFER_FRONT);
+                }
+                if (delay(600))
+                {
+                    state = pickupCycle == 3 ? autoState.INTAKE : autoState.PRELOADS_INTAKE;
+                    pickupState = PickupState.SAMPLE_PICKUP;
+                    pickupCycle++;
+                    resetTimer();
+                    break;
+                }
+                break;
+        }
+    }
+
+    private boolean canSlidesComeBackWithoutHitting()
+    {
+        return yPosition + Math.max(0, intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition)) + 6.5 < -26;
+    }
+
     public void intakeClipHoldLogicWithoutPowerCutout(double slideToPosition, int closeThreshold){
         if (intakeSubsystem.slidePosition < closeThreshold) {
             if (globalTimer - intakeClipTimer > 100){
@@ -695,6 +794,22 @@ public class Specimen7AutoNew extends LinearOpMode
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN); // this might break something when as the intake slides won't go in, but stops jitter
             intakeSubsystem.intakeSlideInternalPID(slideToPosition);
             intakeClipTimer = globalTimer;
+        }
+    }
+    public void extendIntakeSlides(int cycle)
+    {
+        switch (cycle)
+        {
+            case 0:
+            case 1:
+                intakeSubsystem.intakeSlideInternalPID(27);
+                break;
+            case 2:
+                intakeSubsystem.intakeSlideInternalPID(29.3);
+                break;
+            case 3:
+                intakeSubsystem.intakeSlideInternalPID(30);
+                break;
         }
     }
 

@@ -87,7 +87,8 @@ public class IntakeSubsystem
         EXTENDO_DOWN(0.97), // this exists because the intake saggs on the slides
         BACK(0.98),
         IN(0.45),
-        AROUND(0.5);
+        AROUND(0.5),
+        AUTO_REALLY_SICK_THROW(0.36);
 
         public final double pos;
 
@@ -120,7 +121,8 @@ public class IntakeSubsystem
         RIGHT(0.27),
         MAX_RIGHT(0.21),
         HP_DEPOSIT(0.6),
-        AROUND(0.94);
+        AROUND(0.94),
+        REALLY_SICK_THROW(0.39);
 
         public final double pos;
 
@@ -143,8 +145,6 @@ public class IntakeSubsystem
         BLUE,
         YELLOW
     }
-
-
 
     public IntakeFilter intakeFilter = IntakeFilter.NEUTRAL;
 
@@ -346,7 +346,10 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         intakeSlideMotor.setPower(manualControlIntakeSlide);
     }
-
+    public double getSlidePositionIn()
+    {
+        return ticksToInchesSlidesMotor(slidePosition);
+    }
     public boolean checkColour(IntakeFilter filter) {
 
         final float[] hsvValues = new float[3];
@@ -398,6 +401,10 @@ public class IntakeSubsystem
     public boolean isDistance(double inch)
     {
         return distance < inch;
+    }
+    public boolean isDistance()
+    {
+        return distance < 3.5;
     }
     public double getDistance()
     {
