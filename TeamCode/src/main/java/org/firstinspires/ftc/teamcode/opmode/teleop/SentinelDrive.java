@@ -21,6 +21,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+import org.firstinspires.ftc.teamcode.gvf.MecanumDrive;
 import org.firstinspires.ftc.teamcode.gvf.odo.GoBildaPinpointDriver;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
 import org.firstinspires.ftc.teamcode.system.accessory.SideAfterAuto;
@@ -135,8 +136,9 @@ public class  SentinelDrive extends LinearOpMode
     IMU imu;
     double angularVel, heading;
     Pose pose = new Pose();
-    final Pose resetPoseOffsets = new Pose(3.4, -32.5, Math.toRadians(-90));
+    final Pose resetPoseOffsets = new Pose(3.4, -31, Math.toRadians(-90));
     boolean wasPoseReset;
+    double xPosition = 9;
 
     @Override
     public void runOpMode() throws InterruptedException
@@ -199,7 +201,7 @@ public class  SentinelDrive extends LinearOpMode
                 false
             );
             updateHeading(true); // FIXME: we shouldn't read every cycle + maybe use pinpoint
-            updatePose(state != OuttakeState.INTAKE);
+            updatePose(true);
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
             drawRobot(fieldOverlay, pose.toPose2d(), true);
@@ -262,8 +264,9 @@ public class  SentinelDrive extends LinearOpMode
     {
         if (state)
         {
-            hardware.drive.getLocalizer().update();
             pose = hardware.drive.getPoseEstimate();
+            if (this.state != OuttakeState.SPECIMEN_DEPOSIT_BACK_AUTO) // because we run localizer + motor updates in there...
+                hardware.drive.getLocalizer().update();
         }
     }
     private void resetPose()
@@ -492,7 +495,7 @@ public class  SentinelDrive extends LinearOpMode
                         if (armWentDown)
                         {
 //                            intakeSubsystem.intakeSlideInternalPID(slidePositionStopped);
-                            if (gamepad1.right_bumper) intakeSubsystem.intakeSlideMotorRawControl(1); // if i fuck up the timing
+                            if (gamepad1.right_bumper) intakeSubsystem.intakeSlideMotorRawControl(0.7); // if i fuck up the timing
                             else intakeSubsystem.intakeSlideMotorRawControl(0);
                         }
                         else
@@ -1085,7 +1088,7 @@ public class  SentinelDrive extends LinearOpMode
                         {
                             if (isBetweenAngle(Angles.normalizeDegrees(heading), -25, 20)) //heading <= 45 && heading >= -45),
                             {
-                                outtakeSubsystem.turretKeepToAngleTicks(0.1, heading);
+                                outtakeSubsystem.turretKeepToAngleTicks(0, heading);
                             } else outtakeSubsystem.turretRawControl(0);
                         }
                         else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
@@ -1096,8 +1099,8 @@ public class  SentinelDrive extends LinearOpMode
                                 OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
 
                         specSideLogic(gamepad2.dpad_left, gamepad2.dpad_right);
-                        if (specOnLeft) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-                        else  outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
+                        if (specOnLeft) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
+                        else  outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
                         if (toggleRisingEdge.mode(gamepad1.right_bumper))
                         {
                             secondToggleForTheDrop.mode(gamepad1.right_bumper);
@@ -1109,8 +1112,24 @@ public class  SentinelDrive extends LinearOpMode
                 }
                 else // we are having strange hz drops in this state, no point running this after shit was ran
                 {
-                    outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                    if (internalDelay(250))
+                    outtakeSubsystem.liftToInternalPID(0);
+                    if (!internalDelay(900))
+                    {
+                        outtakeSubsystem.armSetPos(0.95);
+                        outtakeSubsystem.wristSetPos(0.6);
+                        if (internalDelay(450))
+                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                    }
+                    if (autoAlignSpecDeposit && !internalDelay(600)) //after drop sequence we want the turret to reset
+                    {
+                        if (isBetweenAngle(Angles.normalizeDegrees(heading), -45, 20)) //heading <= 45 && heading >= -45),
+                        {
+                            outtakeSubsystem.turretKeepToAngleTicks(0, heading);
+                        } else outtakeSubsystem.turretRawControl(0);
+                    }
+                    else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+
+                    if (internalDelay(900))
                     {
                         if (secondToggleForTheDrop.mode(gamepad1.right_bumper))
                         {
@@ -1122,18 +1141,14 @@ public class  SentinelDrive extends LinearOpMode
                         }
                         if (!intakeEdgeCase) // this will cause a bug because intake edge case resets the internal timer
                         {
-
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-                            outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
-                            outtakeSubsystem.liftToInternalPID(0);
-
+                            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT); // we reset for spec intake
                         }
-//                        outtakeKeepTurretBack(); // this has to be outside the if statement or else the pid wont update
-                        outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
                     }
                 }
+
+                // Intake part
 
                 intakeSlideSubBtn.upToggle(gamepad2.right_bumper);
                 intakeSlideSubBtn.downToggle(gamepad2.left_bumper, 1);
@@ -1156,7 +1171,6 @@ public class  SentinelDrive extends LinearOpMode
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                 //outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
 
-                // Intake part
                 if (delay(110))
                 {
 
@@ -1192,7 +1206,7 @@ public class  SentinelDrive extends LinearOpMode
 
                     if (gamepad1.right_stick_button)
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                    else if (intakeArmToggle.OffsetTargetPosition > 1 && dropped)
+                    else if (intakeArmToggle.OffsetTargetPosition > 1 && dropped && internalDelay(500)) // matches drop sequence timing
                         intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                     if (
@@ -1287,11 +1301,11 @@ public class  SentinelDrive extends LinearOpMode
             case SPECIMEN_DEPOSIT_BACK_AUTO:
                 if (delay(40))
                 {
-                    hardware.drive.setTargetPose(new Pose(9, -35.7, Math.toRadians(-35)));
-                    hardware.drive.update();
                     if (!dropped)
                     {
-                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
+                        hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
+                        hardware.drive.setTargetPose(new Pose(xPosition, -39.7, Math.toRadians(-25)));
+                        xPosition += -gamepad1.left_stick_y * 0.5;
                         if (delay(100))
                         {
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_READY);
@@ -1303,6 +1317,7 @@ public class  SentinelDrive extends LinearOpMode
                         if (toggleRisingEdge.mode(gamepad1.right_bumper))
                         {
                             dropped = true;
+                            secondToggleForTheDrop.mode(gamepad1.right_bumper);
                             internalTimerReset();
                             break;
                         }
@@ -1310,13 +1325,17 @@ public class  SentinelDrive extends LinearOpMode
                     else
                     {
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_SCORE);
-                        if (internalDelay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
+                        if (internalDelay(200)) outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_AUTO_FLICK);
+                        if (internalDelay(350)) hardware.drive.setTargetPose(new Pose(xPosition - 8, -39.7, Math.toRadians(-25)));
+                        if (internalDelay(800) && secondToggleForTheDrop.mode(gamepad1.right_bumper)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                         if (gamepad1.left_bumper)
                         {
                             dropped = false;
                             break;
                         }
                     }
+                    outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
+                    hardware.update();
                 }
                 break;
             case HANG_START:

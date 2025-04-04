@@ -149,8 +149,8 @@ public class Specimen7AutoNew extends LinearOpMode
         while (opModeIsActive())
         {
             globalTimer = GlobalTimer.milliseconds();
-            intakeSubsystem.intakeReads(true, state == autoState.PRELOAD_DEPOSIT || state == autoState.SUB_INTAKE); // we dont need the color sensor in this auto
-            outtakeSubsystem.outtakeReads();
+            intakeSubsystem.intakeReads(true, state == autoState.PRELOAD_DEPOSIT || state == autoState.SUB_INTAKE || state == autoState.INTAKE || state == autoState.PRELOADS_INTAKE); // we dont need the color sensor in this auto
+            outtakeSubsystem.outtakeReads(false);
 
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
@@ -255,7 +255,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 preloadsDropOuttakeState();
                 break;
                 case INTAKE:
-                if (intakedSpec && delay(190) && hardware.drive.stopped())
+                if ((intakedSpec && delay(190)) && delay(1000))
                 {
                     state =  autoState.DEPOSIT_DRIVE;
                     intakedSpec = false;
@@ -281,7 +281,6 @@ public class Specimen7AutoNew extends LinearOpMode
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
                         outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
                         outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
-                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                     }
                 }
 
@@ -292,7 +291,7 @@ public class Specimen7AutoNew extends LinearOpMode
                                 (cycle == 3 && trajectories.secondDeposit.isFinished()) ||
                                 (cycle == 4 && trajectories.thirdDeposit.isFinished()) ||
                                 (cycle == 5 && trajectories.forthDeposit.isFinished()) ||
-                                (cycle == 6 && trajectories.fifthDeposit.isFinished())) && (internalDelay(600) && transferred)
+                                (cycle == 6 && trajectories.fifthDeposit.isFinished())) && (internalDelay(550) && transferred)
                 )
                 {
                     state = autoState.DROP;
@@ -306,7 +305,7 @@ public class Specimen7AutoNew extends LinearOpMode
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
                     intakeSubsystem.intakeSlideMotorRawControl(-1);
                 }
-                if (cycle == 2 || (delay(40) && intakeSubsystem.isSlidesAtBase()))
+                if (cycle == 2 || (delay(400) && intakeSubsystem.isSlidesAtBase()))
                 {
                     outtakeSubsystem.liftToInternalPID(0);
                     if (!transferred)
@@ -330,7 +329,7 @@ public class Specimen7AutoNew extends LinearOpMode
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                             if (internalDelay(250))
                             {
-                                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+                                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
                                 intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                             }
                         }
@@ -364,6 +363,7 @@ public class Specimen7AutoNew extends LinearOpMode
                         outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                         cycle++;
                         transferred = false;
+                        intakedSpec = true;
                         resetTimer();
                         break;
                     }
@@ -580,13 +580,14 @@ public class Specimen7AutoNew extends LinearOpMode
                 break;
             case 3:
                 hardware.drive.followTrajectorySplineHeading(trajectories.firstIntake);
-                if (delay(40))
+                if (delay(100))
                 {
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                     intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                    if (intakeSubsystem.getColorValue() > 400)
+                    if (intakeSubsystem.getColorValue() > 400 && delay(400))
                     {
-                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        intakeSubsystem.intakeSlideMotorRawControl(-1);
+                        intakedSpec = true;
                         state = autoState.DEPOSIT_DRIVE;
                         break;
                     }
@@ -598,9 +599,10 @@ public class Specimen7AutoNew extends LinearOpMode
                 {
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                     intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                    if (intakeSubsystem.getColorValue() > 800)
+                    if (intakeSubsystem.getColorValue() > 400 && delay(400))
                     {
-                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        intakeSubsystem.intakeSlideMotorRawControl(-1);
+                        intakedSpec = true;
                         state = autoState.DEPOSIT_DRIVE;
                         break;
                     }
@@ -611,9 +613,10 @@ public class Specimen7AutoNew extends LinearOpMode
                 {
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                     intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                    if (intakeSubsystem.getColorValue() > 800)
+                    if (intakeSubsystem.getColorValue() > 400 && delay(400))
                     {
-                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        intakeSubsystem.intakeSlideMotorRawControl(-1);
+                        intakedSpec = true;
                         state = autoState.DEPOSIT_DRIVE;
                         break;
                     }
@@ -624,9 +627,10 @@ public class Specimen7AutoNew extends LinearOpMode
                 {
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                     intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                    if (intakeSubsystem.getColorValue() > 800)
+                    if (intakeSubsystem.getColorValue() > 400 && delay(400))
                     {
-                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        intakeSubsystem.intakeSlideMotorRawControl(-1);
+                        intakedSpec = true;
                         state = autoState.DEPOSIT_DRIVE;
                         break;
                     }
@@ -637,9 +641,10 @@ public class Specimen7AutoNew extends LinearOpMode
                 {
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                     intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                    if (intakeSubsystem.getColorValue() > 800)
+                    if (intakeSubsystem.getColorValue() > 400 && delay(400))
                     {
-                        intakeSubsystem.intakeSlideInternalPID(-2);
+                        intakeSubsystem.intakeSlideMotorRawControl(-1);
+                        intakedSpec = true;
                         state = autoState.DEPOSIT_DRIVE;
                         break;
                     }
@@ -662,7 +667,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
                 {
                     intakeSubsystem.intakeSlideInternalPID(0); // this controls the intake slides and the clip
-                } else if (delay(170)) intakeSubsystem.intakeSlideMotorRawControl(-0.7);
+                } else if (delay(170)) intakeSubsystem.intakeSlideMotorRawControl(-0.8);
 
                 if (intakeSubsystem.getSlidePositionIn() < 11) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 if (intakeSubsystem.getSlidePositionIn() < 1)
@@ -760,7 +765,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
                 outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
-                if (delay(500))
+                if (delay(570))
                 {
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.TRANSFER_FRONT);
                 }
@@ -805,7 +810,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 intakeSubsystem.intakeSlideInternalPID(27);
                 break;
             case 2:
-                intakeSubsystem.intakeSlideInternalPID(29.3);
+                intakeSubsystem.intakeSlideInternalPID(28);
                 break;
             case 3:
                 intakeSubsystem.intakeSlideInternalPID(30);
