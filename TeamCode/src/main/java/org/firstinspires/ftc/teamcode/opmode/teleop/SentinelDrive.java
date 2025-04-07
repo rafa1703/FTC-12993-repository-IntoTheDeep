@@ -242,13 +242,13 @@ public class  SentinelDrive extends LinearOpMode
 //            telemetry.addData("IntakeSLide target", intakeSlideTarget);
 //            telemetry.addData("Aura transfer", auraTransferEdgeCase);
 //            telemetry.addData("Meta transfer", metaTransferEdgeCase);
-////            telemetry.addData("Auto align", autoAlign);
+//            telemetry.addData("Auto align", autoAlign);
 //            telemetry.addData("Go hp extendo", goToHPExtendoDeposit);
-////            telemetry.addData("Side after auto", SideAfterAuto.side);
-////            telemetry.addData("Go to intake", goToIntake);
-////            telemetry.addData("Go to Deposit", goToDeposit);
-////            telemetry.addData("Go to HpDeposit", goToHPDeposit);
-////            telemetry.addData("IsArmOver", outtakeSubsystem.isArmOver());
+//            telemetry.addData("Side after auto", SideAfterAuto.side);
+//            telemetry.addData("Go to intake", goToIntake);
+//            telemetry.addData("Go to Deposit", goToDeposit);
+//            telemetry.addData("Go to HpDeposit", goToHPDeposit);
+//            telemetry.addData("IsArmOver", outtakeSubsystem.isArmOver());
 //            telemetry.addData("Intake edge case", intakeEdgeCase);
 //            telemetry.addData("Turret angle", outtakeSubsystem.turretAngle);
 //            telemetry.addData("Turret angle wrapped", Angles.normalizeDegrees(outtakeSubsystem.turretAngle));
@@ -1411,19 +1411,20 @@ public class  SentinelDrive extends LinearOpMode
                 }
                 outtakeSubsystem.liftMotorRawControl(-1);
                 driveBase.ptoMotorsSetPower(1);
-                if (delay(2000)) driveBase.climbServoSetPower(0);
+                if (delay(3500)) driveBase.climbServoSetPower(0);
                 else driveBase.climbServoSetPower(-1);
                 break;
             case HANG_END:
-                if (delay(100))
+                if (delay(90))
+                    driveBase.PTOState(DriveBaseSubsystem.PTOState.IN); // lol turret can't spin without this
+                if (delay(300)) {
+                    outtakeSubsystem.liftMotorRawControl(0);
+                    driveBase.ptoMotorsSetPower(0);
+                }
+                if (delay(500))
                 {
                     outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
                     driveBase.frontMotorsSetPower(0.2, -0.2); // helps spin
-                }
-                if (delay(1500))
-                {
-                    intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                    if (delay(1590)) intakeSubsystem.intakeSlideInternalPID(6);
                 }
                 break;
             case RETURN:

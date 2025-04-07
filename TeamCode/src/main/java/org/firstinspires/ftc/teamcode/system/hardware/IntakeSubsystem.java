@@ -309,6 +309,15 @@ public class IntakeSubsystem
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(1);
     }
+    public void intakeSlideInternalPID(double inches, double maxLimit)
+    {
+        slideTarget = (int) inchesToTicksSlidesMotor(inches);
+        if (slideTarget > slideExtensionLimit)
+            slideTarget = (int) inchesToTicksSlidesMotor(slideExtensionLimit);
+        intakeSlideMotor.setTargetPosition(slideTarget);
+        intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        intakeSlideMotor.setPower(maxLimit);
+    }
 
     public void intakeSlideInternalPIDTicks(int ticks)
     {
@@ -437,7 +446,7 @@ public class IntakeSubsystem
     }
     public boolean isDistance()
     {
-        return distance < 3.5;
+        return distance < 4;
     }
     public double getDistance()
     {
