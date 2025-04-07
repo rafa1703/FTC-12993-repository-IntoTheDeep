@@ -1424,7 +1424,7 @@ public class  SentinelDrive extends LinearOpMode
                 if (delay(500))
                 {
                     outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                    driveBase.frontMotorsSetPower(0.2, -0.2); // helps spin
+                    driveBase.drive(0, 0, 0.7);
                 }
                 break;
             case RETURN:

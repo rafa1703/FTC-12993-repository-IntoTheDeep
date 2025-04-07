@@ -148,7 +148,7 @@ public class OuttakeSubsystem
         SPECIMEN_HIGH_BACK_KINETIC(0.76),
         SPECIMEN_LOW(0.88),
         SPECIMEN_LOW_BACK(0.37),
-        INTAKE(0.14),
+        INTAKE(0.1),
         HP_DEPOSIT(0.11);
 
         public final double pos;
@@ -178,7 +178,7 @@ public class OuttakeSubsystem
         SPECIMEN_LOW(0.75),
         SPECIMEN_LOW_BACK(0.25),
         HP_DEPOSIT(0.43),
-        INTAKE(0.48);
+        INTAKE(0.5);
 
         public final double pos;
 
