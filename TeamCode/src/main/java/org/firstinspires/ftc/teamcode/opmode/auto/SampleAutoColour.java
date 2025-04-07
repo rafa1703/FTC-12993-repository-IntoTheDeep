@@ -25,8 +25,8 @@ import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "0+9", group = "Close")
-public class SampleAutoGoated extends LinearOpMode
+@Autonomous(name = "0+9 Colour blob shit", group = "Close")
+public class SampleAutoColour extends LinearOpMode
 {
      double pureYdis;
      boolean stopped;
@@ -100,7 +100,7 @@ public class SampleAutoGoated extends LinearOpMode
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         cameraHardware = new CameraHardware(hardware);
-        cameraHardware.pipelineSwitch(CameraHardware.PipelineType.DETECTOR_YELLOW);
+        cameraHardware.pipelineSwitch(CameraHardware.PipelineType.YELLOW);
         GlobalTimer = new ElapsedTime(System.nanoTime());
         globalTimer = GlobalTimer.milliseconds();
         telemetry = new MultipleTelemetry(telemetry, FtcDashboard.getInstance().getTelemetry());
@@ -412,7 +412,7 @@ public class SampleAutoGoated extends LinearOpMode
                                     break;
                                 case CAMERA_DETECTION:
                                     result = cameraHardware.getLatestResult();
-                                    if (result == null || !result.isValid() || result.getDetectorResults().isEmpty())
+                                    if (result == null || !result.isValid())
                                     {
                                         if (internalDelay(100))
                                         {
@@ -422,10 +422,11 @@ public class SampleAutoGoated extends LinearOpMode
                                         break;
                                     }
                                     cameraHardware.captureSnapshot("Auto");
-                                    ArrayList<CameraHardware.Sample> samples = cameraHardware.sampleQuery(result, hardware.drive.getPoseEstimate());
-
-                                    CameraHardware.Sample intakeSample = sortSmallestAngSample(samples, subIntakeTrajectory.getFinalPose());
-                                    calculateExtendoAndPose(intakeSample, subIntakeTrajectory);
+//                                    ArrayList<CameraHardware.Sample> samples = cameraHardware.sampleQuery(result, hardware.drive.getPoseEstimate());
+//
+//                                    CameraHardware.Sample intakeSample = sortSmallestAngSample(samples, subIntakeTrajectory.getFinalPose());
+                                    Pose pose = cameraHardware.ro2GoatMath();
+                                    calculateExtendoAndPose(new Vector(pose.getX(), pose.getY()), subIntakeTrajectory);
 
                                     subIntakeState = SubIntakeState.ALIGN;
 
@@ -448,9 +449,16 @@ public class SampleAutoGoated extends LinearOpMode
                                     }
                                     break;
                                 case INTAKE:
-                                    if (intakeSubsystem.getColourValue() > 500)
+                                    if (internalDelay(500)) // might need to re-structure this...
                                     {
-                                        if (true)
+                                        if (intakeSubsystem.getColourValue() < 130)
+                                        {
+                                            subIntakeState = SubIntakeState.MISSED;
+                                            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
+                                            internalTimerReset();
+                                            break;
+                                        }
+                                        else if (intakeSubsystem.sampleInIntakeAuto(false))
                                         {
                                             exitSubIntake = true;
                                             break;
@@ -460,14 +468,13 @@ public class SampleAutoGoated extends LinearOpMode
                                             subIntakeState = SubIntakeState.WRONG_COLOUR;
                                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
                                             internalTimerReset();
+                                            break;
                                         }
                                     }
                                     if (internalDelay(90)) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                                     if (internalDelay(250))
-                                        intakeSubsystem.intakeSlideInternalPID(sampleDis.getY() + 8);
-                                    if (internalDelay(850))
-                                        subIntakeState = SubIntakeState.MISSED;
+                                        intakeSubsystem.intakeSlideInternalPID(sampleDis.getY() + 13); // 8 works
 
                                     break;
                                 case MISSED:
@@ -567,9 +574,9 @@ public class SampleAutoGoated extends LinearOpMode
         }
     }
 
-    private void calculateExtendoAndPose(CameraHardware.Sample intakeSample, Trajectory subIntakeTrajectory)
+    private void calculateExtendoAndPose(Vector vector, Trajectory subIntakeTrajectory)
     {
-        sampleDis = intakeSample.vectorToDetectPose; // new Vector(ro2Pose.getX(), ro2Pose.getY()); // InverseKinematics.distanceToSample(result.getTyNC(), result.getTxNC());
+        sampleDis = vector; // new Vector(ro2Pose.getX(), ro2Pose.getY()); // InverseKinematics.distanceToSample(result.getTyNC(), result.getTxNC());
         // we store a pose to move to and a intake slide target
         sampleDis.setY(sampleDis.getY() - 6); // arm offset
         double finalHeading = Math.toRadians(0) - Math.toRadians(result.getTxNC());

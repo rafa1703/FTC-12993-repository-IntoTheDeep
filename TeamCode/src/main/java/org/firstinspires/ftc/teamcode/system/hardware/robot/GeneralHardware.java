@@ -40,7 +40,7 @@ public class GeneralHardware
     public ServoPika turretS, clipS, intakeArmS, ptoS;
     public CRServoPika intakeCS;
     public ServoPika clawS, wristS, pivotS, armS, lockS;
-    public ServoPika leftClimbS, rightClimbS;
+    public CRServoPika leftClimbS, rightClimbS; // this is cr lol
     public RevColorSensorV3 colourSensor;
     public DistanceSensor distanceSensor;
     public GoBildaPinpointDriver pinpoint;
@@ -110,8 +110,8 @@ public class GeneralHardware
         pivotS = new ServoPika(hm.get(ServoImplEx.class, "pivotS"));
         lockS = new ServoPika(hm.get(ServoImplEx.class, "lockS"));
 
-        leftClimbS = new ServoPika(hm.get(ServoImplEx.class, "leftClimbS"));
-        rightClimbS = new ServoPika(hm.get(ServoImplEx.class, "rightClimbS"));
+        leftClimbS = new CRServoPika(hm.get(CRServoImplEx.class, "leftClimbS"));
+        rightClimbS = new CRServoPika(hm.get(CRServoImplEx.class, "rightClimbS"));
 
         //seh3 = hm.get(ServoImplEx.class, "seh3");
         //seh4 = hm.get(ServoImplEx.class, "seh4");

@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
+import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.CRServoPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.MotorPika;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.wrappers.ServoPika;
 
@@ -29,6 +30,9 @@ public class DriveBaseSubsystem
             BR;
     ServoPika
         ptoS;
+    CRServoPika
+        leftClimbS,
+        rightClimbS;
 
 
     public enum PTOState
@@ -67,7 +71,7 @@ public class DriveBaseSubsystem
     //variable for the drivebase speed toggle;
     boolean PowerToggled;
     double PowerBase = 1;
-    double PowerBaseTurn = 0.83;
+    double PowerBaseTurn = 0.55;
     double PowerStrafe = 1.1;
 
     Telemetry telemetry;
@@ -78,6 +82,9 @@ public class DriveBaseSubsystem
         BL = hardware.BL;
         BR = hardware.BR;
         ptoS = hardware.ptoS;
+        leftClimbS = hardware.leftClimbS;
+        rightClimbS = hardware.rightClimbS;
+        leftClimbS.setDirection(DcMotorSimple.Direction.REVERSE); // left and right are swapped wtf
         drivebaseSetup(true); // this has to be true for GVF, as we do glinding vectors
     }
     public DriveBaseSubsystem(HardwareMap hardwareMap)
@@ -112,6 +119,11 @@ public class DriveBaseSubsystem
     public void PTOSetPosition(double pos)
     {
         ptoS.setPosition(pos);
+    }
+    public void climbServoSetPower(double pow)
+    {
+        leftClimbS.setPower(-pow);
+        rightClimbS.setPower(-pow);
     }
 
     public static double adjustedJoystick(double x) {

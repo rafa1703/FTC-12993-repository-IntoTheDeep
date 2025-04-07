@@ -3,10 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.test;
 import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.NormalizedRGBA;
 
-import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.system.hardware.DriveBaseSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.system.hardware.OuttakeSubsystem;
@@ -32,7 +29,7 @@ public class IntakeTest extends LinearOpMode
     @Override
     public void runOpMode() throws InterruptedException
     {
-        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.BLUE);
+        hardware = new GeneralHardware(hardwareMap, GeneralHardware.Side.RED);
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         drive = new DriveBaseSubsystem(hardware);
@@ -42,18 +39,23 @@ public class IntakeTest extends LinearOpMode
             hardware.resetCacheHubs();
             intakeSubsystem.intakeReads(true);
             outtakeSubsystem.outtakeReads(true);
+            intakeSubsystem.clipSetPos(pto);
+            drive.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
 //            drive.PTOSetPosition(pto);
 
-//            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
-//            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
-//            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
-//            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
+            intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
 //            intakeSubsystem.intakeSlideInternalPID(23.2);
             telemetry.addData("Filter NEUTRAL", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL));
             telemetry.addData("Filter SIDE ONLY", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.SIDE_ONLY));
             telemetry.addData("Filter YELLOW", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.YELLOW_ONLY));
             telemetry.addData("Filter OFF", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.OFF));
+            telemetry.addData("Colour value", intakeSubsystem.getColourValue());
+            telemetry.addData("Sample in intake, colour only", intakeSubsystem.sampleInIntakeWithColourCheck(true));
+            telemetry.addData("Sample in intake", intakeSubsystem.sampleInIntakeWithColourCheck(false));
 //            NormalizedRGBA rgba = hardware.colourSensor.getNormalizedColors();
 //            telemetry.addData("Colour sensor as distance", hardware.colourSensor.getDistance(DistanceUnit.INCH));
 //            telemetry.addData("Intake slide current", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));

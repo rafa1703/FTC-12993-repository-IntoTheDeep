@@ -25,7 +25,7 @@ public class OuttakeSubsystem
     AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
     PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
-    PID turretAbsolutePID = new PID(0.02, 0.03, 0.0003, 10, 0);
+    PID turretAbsolutePID = new PID(0.012, 0.03, 0.0008, 10, 0);
     LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
@@ -38,8 +38,9 @@ public class OuttakeSubsystem
             liftMaxExtension = 22.5,
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 9,
-            liftHighBarPos = 11,
-            liftHighBarBackStaticPos = 10.5,
+            liftHighBarPos = 13.5,
+            liftHighBarBackStaticPos = 9.5,
+            liftHighBarBackAutoPos = 10,
             liftHighBarBackKineticPos = 17,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
@@ -57,10 +58,10 @@ public class OuttakeSubsystem
     {
         TRANSFER_FRONT(0),
         TRANSFER_BACK(180),
-        TRANSFER_META(145),
+        TRANSFER_META(142),
         HP_DROP_AUTO(-90),
         CLIMB_START(150),
-        SPEC_DEPOSIT_BACK(245);
+        SPEC_DEPOSIT_BACK(252);
 
         public final double angle;
         OuttakeTurretState(double angle)
@@ -112,9 +113,9 @@ public class OuttakeSubsystem
     }
     public enum OuttakeClawServoState
     {
-        OPEN(0.82),
+        OPEN(0.88),
         CLOSE(0.52),
-        INTAKE(0.92),
+        INTAKE(0.94),
         TRANSFER_FRONT(0.99);
 
         public final double pos;
@@ -132,18 +133,17 @@ public class OuttakeSubsystem
         SPIN(0.59),
         STRAIGHT(0.65), // +0.04
         TRANSFER_FRONT(0.985),
-        TRANSFER_BACK(0.34),
+        TRANSFER_BACK(0.35),
         TRANSFER_AURA(0.39),
         TRANSFER_META(0.24),
-        SAMPLE(0.65),
+        SAMPLE(0.62),
         SPECIMEN_HIGH(0.9),
-        SPECIMEN_HIGH_AUTO_READY(0.6),
-        SPECIMEN_HIGH_AUTO_SCORE(1),
-        SPECIMEN_HIGH_BACK_STATIC(0.70),
+        SPECIMEN_HIGH_AUTO_SCORE(0.81),
+        SPECIMEN_HIGH_BACK_STATIC(0.6),
         SPECIMEN_HIGH_BACK_KINETIC(0.8),
         SPECIMEN_LOW(0.92),
         SPECIMEN_LOW_BACK(0.41),
-        INTAKE(0.12),
+        INTAKE(0.18),
         HP_DEPOSIT(0.15);
 
         public final double pos;
@@ -161,19 +161,19 @@ public class OuttakeSubsystem
         TRANSFER_FRONT(0.59),
         TRANSFER_BACK(0.24), //-0.16
         TRANSFER_AURA(0.18),
-        TRANSFER_META(0.39),
-        SAMPLE(0.49), // 435
-        SAMPLE_DROP(0.3),
-        SPECIMEN_HIGH(0.47),
-        SPECIMEN_HIGH_AUTO(0.45),
-        SPECIMEN_HIGH_AUTO_FLICK(0.75),
-        SPECIMEN_HIGH_BACK_STATIC(0.74),
+        TRANSFER_META(0.37),
+        SAMPLE(0.52), // 435
+        SAMPLE_DROP(0.57),
+        SPECIMEN_HIGH(0.59),
+        SPECIMEN_HIGH_FLICK(0.4),
+        SPECIMEN_HIGH_AUTO(0.61), // 0.45 prev
+        SPECIMEN_HIGH_BACK_STATIC(0.8),
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         SPECIMEN_LOW(0.75),
         SPECIMEN_LOW_BACK(0.25),
         HP_DEPOSIT(0.43),
-        INTAKE(0.42);
+        INTAKE(0.48);
 
         public final double pos;
 

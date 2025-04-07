@@ -249,7 +249,7 @@ public class Specimen7Auto extends LinearOpMode
                         }
                         break;
                     case DROP:
-                        colourValue = intakeSubsystem.getColorValue(); // we attempt intake in this case
+                        colourValue = intakeSubsystem.getColourValue(); // we attempt intake in this case
                         intakeSubsystem.intakeSlideInternalPID(armDown ? 11 : 4);
                         if (intakeSubsystem.slideOverPosition(2))
                         {
@@ -391,7 +391,7 @@ public class Specimen7Auto extends LinearOpMode
                         }
                         break;
                     case DROP:
-                        colourValue = intakeSubsystem.getColorValue(); // we attempt intake in this case
+                        colourValue = intakeSubsystem.getColourValue(); // we attempt intake in this case
                         intakeSubsystem.intakeSlideInternalPID(armDown ? 11 : 4);
                         if (intakeSubsystem.slideOverPosition(2))
                         {
@@ -456,7 +456,7 @@ public class Specimen7Auto extends LinearOpMode
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
                             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
 
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakedSample = true;
                                 internalTimerReset();
@@ -541,7 +541,7 @@ public class Specimen7Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;
@@ -554,7 +554,7 @@ public class Specimen7Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;
@@ -567,7 +567,7 @@ public class Specimen7Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;
@@ -580,7 +580,7 @@ public class Specimen7Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;

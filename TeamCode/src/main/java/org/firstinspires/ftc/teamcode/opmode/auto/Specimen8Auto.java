@@ -179,7 +179,7 @@ public class Specimen8Auto extends LinearOpMode
                         turretSpinTo(0, OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT,
                                 OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
                     }
-                    if ((intakeSubsystem.getColorValue() > 800 && internalDelay(150)) || internalDelay(1200))
+                    if ((intakeSubsystem.getColourValue() > 800 && internalDelay(150)) || internalDelay(1200))
                     {
                         state = autoState.SUB_TO_HP;
                         intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_TRANSFER);
@@ -317,7 +317,7 @@ public class Specimen8Auto extends LinearOpMode
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT);
                             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.UP);
 
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakedSample = true;
                                 internalTimerReset();
@@ -402,7 +402,7 @@ public class Specimen8Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;
@@ -415,7 +415,7 @@ public class Specimen8Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;
@@ -428,7 +428,7 @@ public class Specimen8Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;
@@ -441,7 +441,7 @@ public class Specimen8Auto extends LinearOpMode
                         {
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.DOWN);
                             intakeSubsystem.intakeSlideInternalPID(IntakeSubsystem.slideExtensionLimit);
-                            if (intakeSubsystem.getColorValue() > 800)
+                            if (intakeSubsystem.getColourValue() > 800)
                             {
                                 intakeSubsystem.intakeSlideInternalPID(-2);
                                 state = autoState.DEPOSIT_DRIVE;

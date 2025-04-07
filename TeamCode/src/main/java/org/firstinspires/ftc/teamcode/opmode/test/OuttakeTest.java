@@ -22,9 +22,10 @@ public class OuttakeTest extends LinearOpMode
     //public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
 //    ..public static OuttakeSubsystem.OuttakeTurretState turretState = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
 //    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
-    public static double armO = OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_BACK_KINETIC.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK.pos;
-    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_BACK_KINETIC.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.RIGHT.pos;
-    public static double turretI = IntakeSubsystem.IntakeTurretServoState.STRAIGHT.pos;
+    public static double armO = OuttakeSubsystem.OuttakeArmServoState.INTAKE.pos, armI = IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT.pos;
+    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.INTAKE.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.RIGHT.pos;
+    public static double turretI = IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT.pos;
+    public static double hpReversePow = -0.15;
     public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK;
 //    public static OuttakeSubsystem.OuttakePivotServoState pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN;
     public static double claw = 0.88, lift = 0;
@@ -56,14 +57,19 @@ public class OuttakeTest extends LinearOpMode
 
             hardware.resetCacheHubs();
             outtakeSubsystem.outtakeReads(true);
-            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
-
-//            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
+//            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+//
+////            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
             outtakeSubsystem.clawSetPos(claw);
             outtakeSubsystem.pivotSetPos(pivot);
             outtakeSubsystem.armSetPos(armO);
             outtakeSubsystem.wristSetPos(wrist);
-            outtakeSubsystem.liftToInternalPID(lift);
+//            outtakeSubsystem.liftToInternalPID(lift);
+
+//            intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.TRANSFER_BACK);
+            if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+            else if (gamepad1.b) intakeSubsystem.intakeSpin(hpReversePow);
+            else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
 //            outtakeSubsystem.turretSpinToGains(turret);
 //            intakeSubsystem.armSetPos(armI);
 //            intakeSubsystem.intakeTurretSetPos(turretI);

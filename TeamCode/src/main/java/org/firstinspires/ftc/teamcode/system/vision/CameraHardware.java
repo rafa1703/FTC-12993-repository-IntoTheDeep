@@ -30,7 +30,7 @@ public class CameraHardware
     {
         RED(0),
         BLUE(1),
-        YELLOW(3),
+        YELLOW(6),
         RED_YELLOW(2),
         BLUE_YELLOW(4),
         DETECTOR_YELLOW(7);
@@ -280,12 +280,19 @@ public class CameraHardware
 
         MatOfPoint2f matOfPoint = new MatOfPoint2f();
         matOfPoint.fromArray(cornerPoints);
-        RotatedRect rotatedRect = Imgproc.minAreaRect(matOfPoint);
+        RotatedRect rotatedRect = Imgproc.minAreaRect(matOfPoint); // i get a bounding rect not a rotated one lmao
         Rect boundingRect = rotatedRect.boundingRect();
         double ratio = (double) boundingRect.width / boundingRect.height;
-        if (ratio < lowerBound) return 90;// interpLUT.get(lowerBound + 0.01);
-        if (ratio > upperBound) return 0; //interpLUT.get(upperBound - 0.01);
-        return interpLUT.get(ratio);
+        if (ratio <= lowerBound) return 90;// interpLUT.get(lowerBound + 0.01);
+        if (ratio >= upperBound) return 0; //interpLUT.get(upperBound - 0.01);
+        try
+        {
+            return interpLUT.get(ratio);
+        } catch (IllegalArgumentException e)
+        {
+            throw new RuntimeException("Ling Ling is to fat to fit in the LUT");
+        }
+
     }
     private double interpolation(double p1, double p2, double t)
     {

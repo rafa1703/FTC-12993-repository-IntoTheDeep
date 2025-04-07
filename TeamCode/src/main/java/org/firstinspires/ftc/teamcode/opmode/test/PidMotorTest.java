@@ -63,7 +63,7 @@ public class PidMotorTest extends LinearOpMode
             telemetry.addData("Outtake Pos", outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition));
             telemetry.addData("Outtake target", outtakeTarget);
 
-            telemetry.addData("Color valor", intakeSubsystem.getColorValue());
+            telemetry.addData("Color valor", intakeSubsystem.getColourValue());
             telemetry.addData("IsRed", intakeSubsystem.isRed);
             telemetry.update();
       }

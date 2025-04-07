@@ -237,7 +237,7 @@ public class SampleAutoSorting extends LinearOpMode
                             outtakeKeepTurretBack();
                         }
                     }
-                    if (delay(2500) || intakeSubsystem.getColorValue() > 950)
+                    if (delay(2500) || intakeSubsystem.getColourValue() > 950)
                     {
                         state =  autoState.DEPOSIT;
                         outtakeState = OuttakeState.TRANSFER_START;

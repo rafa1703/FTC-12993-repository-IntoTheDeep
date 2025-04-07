@@ -186,7 +186,7 @@ public class SampleAuto extends LinearOpMode
                         if (delay(300)) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
                         outtakeKeepTurretBack();
                     }
-                    if ((intakeSubsystem.getColorValue() > sampleThreshold && delay(240)) || delay(1800))
+                    if ((intakeSubsystem.getColourValue() > sampleThreshold && delay(240)) || delay(1800))
                     {
                         state = autoState.DEPOSIT;
                         outtakeState = OuttakeState.TRANSFER_START;
@@ -255,7 +255,7 @@ public class SampleAuto extends LinearOpMode
                         outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
                         if (delay(300)) liftToBase();
                     }
-                    if (delay(2500) || intakeSubsystem.getColorValue() > 950)
+                    if (delay(2500) || intakeSubsystem.getColourValue() > 950)
                     {
                         state =  autoState.DEPOSIT;
                         outtakeState = OuttakeState.TRANSFER_START;
@@ -423,7 +423,7 @@ public class SampleAuto extends LinearOpMode
                         liftToBase();
                         outtakeKeepTurretBack();
                     }
-                    if ((intakeSubsystem.getColorValue() > 1100 && delay(150)) || delay(3000))
+                    if ((intakeSubsystem.getColourValue() > 1100 && delay(150)) || delay(3000))
                     {
                         state = autoState.DEPOSIT;
                         outtakeState = OuttakeState.TRANSFER_START;

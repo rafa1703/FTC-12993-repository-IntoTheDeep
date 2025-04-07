@@ -10,7 +10,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.ServoImplEx;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -37,7 +36,7 @@ public class IntakeSubsystem
     public static double kP = 0.04, kI = 0, kD = 0;
     PID intakeSlidesPID = new PID(kP, kI, kD, 0, 0);
     public int slideTarget, slidePosition;
-    double colorValue;
+    double colourValue;
     double colourSensorDistance;
     GeneralHardware.Side side;
     double intakeSlidesFineAdjustTimer;
@@ -60,7 +59,8 @@ public class IntakeSubsystem
     {
         INTAKE(1),
         REVERSE(-1),
-        OFF(0);
+        OFF(0),
+        HP_REVERSE(-0.15);
 
         public final double power;
 
@@ -80,7 +80,7 @@ public class IntakeSubsystem
         TRANSFER_META(0.68),
         TRANSFER_FINISH(0.55),
         HORIZONTAL(0.82),
-        HP_DEPOSIT(0.445),
+        HP_DEPOSIT(0.69),
         HALF_DOWN(0.9),
         AURA_DOWN(0.93),
         DOWN(1),
@@ -120,7 +120,7 @@ public class IntakeSubsystem
         STRAIGHT(0.37),
         RIGHT(0.27),
         MAX_RIGHT(0.21),
-        HP_DEPOSIT(0.6),
+        HP_DEPOSIT(0.04),
         AROUND(0.94),
         REALLY_SICK_THROW(0.39);
 
@@ -202,7 +202,7 @@ public class IntakeSubsystem
         slidePosition = intakeSlideMotor.getCurrentPosition();
         if (i2c)
         {
-            colorValue = colourSupplier.get();
+            colourValue = colourSupplier.get();
             colourSensorDistance = colourSensor.getDistance(DistanceUnit.INCH);
             if (auto) distance = distanceSupplier.get();
         }
@@ -210,18 +210,7 @@ public class IntakeSubsystem
 
     public void intakeSpin(IntakeSpinState state)
     {
-        switch (state)
-        {
-            case INTAKE:
-                intakeCS.setPower(1);
-                break;
-            case OFF:
-                intakeCS.setPower(0);
-                break;
-            case REVERSE:
-                intakeCS.setPower(-1);
-                break;
-        }
+        intakeCS.setPower(state.power);
     }
 
     public void intakeSpin(double spinDirection)
@@ -376,6 +365,50 @@ public class IntakeSubsystem
                 return true;
         }
     }
+    public boolean sampleInIntakeWithColourCheck(boolean colourOnly) {
+
+        final double yellowThreshold = 320;
+        final double redThreshold = 170;
+        final double blueThreshold = 200;
+        final float[] hsvValues = new float[3];
+
+        android.graphics.Color.colorToHSV(colourSensor.getNormalizedColors().toColor(), hsvValues);
+//        SampleColour colourOfSample;
+        if(colourOnly)
+        {
+            if (hsvValues[0] < 60)
+                return side == GeneralHardware.Side.RED && colourValue > redThreshold;
+            else if(hsvValues[0] > 120)
+            {
+                return side == GeneralHardware.Side.BLUE && colourValue > blueThreshold;
+            }
+        }
+        else return colourValue > yellowThreshold;
+        return false;
+    }
+    public boolean sampleInIntakeAuto(boolean colourOnly) {
+
+        final double yellowThreshold = 320;
+        final double redThreshold = 170;
+        final double blueThreshold = 200;
+        final float[] hsvValues = new float[3];
+
+        android.graphics.Color.colorToHSV(colourSensor.getNormalizedColors().toColor(), hsvValues);
+//        SampleColour colourOfSample;
+        if(colourOnly)
+        {
+            if (hsvValues[0] < 60)
+                return side == GeneralHardware.Side.RED && colourValue > redThreshold;
+            else if(hsvValues[0] > 120)
+            {
+                return side == GeneralHardware.Side.BLUE && colourValue > blueThreshold;
+            }
+            return false; // if only colour that means yellow was picked here so we can just return false
+        }
+        else return colourValue > yellowThreshold ||
+                side == GeneralHardware.Side.RED ? colourValue > redThreshold : colourValue > blueThreshold;
+    }
+
     public boolean colorLogic()
     {
         switch (intakeFilter)
@@ -443,9 +476,9 @@ public class IntakeSubsystem
         if (isYellow) return true;
         else return isRed ? side == GeneralHardware.Side.RED : side == GeneralHardware.Side.BLUE;
     }
-    public double getColorValue()
+    public double getColourValue()
     {
-        return colorValue;
+        return colourValue;
     }
     public GeneralHardware.Side getSide()
     {
