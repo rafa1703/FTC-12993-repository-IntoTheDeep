@@ -71,7 +71,7 @@ public class DriveBaseSubsystem
     //variable for the drivebase speed toggle;
     boolean PowerToggled;
     double PowerBase = 1;
-    double PowerBaseTurn = 0.55;
+    double PowerBaseTurn = 0.65;
     double PowerStrafe = 1.1;
 
     Telemetry telemetry;
@@ -193,6 +193,10 @@ public class DriveBaseSubsystem
     public void ptoMotorsSetPower(double pow){
         this.BL.setPower(pow);
         this.BR.setPower(pow);
+    }
+    public void frontMotorsSetPower(double fl, double fr){
+        this.FL.setPower(fl);
+        this.BR.setPower(fr);
     }
     public void motorDirectionTest(double FL, double FR, double BL, double BR){
         this.FL.setPower(FL);

@@ -367,7 +367,7 @@ public class IntakeSubsystem
     }
     public boolean sampleInIntakeWithColourCheck(boolean colourOnly) {
 
-        final double yellowThreshold = 320;
+        final double yellowThreshold = 400;
         final double redThreshold = 170;
         final double blueThreshold = 200;
         final float[] hsvValues = new float[3];

@@ -478,6 +478,7 @@ public class SampleAutoColour extends LinearOpMode
 
                                     break;
                                 case MISSED:
+
                                     intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit);
                                     if (intakeSubsystem.getColourValue() > 500)
                                     {

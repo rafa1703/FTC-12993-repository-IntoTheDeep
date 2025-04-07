@@ -35,13 +35,13 @@ public class OuttakeSubsystem
     private final double TICKS_PER_BARE_MOTOR = 28;
 
     public double
-            liftMaxExtension = 22.5,
+            liftMaxExtension = 31.7,
             liftHighBucketPos = 22.5,
-            liftLowBucketPos = 9,
-            liftHighBarPos = 13.5,
-            liftHighBarBackStaticPos = 9.5,
-            liftHighBarBackAutoPos = 10,
-            liftHighBarBackKineticPos = 17,
+            liftLowBucketPos = 9 + 2,
+            liftHighBarPos = 13.5 + 2,
+            liftHighBarBackStaticPos = 9.5 + 2,
+            liftHighBarBackAutoPos = 10 + 2,
+            liftHighBarBackKineticPos = 17 + 2,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
             liftBasePos = 0;
@@ -53,6 +53,11 @@ public class OuttakeSubsystem
     private final double maxAngleAxon = 355;
     public int turretIncrementalPosition;
     public double initialOffsetPosition;
+
+    public double getPositionIn()
+    {
+        return ticksToInchesSlidesMotor(liftPosition);
+    }
 
     public enum OuttakeTurretState
     {
@@ -129,22 +134,22 @@ public class OuttakeSubsystem
     public enum OuttakeArmServoState
     {
 
-        READY(0.24),
-        SPIN(0.59),
-        STRAIGHT(0.65), // +0.04
-        TRANSFER_FRONT(0.985),
-        TRANSFER_BACK(0.35),
-        TRANSFER_AURA(0.39),
-        TRANSFER_META(0.24),
-        SAMPLE(0.62),
-        SPECIMEN_HIGH(0.9),
-        SPECIMEN_HIGH_AUTO_SCORE(0.81),
-        SPECIMEN_HIGH_BACK_STATIC(0.6),
-        SPECIMEN_HIGH_BACK_KINETIC(0.8),
-        SPECIMEN_LOW(0.92),
-        SPECIMEN_LOW_BACK(0.41),
-        INTAKE(0.18),
-        HP_DEPOSIT(0.15);
+        READY(0.2),
+        SPIN(0.55),
+        STRAIGHT(0.61), // -0.04
+        TRANSFER_FRONT(0.945),
+        TRANSFER_BACK(0.31),
+        TRANSFER_AURA(0.35),
+        TRANSFER_META(0.2),
+        SAMPLE(0.58),
+        SPECIMEN_HIGH(0.86),
+        SPECIMEN_HIGH_AUTO_SCORE(0.77),
+        SPECIMEN_HIGH_BACK_STATIC(0.56),
+        SPECIMEN_HIGH_BACK_KINETIC(0.76),
+        SPECIMEN_LOW(0.88),
+        SPECIMEN_LOW_BACK(0.37),
+        INTAKE(0.14),
+        HP_DEPOSIT(0.11);
 
         public final double pos;
 
