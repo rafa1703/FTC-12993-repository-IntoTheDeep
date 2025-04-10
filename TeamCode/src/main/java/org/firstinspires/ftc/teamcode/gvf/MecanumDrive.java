@@ -213,6 +213,12 @@ public class MecanumDrive
         updatePowerVector();
         updateMotors();
     }
+    public void updateDrive()
+    {
+        updatePowerVector();
+        updateMotors();
+    }
+
 
     public LocalizerPinpoint getLocalizer()
     {

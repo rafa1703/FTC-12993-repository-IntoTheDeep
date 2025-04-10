@@ -55,6 +55,7 @@ public class CameraHardware
         this.limelight = hardware.limelight;
         hardwareSetUp(hardware);
         limelight.pipelineSwitch(pipelineIndex);
+        limelight.stop();
     }
 
     public void hardwareSetUp(GeneralHardware hardware)

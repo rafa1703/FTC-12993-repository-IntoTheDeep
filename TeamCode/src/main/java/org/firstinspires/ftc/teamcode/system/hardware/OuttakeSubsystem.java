@@ -39,7 +39,7 @@ public class OuttakeSubsystem
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 9 + 2,
             liftHighBarPos = 13.5 + 2,
-            liftHighBarBackStaticPos = 9.5 + 2,
+            liftHighBarBackStaticPos = 11,
             liftHighBarBackAutoPos = 10 + 2,
             liftHighBarBackKineticPos = 17 + 2,
             liftLowBarPos = 0,
@@ -134,22 +134,22 @@ public class OuttakeSubsystem
     public enum OuttakeArmServoState
     {
 
-        READY(0.2),
-        SPIN(0.55),
-        STRAIGHT(0.61), // -0.04
-        TRANSFER_FRONT(0.945),
-        TRANSFER_BACK(0.31),
-        TRANSFER_AURA(0.35),
-        TRANSFER_META(0.2),
-        SAMPLE(0.58),
-        SPECIMEN_HIGH(0.86),
-        SPECIMEN_HIGH_AUTO_SCORE(0.77),
-        SPECIMEN_HIGH_BACK_STATIC(0.56),
-        SPECIMEN_HIGH_BACK_KINETIC(0.76),
-        SPECIMEN_LOW(0.88),
-        SPECIMEN_LOW_BACK(0.37),
-        INTAKE(0.1),
-        HP_DEPOSIT(0.11);
+        READY(0.1),
+        SPIN(0.45),
+        STRAIGHT(0.51), // -0.1
+        TRANSFER_FRONT(0.845),
+        TRANSFER_BACK(0.215), // new thing so the huge fucking claw doesn't hit the fat servo (as fat as our cad designer)
+        TRANSFER_AURA(0.25),
+        TRANSFER_META(0.1),
+        SAMPLE(0.48),
+        SPECIMEN_HIGH(0.76),
+        SPECIMEN_HIGH_AUTO_SCORE(0.67),
+        SPECIMEN_HIGH_BACK_STATIC(0.46),
+        SPECIMEN_HIGH_BACK_KINETIC(0.66),
+        SPECIMEN_LOW(0.78),
+        SPECIMEN_LOW_BACK(0.27),
+        INTAKE(0),
+        HP_DEPOSIT(0.01);
 
         public final double pos;
 
@@ -178,7 +178,7 @@ public class OuttakeSubsystem
         SPECIMEN_LOW(0.75),
         SPECIMEN_LOW_BACK(0.25),
         HP_DEPOSIT(0.43),
-        INTAKE(0.5);
+        INTAKE(0.47);
 
         public final double pos;
 
