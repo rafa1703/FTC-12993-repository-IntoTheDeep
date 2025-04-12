@@ -45,7 +45,7 @@ public class MecanumDrive
     public static double headingMultiplier = 1;
     private double overallMultiplier = 1;
 
-    private final double velocityThreshold = 4;
+    private final double velocityThreshold = 4.5;
 
     private TimedSupplier<Double> voltageSupplier;
     public double FLPower, FRPower, BLPower, BRPower;

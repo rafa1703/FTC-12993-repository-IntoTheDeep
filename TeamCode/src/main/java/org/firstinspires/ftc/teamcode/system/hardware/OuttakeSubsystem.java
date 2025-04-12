@@ -143,6 +143,7 @@ public class OuttakeSubsystem
         TRANSFER_META(0.1),
         SAMPLE(0.48),
         SPECIMEN_HIGH(0.76),
+        SPECIMEN_AUTO_PRELOADS(0.69),
         SPECIMEN_HIGH_AUTO_SCORE(0.67),
         SPECIMEN_HIGH_BACK_STATIC(0.46),
         SPECIMEN_HIGH_BACK_KINETIC(0.66),
@@ -170,6 +171,7 @@ public class OuttakeSubsystem
         SAMPLE(0.52), // 435
         SAMPLE_DROP(0.57),
         SPECIMEN_HIGH(0.59),
+        SPECIMEN_AUTO_PRELOADS(0.6),
         SPECIMEN_HIGH_FLICK(0.4),
         SPECIMEN_HIGH_AUTO(0.61), // 0.45 prev
         SPECIMEN_HIGH_BACK_STATIC(0.8),

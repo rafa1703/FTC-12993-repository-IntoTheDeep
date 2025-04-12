@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.apache.commons.math3.analysis.function.Power;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.system.accessory.pids.PID;
 import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
@@ -71,7 +72,7 @@ public class DriveBaseSubsystem
     //variable for the drivebase speed toggle;
     boolean PowerToggled;
     double PowerBase = 1;
-    double PowerBaseTurn = 0.65;
+    double PowerBaseTurn = 0.9;
     double PowerStrafe = 1.1;
 
     Telemetry telemetry;
@@ -162,16 +163,20 @@ public class DriveBaseSubsystem
         BR.setPower(backRightPower);
         BL.setPower(backLeftPower);
     }
-    public void drive(double LY, double LX, double RX) {
+    public void driveWithPIDHeadingLockFieldCentric(double LY, double LX, double targetHeading, double heading) {
+
+        double headingDiff = angleWrap(targetHeading - heading);
+
+        double t = -HEADING_PID.update(headingDiff, 0, 1); // kinda dodge to import this but like what ever
         double f = LY < 0? -adjustedJoystick(Math.abs(LY)):adjustedJoystick(Math.abs(LY));
         double s = LX < 0? -adjustedJoystick(Math.abs(LX)):adjustedJoystick(Math.abs(LX));
-        double t = RX < 0? -adjustedJoystick(Math.abs(RX)):adjustedJoystick(Math.abs(RX));
+//        double t = RX < 0? -adjustedJoystick(Math.abs(RX)):adjustedJoystick(Math.abs(RX));
 
-        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
-        double frontLeftPower = (-f*PowerBase + s*PowerStrafe + t*PowerBaseTurn) / denominator;
-        double backLeftPower = (-f*PowerBase - s*PowerStrafe + t*PowerBaseTurn) / denominator;
-        double frontRightPower = (-f*PowerBase - s*PowerStrafe - t*PowerBaseTurn) / denominator;
-        double backRightPower = (-f*PowerBase + s*PowerStrafe - t*PowerBaseTurn) / denominator;
+        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(t), 1);
+        double frontLeftPower = (-f*PowerBase + s*PowerStrafe + t) / denominator;
+        double backLeftPower = (-f*PowerBase - s*PowerStrafe + t) / denominator;
+        double frontRightPower = (-f*PowerBase - s*PowerStrafe - t) / denominator;
+        double backRightPower = (-f*PowerBase + s*PowerStrafe - t) / denominator;
 
 //        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
 //        double frontLeftPower = (-LY * PowerBase + LX * PowerStrafe + RX * PowerBaseTurn) / denominator;
@@ -189,6 +194,34 @@ public class DriveBaseSubsystem
         BR.setPower(backRightPower);
         BL.setPower(backLeftPower);
     }
+
+    public void drive(double LY, double LX, double RX) {
+        drive(LY, LX, RX, false);
+    }
+
+    public void drive(double LY, double LX, double RX, boolean slowDown) { // lol i should probably write this in a nice way and not re use cs code
+        double f = LY < 0? -adjustedJoystick(Math.abs(LY)) : adjustedJoystick(Math.abs(LY));
+        double s = LX < 0? -adjustedJoystick(Math.abs(LX)) : adjustedJoystick(Math.abs(LX));
+        double t = RX < 0? -adjustedJoystick(Math.abs(RX)) : adjustedJoystick(Math.abs(RX));
+
+        PowerBase = slowDown ? 1 : PowerBase;
+        PowerStrafe = slowDown ? 1.1 : PowerStrafe;
+        PowerBaseTurn = slowDown ? 0.55 : PowerBaseTurn; // we only slow down the heading rn lol
+        double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
+        double frontLeftPower = (-f * PowerBase + s * PowerStrafe + t * PowerBaseTurn) / denominator;
+        double backLeftPower = (-f * PowerBase - s * PowerStrafe + t * PowerBaseTurn) / denominator;
+        double frontRightPower = (-f * PowerBase - s * PowerStrafe - t * PowerBaseTurn) / denominator;
+        double backRightPower = (-f * PowerBase + s * PowerStrafe - t * PowerBaseTurn) / denominator;
+
+        backLeftPower = backLeftPower * 1.1;
+        backRightPower = backRightPower * 1.1;
+
+        FL.setPower(frontLeftPower);
+        FR.setPower(frontRightPower);
+        BR.setPower(backRightPower);
+        BL.setPower(backLeftPower);
+    }
+
 
     public void ptoMotorsSetPower(double pow){
         this.BL.setPower(pow);

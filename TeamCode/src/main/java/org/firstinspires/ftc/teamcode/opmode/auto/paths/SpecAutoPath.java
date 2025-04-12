@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.opmode.auto.paths;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.Trajectory;
 import org.firstinspires.ftc.teamcode.gvf.trajectories.TrajectoryBuilder;
 import org.firstinspires.ftc.teamcode.gvf.utils.Pose;
+import org.firstinspires.ftc.teamcode.gvf.utils.Vector;
 import org.opencv.core.Point;
 
 public class SpecAutoPath
@@ -31,10 +32,10 @@ public class SpecAutoPath
         preloadTrajectory = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(7.2, -62.5),
-                        new Point(0, -30)
+                        new Point(0, -33.2)
                 )
-                .addFinalSpeed(0.7)
-                .addFinalPose(0, -30, Math.toRadians(90))
+                .addFinalSpeed(0.3)
+                .addFinalPose(0, -33.2, Math.toRadians(90))
                 //.addTrajectoryTimeOut(300)
                 .build();
 
@@ -69,11 +70,11 @@ public class SpecAutoPath
                 .addBezierSegment(
                         new Point(32, -59),
                         new Point(0, -43),
-                        new Point(0, -30)
+                        new Point(0, -33.2)
                         //new Point(0, -26.8),
                 )
-                .addFinalSpeed(0.6)
-                .addFinalPose(0, -30, Math.toRadians(90))
+                .addFinalSpeed(0.3)
+                .addFinalPose(0, -33.2, Math.toRadians(90))
                 .build();
 
         subToHpExtendo = new TrajectoryBuilder() // spline heading
@@ -179,7 +180,7 @@ public class SpecAutoPath
                 )
                 .addFinalPose(depositEndPose)
                 .build();
-        Pose intakeEndPose = new Pose(14, -50, Math.toRadians(-18));
+        Pose intakeEndPose = new Pose(15.5, -50, Math.toRadians(-18));
         firstIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         firstDepositWhileTurning.getFinalPose().toPoint(),
@@ -278,6 +279,25 @@ public class SpecAutoPath
 
                 )
                 .addFinalPose(46, -60, Math.toRadians(0))
+                .build();
+    }
+
+    public void generatePreloadTrajectory(Pose samplePose)
+    {
+        if (samplePose == null) return;
+        double cameraXOffset = -5;
+        double finalXPose = 7.2 + samplePose.getX() + cameraXOffset;
+        Vector offSetVector = new Vector(-2.5, 2); // as center of rotation of the robot is not the camera
+        double finalHeading = Math.toRadians(90) - samplePose.getHeading();
+        offSetVector = offSetVector.rotated(-finalHeading);
+        preloadTrajectory = new TrajectoryBuilder() // spline heading
+                .addBezierSegment(1,
+                        new Point(7.2, -62.5),
+                        new Point( finalXPose - offSetVector.getX(),
+                                -30 + offSetVector.getY())
+                )
+                .addFinalSpeed(0.7)
+                .addFinalPose(finalXPose, -30, finalHeading) // limelight heading is inverted lol
                 .build();
     }
 }

@@ -198,7 +198,11 @@ public class  SentinelDrive extends LinearOpMode
                     state != OuttakeState.HANG_LEVEL3 &&
                     state != OuttakeState.HANG_END
             ) // this state runs aim assist
-                driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x);
+                driveBase.drive(gamepad1.left_stick_y, gamepad1.left_stick_x, gamepad1.right_stick_x,
+                        state == OuttakeState.INTAKE_EXTENDO_SUB ||
+                                state == OuttakeState.SPECIMEN_DEPOSIT_BACK ||
+                                state == OuttakeState.SPECIMEN_INTAKE
+                );
 
             intakeSubsystem.intakeReads(
                     state == OuttakeState.INTAKE ||
@@ -228,6 +232,8 @@ public class  SentinelDrive extends LinearOpMode
             telemetry.addData("Slide pos", intakeSubsystem.slidePosition);
             telemetry.addData("Intake turret offset pos", intakeTurretToggle.OffsetTargetPosition);
             telemetry.addData("stupid tinzen boxtoob draw(AMPS): ", hardware.outtakeLiftM.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("intake slide (AMPS): ", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
+            telemetry.addData("turret motor: ", hardware.turretM.getCurrent(CurrentUnit.AMPS));
 //            telemetry.addData("Heading reduced", Angles.reduceDegrees(heading));
 //            telemetry.addData("slides position", intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition));
 //            telemetry.addData("Outtake position", outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition));
@@ -361,7 +367,7 @@ public class  SentinelDrive extends LinearOpMode
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
                 }
 
-                intakeClipHoldLogic(0, 8);
+                intakeSubsystem.intakeSlideInternalPID(0);
                 if (!gamepad1.dpad_down)
                 {
                     outtakeKeepTurretBack();
@@ -1331,7 +1337,7 @@ public class  SentinelDrive extends LinearOpMode
                 {
                     if (!dropped)
                     {
-                        if(hardware.drive.getPredictedPoseEstimate().getY() > -37 && !gamepad1.right_stick_button)
+                        if(hardware.drive.getPredictedPoseEstimate().getY() > -37.2 && !gamepad1.right_stick_button)
                         {
                             hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
                             hardware.drive.setTargetPose(new Pose(pose.getX(), -38, Math.toRadians(-18)));
@@ -1341,7 +1347,7 @@ public class  SentinelDrive extends LinearOpMode
                         }
                         else
                         {
-                            Vector vector = new Vector(gamepad1.left_stick_y, gamepad1.left_stick_x);//.rotated(-pose.getHeading());
+                            Vector vector = new Vector(-gamepad1.left_stick_x, gamepad1.left_stick_y).rotated(pose.getHeading());//.rotated(-pose.getHeading());
                             driveBase.driveWithPIDHeadingLock(vector.getX(), vector.getY(), //!gamepad1.right_stick_button ? gamepad1.left_stick_x : 0,
                                     Math.toRadians(-18), pose.getHeading());
                             telemetry.addData("Auto drive: ", false);
@@ -1365,9 +1371,9 @@ public class  SentinelDrive extends LinearOpMode
                     }
                     else
                     {
-                        if (internalDelay(200)) outtakeSubsystem.liftMotorRawControl(-1);
-                        if (internalDelay(300)) outtakeSubsystem.wristSetPos(0.75);
-                        if (internalDelay(450)) hardware.drive.setTargetPose(new Pose(xPosition - 8, -38, Math.toRadians(-18)));
+                        outtakeSubsystem.liftMotorRawControl(-1);
+                        if (internalDelay(200)) outtakeSubsystem.wristSetPos(0.75);
+//                        if (internalDelay(450)) hardware.drive.setTargetPose(new Pose(xPosition - 8, -38, Math.toRadians(-18)));
                         if (internalDelay(800)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                         if (gamepad1.left_bumper)
                         {
@@ -1401,7 +1407,7 @@ public class  SentinelDrive extends LinearOpMode
                 outtakeSubsystem.liftMotorRawControl(1);
                 driveBase.PTOState(DriveBaseSubsystem.PTOState.IN);
                 outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
-                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                outtakeSubsystem.armSetPos(0.15);
                 outtakeSubsystem.wristSetPos(0.2);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 if (delay(4250)) driveBase.climbServoSetPower(0);
@@ -1451,7 +1457,7 @@ public class  SentinelDrive extends LinearOpMode
                 if (delay(500))
                 {
                     outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                    driveBase.drive(0, 0, 0.7);
+                    driveBase.drive(0, 0, delay(2000) ? 0 : 0.7);
                 }
                 if (delay(2000))
                 {
