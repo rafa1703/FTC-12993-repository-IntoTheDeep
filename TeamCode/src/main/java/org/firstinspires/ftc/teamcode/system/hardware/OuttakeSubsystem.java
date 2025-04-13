@@ -178,7 +178,7 @@ public class OuttakeSubsystem
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         HP_DEPOSIT(0.43),
-        INTAKE(0.47);
+        INTAKE(0.42); // 0.47
 
         public final double pos;
 
