@@ -294,6 +294,7 @@ public class IntakeSubsystem
 
     public void intakeSlideInternalPID(double inches)
     {
+        if (inches > 32.5) inches = 32.5;
         slideTarget = (int) inchesToTicksSlidesMotor(inches);
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);

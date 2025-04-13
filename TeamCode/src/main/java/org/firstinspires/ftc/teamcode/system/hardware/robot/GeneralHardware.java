@@ -56,6 +56,17 @@ public class GeneralHardware
     public static double voltage;
     public Limelight3A limelight;
 
+    public void reInitImu() {
+        imu = hardwareMap.get(BHI260IMU.class, "imu"); // we initialize a normal instance of the imu for tele
+        imu.initialize(new IMU.Parameters(
+                new RevHubOrientationOnRobot(
+                        RevHubOrientationOnRobot.LogoFacingDirection.RIGHT,
+                        RevHubOrientationOnRobot.UsbFacingDirection.UP
+                )
+        ));
+        imu.resetYaw();
+    }
+
     public enum Side
     {
         RED, BLUE

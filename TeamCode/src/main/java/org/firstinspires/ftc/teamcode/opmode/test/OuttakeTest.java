@@ -57,7 +57,7 @@ public class OuttakeTest extends LinearOpMode
 
             hardware.resetCacheHubs();
             outtakeSubsystem.outtakeReads(true);
-            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+//            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
 
 //            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
             outtakeSubsystem.clawSetPos(claw);

@@ -581,10 +581,10 @@ public class SampleAutoColour extends LinearOpMode
         // we store a pose to move to and a intake slide target
         sampleDis.setY(sampleDis.getY() - 6); // arm offset
         double finalHeading = Math.toRadians(0) - Math.toRadians(result.getTxNC());
-        Vector offSetVector = new Vector(-2.5, 2); // as center of rotation of the robot is not the camera
+        Vector offSetVector = new Vector(-0, 6); // as center of rotation of the robot is not the camera
         offSetVector = offSetVector.rotated(-finalHeading);
         intakePose = new Pose(
-                subIntakeTrajectory.getFinalPose().getX() - offSetVector.getX(),
+                subIntakeTrajectory.getFinalPose().getX() + offSetVector.getX(),
                 subIntakeTrajectory.getFinalPose().getY() + offSetVector.getY(),
                 subIntakeTrajectory.getFinalPose().getHeading() + finalHeading);
         double maxSlide = 33 - 8;
