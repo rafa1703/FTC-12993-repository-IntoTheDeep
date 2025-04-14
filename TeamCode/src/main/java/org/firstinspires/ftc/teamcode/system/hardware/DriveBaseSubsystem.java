@@ -72,7 +72,7 @@ public class DriveBaseSubsystem
     //variable for the drivebase speed toggle;
     boolean PowerToggled;
     double PowerBase = 1;
-    double PowerBaseTurn = 0.9;
+    double PowerBaseTurn = 0.85;
     double PowerStrafe = 1.1;
 
     Telemetry telemetry;
@@ -206,7 +206,7 @@ public class DriveBaseSubsystem
 
         PowerBase = slowDown ? 1 : PowerBase;
         PowerStrafe = slowDown ? 1.1 : PowerStrafe;
-        PowerBaseTurn = slowDown ? 0.55 : PowerBaseTurn; // we only slow down the heading rn lol
+        PowerBaseTurn = slowDown ? 0.55 : 0.85; // we only slow down the heading rn lol
         double denominator = Math.max(Math.abs(LY) + Math.abs(LX) + Math.abs(RX), 1);
         double frontLeftPower = (-f * PowerBase + s * PowerStrafe + t * PowerBaseTurn) / denominator;
         double backLeftPower = (-f * PowerBase - s * PowerStrafe + t * PowerBaseTurn) / denominator;

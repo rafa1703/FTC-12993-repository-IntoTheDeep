@@ -25,7 +25,7 @@ public class OuttakeSubsystem
     AnalogInput turretEncoder;
     PID liftPID = new PID(0.04, 0, 0.003, 0, 0);
     PID turretPID = new PID(0.0013, 0.01, 0.00002, 35, 0);
-    PID turretAbsolutePID = new PID(0.012, 0.03, 0.0008, 10, 0);
+    PID turretAbsolutePID = new PID(0.01, 0.03, 0.0010, 10, 0);
     LowPassFilter turretFilter = new LowPassFilter(0.8, 0);
 
     public int liftTarget, liftPosition;
@@ -145,7 +145,7 @@ public class OuttakeSubsystem
         SAMPLE(0.46),
         SPECIMEN_HIGH(0.9), // 0.7
         SPECIMEN_AUTO_PRELOADS(0.69),
-        SPECIMEN_HIGH_AUTO_SCORE(0.67),
+        SPECIMEN_HIGH_AUTO_SCORE(0.7), // 0.67
         SPECIMEN_HIGH_BACK_STATIC(0.46),
         SPECIMEN_HIGH_BACK_KINETIC(0.66),
         SPECIMEN_LOW(0.78),
@@ -179,7 +179,7 @@ public class OuttakeSubsystem
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         HP_DEPOSIT(0.43),
-        INTAKE(0.4); // 0.47
+        INTAKE(0.415); // 0.47
 
         public final double pos;
 

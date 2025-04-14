@@ -47,6 +47,7 @@ public class IntakeTest extends LinearOpMode
             intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
             if (gamepad1.a) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
             else intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
+            intakeSubsystem.intakeSlideMotorRawControl(1);
 
 //            intakeSubsystem.intakeSlideInternalPID(23.2);
             telemetry.addData("Filter NEUTRAL", intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL));
