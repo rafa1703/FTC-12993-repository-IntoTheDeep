@@ -84,12 +84,13 @@ public class  SentinelDrive extends LinearOpMode
         WINDING,
         OUT
     }
-    private enum specDepositState
+    private enum SpecDepositState
     {
         DEPOSIT,
         DROP,
-        INTAKE
+        RETURN
     }
+    SpecDepositState specDepositState = SpecDepositState.DEPOSIT;
     ToggleUpOrDown intakeSlideBtn = new ToggleUpOrDown(1, 1, 0);
     ToggleUpOrDownWithLimit intakeSlideSubBtn = new ToggleUpOrDownWithLimit(1, 1, 0, 4);
 //    ToggleUpOrDown liftFineAdjustBtn = new ToggleUpOrDown(1, 1, 0);
@@ -374,8 +375,8 @@ public class  SentinelDrive extends LinearOpMode
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.OFF);
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.READY);
                 }
-
-                intakeSubsystem.intakeSlideInternalPID(0);
+                if (intakeSubsystem.slidePosition < 8) intakeSubsystem.intakeSlideMotorRawControl(0);
+                else intakeSubsystem.intakeSlideInternalPID(0);
                 if (!gamepad1.dpad_down)
                 {
                     outtakeKeepTurretBack();
@@ -841,7 +842,7 @@ public class  SentinelDrive extends LinearOpMode
                 comingFromSpecDeposit = true;
                 if (!intaked)
                 {
-                    if (delay(300))
+                    if (delay(400))
                     {
                         toggleAutoAlign();
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
@@ -851,9 +852,9 @@ public class  SentinelDrive extends LinearOpMode
 
                         if (autoAlignSpecIntake)
                         {
-                            if (isBetweenAngle(Angles.normalizeDegrees(heading),   -25, 25)) //heading <= 45 && heading >= -45),
+                            if (isBetweenAngle(Angles.normalizeDegrees(heading),-20, 20)) //heading <= 45 && heading >= -45),
                             {
-                                outtakeSubsystem.turretKeepToAngleTicks(0.1, heading);
+                                outtakeSubsystem.turretKeepToAngleTicks(0, heading);
                             } else outtakeSubsystem.turretRawControl(0);
                         }
                         else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
@@ -878,10 +879,9 @@ public class  SentinelDrive extends LinearOpMode
                         outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
 
                         if (!comingFromSpecDeposit) {
-                            outtakeSubsystem.wristSetPos(0.6);
+                            outtakeSubsystem.wristSetPos(0.7);
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                         }
-                        
                     }
 
                     if (delay(250) && toggleRisingEdge.mode(gamepad1.right_bumper))
@@ -1161,84 +1161,95 @@ public class  SentinelDrive extends LinearOpMode
                 break;
             case SPECIMEN_DEPOSIT: // we want to deposit and intake
 
-                //presetChaining(false, gamepad1LeftTrigger(),  gamepad1RightTrigger(), gamepad1.a);
-                toggleAutoAlign();
-                if (!dropped)
+                toggleAutoAlign(); // common on all dep states
+                switch (specDepositState) // lol i should have done this to like all the code lmao
                 {
-//                    liftHeightLogic(gamepad2.x, gamepad2.a);
-                    isSpecimenLow = false; //FIXME:
-                    if (delay(40))
-                    {
-                        if (autoAlignSpecDeposit)
+                    case DEPOSIT:
+                        isSpecimenLow = false; // :skull:
+                        if (delay(40))
                         {
-                            if (isBetweenAngle(heading, -35,35)) //heading <= 45 && heading >= -45),
+                            if (autoAlignSpecDeposit && false) // this should have definitely have been a function lol
+                            {
+                                if (isBetweenAngle(heading, -90,35)) //heading <= 45 && heading >= -45),
+                                {
+                                    outtakeSubsystem.turretKeepToAngleTicks(0, heading);
+                                } else outtakeSubsystem.turretRawControl(0);
+                            }
+                            else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+
+                            outtakeSubsystem.liftToInternalPID(10);
+                            outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
+                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
+
+                            specSideLogic(gamepad2.dpad_left, gamepad2.dpad_right); // this should not be necessary in this state
+
+                            if (specOnLeft) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
+                            else  outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
+
+                            if (toggleRisingEdge.mode(gamepad1.right_bumper))
+                            {
+                                secondToggleForTheDrop.mode(gamepad1.right_bumper);
+                                specDepositState = SpecDepositState.DROP;
+                                internalTimerReset();
+                                break;
+                            }
+                        }
+                        break;
+                    case DROP: // we want to be able to drag in this
+                        // drop sequence
+                        outtakeSubsystem.armSetPos(0.85);
+                        outtakeSubsystem.wristSetPos(0.7);
+                        if (internalDelay(100)) {
+                            // power draw..
+                            if (internalDelay(800)) outtakeSubsystem.liftMotorRawControl(-0.5);
+                            else outtakeSubsystem.liftMotorRawControl(-1);
+                        }
+                        if (gamepad1LeftTrigger()) outtakeSubsystem.turretSpinToGains(-45);
+                        else if (gamepad1RightTrigger()) outtakeSubsystem.turretSpinToGains(45);
+                        else if (autoAlignSpecDeposit)
+                        {
+                            if (isBetweenAngle(Angles.normalizeDegrees(heading), -90, 35)) //heading <= 45 && heading >= -45),
                             {
                                 outtakeSubsystem.turretKeepToAngleTicks(0, heading);
                             } else outtakeSubsystem.turretRawControl(0);
                         }
                         else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                        outtakeSubsystem.liftToInternalPID(10);
-                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH);
-                        outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH);
-
-                        specSideLogic(gamepad2.dpad_left, gamepad2.dpad_right);
-
-                        if (specOnLeft) outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
-                        else  outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
-
-                        if (toggleRisingEdge.mode(gamepad1.right_bumper))
+                        // have the turret toggle so i can use it to sweep lmao
+                        if (secondToggleForTheDrop.mode(gamepad1.right_bumper) && internalDelay(150))
                         {
-                            secondToggleForTheDrop.mode(gamepad1.right_bumper);
+                            specDepositState = SpecDepositState.RETURN;
+                            outtakeSubsystem.clawSetPos(1); // the real drop actually only happens here lol
                             dropped = true;
                             internalTimerReset();
-                            break;
                         }
-                    }
-                }
-
-                else // we are having strange hz drops in this state, no point running this after shit was ran
-                {
-
-                    if (!internalDelay(500)) {
-//                        outtakeSubsystem.liftMotorRawControl(0.99);
-//                        if (internalDelay(100)) outtakeSubsystem.wristSetPos(0.05);
-                        outtakeSubsystem.armSetPos(0.83);
-                        outtakeSubsystem.wristSetPos(0.5);
-                        if (internalDelay(100))
-                            outtakeSubsystem.liftMotorRawControl(-1);
-                    }
-                    if (internalDelay(600)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-
-                    if (autoAlignSpecDeposit && !internalDelay(600)) //after drop sequence we want the turret to reset
-                    {
-                        if (isBetweenAngle(Angles.normalizeDegrees(heading), -35, 35)) //heading <= 45 && heading >= -45),
-                        {
-                            outtakeSubsystem.turretKeepToAngleTicks(0, heading);
-                        } else outtakeSubsystem.turretRawControl(0);
-                    }
-                    else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-
-                    if (internalDelay(500)) // i probably need to fix this if we are not intaking i can change state faster
-                    {
-                        if (secondToggleForTheDrop.mode(gamepad1.right_bumper))
+                        break;
+                    case RETURN:
+                        if (gamepad1.left_bumper)
                         {
                             state = OuttakeState.SPECIMEN_INTAKE;
+                            specDepositState = SpecDepositState.DEPOSIT;
                             intaked = false;
                             comingFromSpecDeposit = true;
                             toggleRisingEdge.mode(gamepad1.right_bumper);
                             resetTimer();
                             break;
                         }
-                        if (!intakeEdgeCase) // this will cause a bug because intake edge case resets the internal timer
+                        if (internalDelay(150))
                         {
                             outtakeSubsystem.liftToInternalPID(0);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT); // we reset for spec intake
                         }
-                    }
+                        if (gamepad1LeftTrigger()) outtakeSubsystem.turretSpinToGains(-45);
+                        else if (gamepad1RightTrigger()) outtakeSubsystem.turretSpinToGains(45);
+                        else if (internalDelay(300)) outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                        else outtakeSubsystem.turretRawControl(0);
+                        break;
                 }
-                armAlwaysUpToggle(gamepad2.dpad_up);// tinko controler, bro why does she have so many buttons
+
+                armAlwaysUpToggle(gamepad2.dpad_up);// tinko controller, bro why does she have so many buttons
+
                 // Intake part
                 if (!armAlwaysUp) {
                     intakeSlideSubBtn.upToggle(gamepad2.right_bumper);
@@ -1287,13 +1298,14 @@ public class  SentinelDrive extends LinearOpMode
 
                         if (gamepad1.right_stick_button)
                             intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
-                        else if (intakeArmToggle.OffsetTargetPosition > 1 && dropped && internalDelay(500)) // matches drop sequence timing
+                        else if (intakeArmToggle.OffsetTargetPosition > 1 && dropped && internalDelay(200)) // matches drop sequence timing
                             intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
 
                         if (
-                                gamepad1.left_stick_button && delay(200)
+                                (gamepad1.left_stick_button || gamepad2.right_bumper) && delay(200)
                         ) {
                             state = OuttakeState.HP_DEPOSIT;
+                            specDepositState = SpecDepositState.DEPOSIT;
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL); // this makes sure arm is up
                             dropped = false;
@@ -1653,6 +1665,8 @@ public class  SentinelDrive extends LinearOpMode
         intakeArmToggle.OffsetTargetPosition = 0;
         intakeTurretToggle.OffsetTargetPosition = 2;
         togglePivot.OffsetTargetPosition = 4;
+
+        specDepositState = SpecDepositState.DEPOSIT;
     }
 
     public void intakeSlideSubOffset()

@@ -32,10 +32,10 @@ public class SpecAutoPath
         preloadTrajectory = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(7.2, -62.5),
-                        new Point(0, -33.2)
+                        new Point(0, -33.5)
                 )
                 .addFinalSpeed(0.3)
-                .addFinalPose(0, -33.2, Math.toRadians(90))
+                .addFinalPose(0, -33.5, Math.toRadians(90))
                 //.addTrajectoryTimeOut(300)
                 .build();
 
@@ -70,11 +70,10 @@ public class SpecAutoPath
                 .addBezierSegment(
                         new Point(32, -59),
                         new Point(0, -43),
-                        new Point(0, -33.2)
+                        new Point(0, -33.7)
                         //new Point(0, -26.8),
                 )
-                .addFinalSpeed(0.3)
-                .addFinalPose(0, -33.2, Math.toRadians(90))
+                .addFinalPose(0, -33.7, Math.toRadians(90))
                 .build();
 
         subToHpExtendo = new TrajectoryBuilder() // spline heading
@@ -153,7 +152,7 @@ public class SpecAutoPath
                         new Point(58, -52),
                         new Point(60.5, -52)
                 )
-                .addFinalPose(60.5, -52, Math.toRadians(80))
+                .addFinalPose(60.5, -52, Math.toRadians(78))
                 .build();
         letsNotCutOurHPHands = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(

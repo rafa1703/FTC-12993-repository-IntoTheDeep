@@ -40,7 +40,8 @@ public class OuttakeSubsystem
             liftLowBucketPos = 9 + 2,
             liftHighBarPos = 13.5 + 2,
             liftHighBarBackStaticPos = 11,
-            liftHighBarBackAutoPos = 10 + 2,
+            liftHighBarBackAutoPos = 13,
+            liftHighBarPrealodAutoPos = 10,
             liftHighBarBackKineticPos = 17 + 2,
             liftLowBarPos = 0,
             liftSpecimenIntakePos = 0,
@@ -171,14 +172,14 @@ public class OuttakeSubsystem
         SAMPLE(0.5), // 435
         SAMPLE_DROP(0.57),
         SPECIMEN_HIGH(0.18), // 0.3
-        SPECIMEN_AUTO_PRELOADS(0.6),
+        SPECIMEN_AUTO_PRELOADS(0.5),
         SPECIMEN_HIGH_FLICK(0.4),
         SPECIMEN_HIGH_AUTO(0.61), // 0.45 prev
         SPECIMEN_HIGH_BACK_STATIC(0.8),
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         HP_DEPOSIT(0.43),
-        INTAKE(0.42); // 0.47
+        INTAKE(0.4); // 0.47
 
         public final double pos;
 

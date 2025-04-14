@@ -447,7 +447,7 @@ public class IntakeSubsystem
     }
     public boolean isDistance()
     {
-        return distance < 5.5;
+        return distance < 5;
     }
     public double getDistance()
     {
