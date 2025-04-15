@@ -60,7 +60,7 @@ public class IntakeSubsystem
         INTAKE(1),
         REVERSE(-1),
         OFF(0),
-        HP_REVERSE(-0.15);
+        HP_REVERSE(-0.13);
 
         public final double power;
 
@@ -447,7 +447,7 @@ public class IntakeSubsystem
     }
     public boolean isDistance()
     {
-        return distance < 5;
+        return distance < 4.5;
     }
     public double getDistance()
     {

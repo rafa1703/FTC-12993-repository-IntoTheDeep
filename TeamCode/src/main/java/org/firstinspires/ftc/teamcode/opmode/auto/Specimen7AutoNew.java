@@ -51,6 +51,8 @@ public class Specimen7AutoNew extends LinearOpMode
     enum OuttakeState
     {
         INTAKE,
+        COLOUR_CHECK,
+        WRONG_COLOUR,
         TRANSFER_START,
         TRANSFER_END,
         READY,
@@ -58,6 +60,8 @@ public class Specimen7AutoNew extends LinearOpMode
     }
     enum PickupState
     {
+        COLOUR_CHECK, // dodgy edge but worlds tomorrow lmao
+        WRONG_COLOUR,
         TRANSFER_START,
         TRANSFER_END,
         SAMPLE_THROW,
@@ -123,6 +127,7 @@ public class Specimen7AutoNew extends LinearOpMode
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_AUTO_PRELOADS);
             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
             outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+            outtakeSubsystem.lockServoState(OuttakeSubsystem.OuttakeLockServoState.OPEN);
 
             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.IN);
             intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
@@ -232,7 +237,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                if (delay(1500) || (colourValue > 170 && delay(500)))
+                if (delay(1200) || (colourValue > 150 && delay(500)))
                 {
                     state = autoState.PRELOADS_DROP;
                     pickupState = PickupState.SAMPLE_THROW;
@@ -411,7 +416,8 @@ public class Specimen7AutoNew extends LinearOpMode
                                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_SCORE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_AUTO);
-                            outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarBackAutoPos);
+                            outtakeSubsystem.liftToInternalPID( cycle != 2 ? outtakeSubsystem.liftHighBarBackAutoPos + 1 : // slack on outtake makes so the arm is under...
+                                    outtakeSubsystem.liftHighBarBackAutoPos + 2);
 
                             if (internalDelay(130)) {
                                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
@@ -482,19 +488,21 @@ public class Specimen7AutoNew extends LinearOpMode
         {
             case READY:
                 hardware.drive.followTrajectorySplineHeading(trajectories.preloadTrajectory);
-                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                if (delay(200))
+                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
                 intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
 
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_AUTO_PRELOADS);
                 outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_AUTO_PRELOADS);
-                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos);
+                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos + 1.5);
                 outtakeSubsystem.turretKeepToAngleTicks(0, trajectories.preloadTrajectory.getFinalPose().getHeading());
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
 
                 LLResult result = cameraHardware.getLatestResult();
-                samplePose = cameraHardware.ro2GoatMath();
+                if (result != null)
+                    samplePose = cameraHardware.ro2GoatMath();
 
-                if ((intakeSubsystem.isDistance() && delay(200)) || delay(2000))
+                if ((intakeSubsystem.isDistance(7.75) && delay(200)) || delay(2000))
                 {
                     outtakeState = OuttakeState.DROP;
                     outtakeSubsystem.liftMotorRawControl(-1);
@@ -532,7 +540,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 if ((colourValue >= 850) || delay(1700))
                 {
                     state = autoState.SUB_TO_HP;
-                    outtakeState = OuttakeState.TRANSFER_START;
+                    outtakeState = OuttakeState.COLOUR_CHECK;
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
                     armDown = false; // just to sure lol
                     cycle++;
@@ -567,6 +575,27 @@ public class Specimen7AutoNew extends LinearOpMode
     {
         switch (outtakeState)
         {
+            case COLOUR_CHECK:
+                if (delay(80))
+                {
+                  if (intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL)) // neutral as we don't re attempt intake
+                  {
+                      outtakeState = OuttakeState.TRANSFER_START;
+                  }
+                  else outtakeState = OuttakeState.WRONG_COLOUR;
+                  resetTimer();
+                  break;
+                }
+                break;
+            case WRONG_COLOUR:
+                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.HP_REVERSE);
+                if (delay(150))
+                {
+                    outtakeState = OuttakeState.TRANSFER_START;
+                    resetTimer();
+                    break;
+                }
+                break;
             case TRANSFER_START:
                 if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
                 {
@@ -600,7 +629,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 if (trajectories.subToHpAndIntake.isFinished() && delay(200))
                 {
                     outtakeState = OuttakeState.INTAKE;
-                    intakeSubsystem.intakeSpin(-0.35);
+                    intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.HP_REVERSE);
                     resetTimer();
                     break;
                 }
@@ -640,12 +669,12 @@ public class Specimen7AutoNew extends LinearOpMode
                     if (delay(400))
                     {
                         result = cameraHardware.getLatestResult();
-                        samplePose = cameraHardware.ro2GoatMath();
+                        if (result != null) samplePose = cameraHardware.ro2GoatMath();
                     }
                 }
                 else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 
-                if (trajectories.hpToSubIntake.isFinished() || intakeSubsystem.isDistance() && delay(220) || delay(2000))
+                if (trajectories.hpToSubIntake.isFinished() || (intakeSubsystem.isDistance(7.75) && delay(900)) || delay(2000))
                 {
                     outtakeState = OuttakeState.DROP;
                     outtakeSubsystem.liftMotorRawControl(-1);
@@ -683,7 +712,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 if (colourValue > 900 || delay(2400))
                 {
                     state = autoState.PRELOADS_DROP;
-                    pickupState = PickupState.TRANSFER_START;
+                    pickupState = PickupState.COLOUR_CHECK;
                     intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                     cycle++;
@@ -730,6 +759,29 @@ public class Specimen7AutoNew extends LinearOpMode
                     resetTimer();
                     break;
                 }
+                break;
+            case COLOUR_CHECK:
+                if (delay(80))
+                {
+                    if (intakeSubsystem.checkColour(IntakeSubsystem.IntakeFilter.NEUTRAL)) // neutral as we don't re attempt intake
+                    {
+                        pickupState = PickupState.TRANSFER_START;
+                    }
+                    else pickupState = PickupState.WRONG_COLOUR;
+                    resetTimer();
+                    break;
+                }
+                break;
+//                throw new RuntimeException("Ling Ling cannot see");
+            case WRONG_COLOUR:
+                intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.HP_REVERSE);
+                if (delay(150))
+                {
+                    pickupState = PickupState.TRANSFER_START;
+                    resetTimer();
+                    break;
+                }
+//                throw new RuntimeException("Ling Ling is yellow");
                 break;
             case TRANSFER_START:
                 if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
@@ -852,13 +904,13 @@ public class Specimen7AutoNew extends LinearOpMode
         {
             case 0:
             case 1:
-                intakeSubsystem.intakeSlideInternalPID(26);
+                intakeSubsystem.intakeSlideInternalPID(30);
                 break;
             case 2:
-                intakeSubsystem.intakeSlideInternalPID(25.7);
+                intakeSubsystem.intakeSlideInternalPID(28.3);
                 break;
             case 3:
-                intakeSubsystem.intakeSlideInternalPID(26.7);
+                intakeSubsystem.intakeSlideInternalPID(29.5);
                 break;
         }
     }

@@ -22,8 +22,8 @@ public class OuttakeTest extends LinearOpMode
     //public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
 //    ..public static OuttakeSubsystem.OuttakeTurretState turretState = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
 //    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
-    public static double armO = OuttakeSubsystem.OuttakeArmServoState.INTAKE.pos, armI = IntakeSubsystem.IntakeArmServoState.HP_DEPOSIT.pos;
-    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.INTAKE.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.RIGHT.pos;
+    public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT.pos;
+    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
     public static double turretI = IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT.pos;
     public static double hpReversePow = -0.15;
     public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK;
@@ -64,6 +64,7 @@ public class OuttakeTest extends LinearOpMode
             outtakeSubsystem.pivotSetPos(pivot);
             outtakeSubsystem.armSetPos(armO);
             outtakeSubsystem.wristSetPos(wrist);
+            intakeSubsystem.armSetPos(armI);
 //
 //            outtakeSubsystem.wristSetPos(wrist);
 //            outtakeSubsystem.liftMotorRawControl(1);

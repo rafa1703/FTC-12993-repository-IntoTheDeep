@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.system.hardware;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.gvf.utils.Encoder;
 import org.firstinspires.ftc.teamcode.gvf.utils.LowPassFilter;
@@ -39,7 +40,7 @@ public class OuttakeSubsystem
             liftHighBucketPos = 22.5,
             liftLowBucketPos = 9 + 2,
             liftHighBarPos = 13.5 + 2,
-            liftHighBarBackStaticPos = 11,
+            liftHighBarBackStaticPos = 9.5,
             liftHighBarBackAutoPos = 13,
             liftHighBarPrealodAutoPos = 10,
             liftHighBarBackKineticPos = 17 + 2,
@@ -54,6 +55,8 @@ public class OuttakeSubsystem
     private final double maxAngleAxon = 355;
     public int turretIncrementalPosition;
     public double initialOffsetPosition;
+    // 0.93 arm hardstopped
+    // 0.56 up right
 
     public double getPositionIn()
     {
@@ -121,7 +124,7 @@ public class OuttakeSubsystem
     {
         OPEN(0.88),
         CLOSE(0.52),
-        INTAKE(0.94),
+        INTAKE(0.95),
         TRANSFER_FRONT(0.99);
 
         public final double pos;
@@ -138,8 +141,8 @@ public class OuttakeSubsystem
         READY(0.1),
         SPIN(0.45),
         STRAIGHT(0.51), // -0.1
-        TRANSFER_FRONT(0.845),
-        TRANSFER_BACK(0.215), // new thing so the huge fucking claw doesn't hit the fat servo (as fat as our cad designer)
+        TRANSFER_FRONT(0.82),
+        TRANSFER_BACK(0.225), // new thing so the huge fucking claw doesn't hit the fat servo (as fat as our cad designer)
         TRANSFER_AURA(0.25),
         TRANSFER_META(0.1),
         SAMPLE(0.46),
@@ -179,7 +182,7 @@ public class OuttakeSubsystem
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         HP_DEPOSIT(0.43),
-        INTAKE(0.415); // 0.47
+        INTAKE(0.46); // 0.415 worked when the slack was less
 
         public final double pos;
 
@@ -223,8 +226,9 @@ public class OuttakeSubsystem
     public void outtakeHardwareSetUp()
     {
         // if we need to reverse anything
-        // i want this to be done inside the hardware class
+        // i want this to be done inside the hardware class.
         //clawS.setDirection(Servo.Direction.REVERSE);
+//        liftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         liftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
