@@ -70,10 +70,10 @@ public class SpecAutoPath
                 .addBezierSegment(
                         new Point(32, -59),
                         new Point(7, -43),
-                        new Point(7, -33.7)
+                        new Point(7, -33.5)
                         //new Point(0, -26.8),
                 )
-                .addFinalPose(7, -33.7, Math.toRadians(90))
+                .addFinalPose(7, -33.5, Math.toRadians(90))
                 .build();
 
         subToHpExtendo = new TrajectoryBuilder() // spline heading
@@ -112,11 +112,11 @@ public class SpecAutoPath
                 .addBezierSegment(0.9,
                         new Point(0, -28.8),
                         new Point(0, -52),
-                        new Point(43, -52)
+                        new Point(41, -52)
                         //new Point(0, -26.8),
                 )
                 .addFinalSpeed(0.5)
-                .addFinalPose(43, -52, Math.toRadians(90))
+                .addFinalPose(41, -52, Math.toRadians(90))
                 .build();
         firstSample = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(

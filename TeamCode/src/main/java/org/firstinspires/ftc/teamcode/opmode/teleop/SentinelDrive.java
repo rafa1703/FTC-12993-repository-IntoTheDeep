@@ -1485,7 +1485,7 @@ public class  SentinelDrive extends LinearOpMode
                 else driveBase.climbServoSetPower(1);
                 break;
             case HANG_LEVEL2:
-                if (delay(900))
+                if (delay(1000))
                 {
                     state = OuttakeState.HANG_LEVEL3;
                     secondToggleForTheDrop.mode(gamepad1.right_bumper);
@@ -1505,7 +1505,7 @@ public class  SentinelDrive extends LinearOpMode
                 }
                 break;
             case HANG_LEVEL3:
-                if ((outtakeSubsystem.getPositionIn() < -2 && delay(3700)) || delay(4200))
+                if ((outtakeSubsystem.getPositionIn() < 0 && delay(2500)) || delay(3000))
                 {
                     state = OuttakeState.HANG_END;
                     outtakeSubsystem.lockServoState(OuttakeSubsystem.OuttakeLockServoState.LOCKED);

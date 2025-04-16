@@ -100,6 +100,7 @@ public class Specimen7AutoNew extends LinearOpMode
     ToggleUpOrDown angleToggle = new ToggleUpOrDown(1, 1, 18);
     LoopTime loopTime = new LoopTime();
     Pose samplePose = null;
+    GeneralHardware.Side side = GeneralHardware.Side.RED;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -109,7 +110,6 @@ public class Specimen7AutoNew extends LinearOpMode
         intakeSubsystem = new IntakeSubsystem(hardware);
         outtakeSubsystem = new OuttakeSubsystem(hardware);
         cameraHardware = new CameraHardware(hardware);
-        cameraHardware.pipelineSwitch(CameraHardware.PipelineType.RED);
         GlobalTimer = new ElapsedTime(System.nanoTime());
         globalTimer = GlobalTimer.milliseconds();
         hardware.limelight.close();
@@ -132,7 +132,8 @@ public class Specimen7AutoNew extends LinearOpMode
             intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.IN);
             intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-
+            if (gamepad1.dpad_up || gamepad2.dpad_up) side = GeneralHardware.Side.RED;
+            if (gamepad1.dpad_down || gamepad2.dpad_down) side = GeneralHardware.Side.BLUE;
 
 //            rowToggle.upToggle(gamepad1.dpad_up);
 //            rowToggle.downToggle(gamepad1.dpad_down, 1);
@@ -153,6 +154,8 @@ public class Specimen7AutoNew extends LinearOpMode
             globalTimer = GlobalTimer.milliseconds();
         }
         waitForStart();
+        cameraHardware.pipelineSwitch(side == GeneralHardware.Side.RED ? CameraHardware.PipelineType.RED :
+                CameraHardware.PipelineType.BLUE);
 //        if (samplePose == null) throw new RuntimeException("Ling-Ling fault");
         globalTimer = GlobalTimer.milliseconds();
         resetTimer();
@@ -230,7 +233,7 @@ public class Specimen7AutoNew extends LinearOpMode
 
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                 outtakeSubsystem.liftToInternalPID(0);
-                intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.EXTENDO_DOWN);
+                intakeSubsystem.armSetPos(0.955);
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                 if (delay(20)) extendIntakeSlides(pickupCycle);
                 if (delay(370)) intakeSubsystem.intakeTurretSetPos(0.18);
@@ -238,7 +241,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                if (delay(1200) || (colourValue > 150 && delay(500)))
+                if (delay(1400) || (colourValue > 150 && delay(500)))
                 {
                     state = autoState.PRELOADS_DROP;
                     pickupState = PickupState.SAMPLE_THROW;
@@ -405,13 +408,13 @@ public class Specimen7AutoNew extends LinearOpMode
                             } else if (internalDelay(90))
                                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                         }
-                        if (delay(40))
+                        if (delay(130))
                         {
                             if (cycle != 2) // we need to flip when coming from the wall one
                                 outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
                             else outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
                         }
-                        if (internalDelay(160)) {
+                        if (internalDelay(190)) {
                             intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                             if (internalDelay(300))
                                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
@@ -495,7 +498,7 @@ public class Specimen7AutoNew extends LinearOpMode
 
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_AUTO_PRELOADS);
                 outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_AUTO_PRELOADS);
-                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos + 1.5);
+                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos + 3);
                 outtakeSubsystem.turretKeepToAngleTicks(0, trajectories.preloadTrajectory.getFinalPose().getHeading());
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
 
@@ -657,7 +660,7 @@ public class Specimen7AutoNew extends LinearOpMode
         {
             case READY:
                 if (delay(100)) hardware.drive.followTrajectorySplineHeading(trajectories.hpToSubIntake);
-                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos);
+                outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos + 3);
                 LLResult result = null;
                 if (delay(200))
                 {
@@ -905,10 +908,10 @@ public class Specimen7AutoNew extends LinearOpMode
         {
             case 0:
             case 1:
-                intakeSubsystem.intakeSlideInternalPID(30);
+                intakeSubsystem.intakeSlideInternalPID(29.5);
                 break;
             case 2:
-                intakeSubsystem.intakeSlideInternalPID(30.3);
+                intakeSubsystem.intakeSlideInternalPID(30);
                 break;
             case 3:
                 intakeSubsystem.intakeSlideInternalPID(29.5);

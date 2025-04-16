@@ -177,7 +177,7 @@ public class OuttakeSubsystem
         SPECIMEN_HIGH(0.18), // 0.3
         SPECIMEN_AUTO_PRELOADS(0.53),
         SPECIMEN_HIGH_FLICK(0.4),
-        SPECIMEN_HIGH_AUTO(0.61), // 0.45 prev
+        SPECIMEN_HIGH_AUTO(0.55), // 0.45 prev
         SPECIMEN_HIGH_BACK_STATIC(0.8),
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),

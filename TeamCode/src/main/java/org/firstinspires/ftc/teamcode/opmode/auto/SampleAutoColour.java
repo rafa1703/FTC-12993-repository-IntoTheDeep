@@ -83,7 +83,7 @@ public class SampleAutoColour extends LinearOpMode
     double intakeSubTarget = 8;
     double slideCachedTarget;
     boolean cachedSlideTarget, cachedPoseTarget;
-    double intakeSlideTarget = 29.5;
+    double intakeSlideTarget = 28.5;
 
     Pose intakePose = null;
     LLResult result = null;
@@ -113,7 +113,7 @@ public class SampleAutoColour extends LinearOpMode
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
 
-            intakeSubsystem.armSetPos(0.65);
+            intakeSubsystem.armSetPos(0.25);
             intakeSubsystem.intakeTurretSetPos(0.65);
 
             outtakeSubsystem.liftMotorRawControl(0);
