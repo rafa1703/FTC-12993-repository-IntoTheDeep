@@ -175,14 +175,14 @@ public class OuttakeSubsystem
         SAMPLE(0.5), // 435
         SAMPLE_DROP(0.57),
         SPECIMEN_HIGH(0.18), // 0.3
-        SPECIMEN_AUTO_PRELOADS(0.5),
+        SPECIMEN_AUTO_PRELOADS(0.53),
         SPECIMEN_HIGH_FLICK(0.4),
         SPECIMEN_HIGH_AUTO(0.61), // 0.45 prev
         SPECIMEN_HIGH_BACK_STATIC(0.8),
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         HP_DEPOSIT(0.43),
-        INTAKE(0.46); // 0.415 worked when the slack was less
+        INTAKE(0.49); // 0.415 worked when the slack was less
 
         public final double pos;
 

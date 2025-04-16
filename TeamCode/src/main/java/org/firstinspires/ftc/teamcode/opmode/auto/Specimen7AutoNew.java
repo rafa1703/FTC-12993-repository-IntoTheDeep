@@ -212,7 +212,8 @@ public class Specimen7AutoNew extends LinearOpMode
                 switch (pickupCycle)
                 {
                     case 1:
-                        pickupTrajectory = trajectories.firstSample;
+                        if (delay(200))
+                            pickupTrajectory = trajectories.firstSample;
                         break;
                     case 2:
                         if (delay(400))
@@ -232,8 +233,8 @@ public class Specimen7AutoNew extends LinearOpMode
                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.EXTENDO_DOWN);
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                 if (delay(20)) extendIntakeSlides(pickupCycle);
-                if (delay(370)) intakeSubsystem.intakeTurretSetPos(0.16);
-                if (pickupCycle == 1) outtakeSubsystem.wristSetPos(0.6);
+                if (delay(370)) intakeSubsystem.intakeTurretSetPos(0.18);
+                if (pickupCycle == 1) outtakeSubsystem.wristSetPos(0.6); // lol i think this is because it hits when the thing turns
                 else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
@@ -417,7 +418,7 @@ public class Specimen7AutoNew extends LinearOpMode
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_SCORE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_AUTO);
                             outtakeSubsystem.liftToInternalPID( cycle != 2 ? outtakeSubsystem.liftHighBarBackAutoPos + 1 : // slack on outtake makes so the arm is under...
-                                    outtakeSubsystem.liftHighBarBackAutoPos + 2);
+                                    outtakeSubsystem.liftHighBarBackAutoPos + 1.5);
 
                             if (internalDelay(130)) {
                                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
@@ -518,7 +519,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 break;
             case DROP:
                 if (delay(100)) outtakeSubsystem.wristSetPos(0.75);
-                if (delay(250)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
+                if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                 colourValue = intakeSubsystem.getColourValue(); // we attempt intake in this case
                 double extendoDistance = samplePose.getY() - 10; // arm offset
@@ -709,7 +710,7 @@ public class Specimen7AutoNew extends LinearOpMode
 
                 outtakeSubsystem.turretKeepToAngleTicks(0, hardware.drive.getPoseEstimate().getHeading());
 
-                if (colourValue > 900 || delay(2400))
+                if (colourValue > 900 || delay(1200))
                 {
                     state = autoState.PRELOADS_DROP;
                     pickupState = PickupState.COLOUR_CHECK;
@@ -878,7 +879,7 @@ public class Specimen7AutoNew extends LinearOpMode
         }
     }
 
-    private boolean canSlidesComeBackWithoutHitting()
+    private boolean canSlidesComeBackWithoutHitting() // this is low key so smart
     {
         return yPosition + Math.max(0, intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition)) + 6.5 < -26;
     }
@@ -907,7 +908,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 intakeSubsystem.intakeSlideInternalPID(30);
                 break;
             case 2:
-                intakeSubsystem.intakeSlideInternalPID(28.3);
+                intakeSubsystem.intakeSlideInternalPID(30.3);
                 break;
             case 3:
                 intakeSubsystem.intakeSlideInternalPID(29.5);
