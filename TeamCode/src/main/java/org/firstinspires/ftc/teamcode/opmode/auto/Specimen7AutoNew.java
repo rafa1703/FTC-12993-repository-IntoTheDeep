@@ -640,7 +640,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 outtakeSubsystem.liftToInternalPID(-3);
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
-                if (trajectories.subToHpAndIntake.isFinished() && delay(200))
+                if ((trajectories.subToHpAndIntake.isFinished() && delay(200)) || delay(2000))
                 {
                     outtakeState = OuttakeState.INTAKE;
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.HP_REVERSE);
