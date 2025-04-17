@@ -145,10 +145,10 @@ public class OuttakeSubsystem
         TRANSFER_BACK(0.225), // new thing so the huge fucking claw doesn't hit the fat servo (as fat as our cad designer)
         TRANSFER_AURA(0.25),
         TRANSFER_META(0.1),
-        SAMPLE(0.46),
+        SAMPLE(0.5),
         SPECIMEN_HIGH(0.9), // 0.7
         SPECIMEN_AUTO_PRELOADS(0.69),
-        SPECIMEN_HIGH_AUTO_SCORE(0.7), // 0.67
+        SPECIMEN_HIGH_AUTO_SCORE(0.67), // 0.7
         SPECIMEN_HIGH_BACK_STATIC(0.46),
         SPECIMEN_HIGH_BACK_KINETIC(0.66),
         SPECIMEN_LOW(0.78),
@@ -168,14 +168,14 @@ public class OuttakeSubsystem
     {
         READY(0),
         SPIN(0.55),
-        TRANSFER_FRONT(0.59),
+        TRANSFER_FRONT(0.62),
         TRANSFER_BACK(0.24), //-0.16
         TRANSFER_AURA(0.18),
         TRANSFER_META(0.37),
         SAMPLE(0.5), // 435
         SAMPLE_DROP(0.57),
         SPECIMEN_HIGH(0.18), // 0.3
-        SPECIMEN_AUTO_PRELOADS(0.53),
+        SPECIMEN_AUTO_PRELOADS(0.57), //0.53
         SPECIMEN_HIGH_FLICK(0.4),
         SPECIMEN_HIGH_AUTO(0.55), // 0.45 prev
         SPECIMEN_HIGH_BACK_STATIC(0.8),

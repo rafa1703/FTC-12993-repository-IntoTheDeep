@@ -70,10 +70,10 @@ public class SpecAutoPath
                 .addBezierSegment(
                         new Point(32, -59),
                         new Point(7, -43),
-                        new Point(7, -33.5)
+                        new Point(7, -33.3)
                         //new Point(0, -26.8),
                 )
-                .addFinalPose(7, -33.5, Math.toRadians(90))
+                .addFinalPose(7, -33.3, Math.toRadians(90))
                 .build();
 
         subToHpExtendo = new TrajectoryBuilder() // spline heading
@@ -157,9 +157,9 @@ public class SpecAutoPath
         letsNotCutOurHPHands = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
                         new Point(60.5, -52),
-                        new Point(60.5, -48)
+                        new Point(60.5, -47)
                 )
-                .addFinalPose(60.5, -48, Math.toRadians(90))
+                .addFinalPose(60.5, -47, Math.toRadians(90))
                 .build();
         thirdSampleToIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(
@@ -175,9 +175,9 @@ public class SpecAutoPath
 //                        new Point(39, -46),
 //                        new Point(9, -63.3),
                         depositEndPose.plus(new Pose(0, -10,0)).toPoint(),
-                        depositEndPose.toPoint()
+                        depositEndPose.plus(new Pose(0, -1, 0)).toPoint()
                 )
-                .addFinalPose(depositEndPose)
+                .addFinalPose(depositEndPose.plus(new Pose(0, -1, 0)))
                 .build();
         Pose intakeEndPose = new Pose(15.5, -50, Math.toRadians(-18));
         firstIntake = new TrajectoryBuilder() // spline heading
@@ -190,12 +190,12 @@ public class SpecAutoPath
                 .build();
 
         secondDeposit = new TrajectoryBuilder() // spline heading
-            .addBezierSegment(0.75,
+            .addBezierSegment(0.9,
                     firstIntake.getFinalPose().toPoint(),
                     //new Point(16, -48),
-                    depositEndPose.plus(new Pose(-2, 0, 0)).toPoint()
+                    depositEndPose.plus(new Pose(-9, 0, 0)).toPoint()
             )
-            .addFinalPose(depositEndPose.plus(new Pose(-2, 0, 0))) // this might need to be at a lower angle
+            .addFinalPose(depositEndPose.plus(new Pose(-9, 0, 0))) // this might need to be at a lower angle
             .build();
 
         secondIntake = new TrajectoryBuilder() // spline heading
@@ -208,13 +208,13 @@ public class SpecAutoPath
                 .build();
 
         thirdDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.75,
+                .addBezierSegment(0.9,
                         secondIntake.getFinalPose().toPoint(),
                         //new Point(16, -48),
-                        depositEndPose.plus(new Pose(-4, 0, 0)).toPoint()
+                        depositEndPose.plus(new Pose(-11, 0, 0)).toPoint()
 
                 )
-                .addFinalPose(depositEndPose.plus(new Pose(-4, 0, 0))) // this might need to be at a lower angle
+                .addFinalPose(depositEndPose.plus(new Pose(-11, 0, 0))) // this might need to be at a lower angle
                 .build();
 
         thirdIntake = new TrajectoryBuilder() // spline heading
@@ -227,13 +227,13 @@ public class SpecAutoPath
                 .build();
 
         forthDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.75,
+                .addBezierSegment(0.9,
                         thirdIntake.getFinalPose().toPoint(),
                         //new Point(16, -48),
-                       depositEndPose.plus(new Pose(-6, 0, 0)).toPoint()
+                       depositEndPose.plus(new Pose(-13, 0, 0)).toPoint()
 
                 )
-                .addFinalPose(depositEndPose.plus(new Pose(-6, 0, 0))) // this might need to be at a lower angle
+                .addFinalPose(depositEndPose.plus(new Pose(-13, 0, 0))) // this might need to be at a lower angle
                 .build();
 
         forthIntake = new TrajectoryBuilder() // spline heading
@@ -246,13 +246,13 @@ public class SpecAutoPath
                 .build();
 
         fifthDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.75,
+                .addBezierSegment(0.9,
                         forthIntake.getFinalPose().toPoint(),
                         //new Point(16, -48),
-                        depositEndPose.plus(new Pose(-8, 0, 0)).toPoint()
+                        depositEndPose.plus(new Pose(-15, 0, 0)).toPoint()
 
                 )
-                .addFinalPose(depositEndPose.plus(new Pose(-8, 0, 0))) // this might need to be at a lower angle
+                .addFinalPose(depositEndPose.plus(new Pose(-15, 0, 0))) // this might need to be at a lower angle
                 .build();
         fifthIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
@@ -263,13 +263,13 @@ public class SpecAutoPath
                 .addFinalPose(intakeEndPose)
                 .build();
         sixthDeposit = new TrajectoryBuilder() // spline heading
-                .addBezierSegment(0.75,
+                .addBezierSegment(0.9,
                         fifthIntake.getFinalPose().toPoint(),
                         //new Point(16, -48),
-                        depositEndPose.plus(new Pose(-10, 0, 0)).toPoint()
+                        depositEndPose.plus(new Pose(-17, 0, 0)).toPoint()
 
                 )
-                .addFinalPose(depositEndPose.plus(new Pose(-10, 0, 0))) // this might need to be at a lower angle
+                .addFinalPose(depositEndPose.plus(new Pose(-17, 0, 0))) // this might need to be at a lower angle
                 .build();
         parkTrajectory = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(

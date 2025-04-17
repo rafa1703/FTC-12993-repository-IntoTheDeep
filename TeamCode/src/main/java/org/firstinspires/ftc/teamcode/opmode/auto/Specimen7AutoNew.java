@@ -139,7 +139,7 @@ public class Specimen7AutoNew extends LinearOpMode
 //            rowToggle.downToggle(gamepad1.dpad_down, 1);
 //            columnToggle.upToggle(gamepad1.dpad_right);
 //            columnToggle.downToggle(gamepad1.dpad_left, 1);
-//            angleToggle.upToggle(gamepad1.left_bumper);
+//            angleToggle.upToggle(gamepad1.left_bumper);a
 //            angleToggle.downToggle(gamepad1.right_bumper, 1);
 //            drawSub(telemetry, rowToggle.OffsetTargetPosition, columnToggle.OffsetTargetPosition);
 //            double angle = angleToggle.OffsetTargetPosition * 5;
@@ -147,6 +147,8 @@ public class Specimen7AutoNew extends LinearOpMode
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
             Pose poseEstimate = hardware.drive.getPoseEstimate();
+            telemetry.addData("Side", side);
+            telemetry.addLine();
             telemetry.addData("Turret", outtakeSubsystem.turretTicksToAngle(outtakeSubsystem.turretIncrementalPosition));
             telemetry.addData("Turret initial offset", outtakeSubsystem.initialOffsetPosition);
             DashboardUtil.drawRobot(fieldOverlay, poseEstimate.toPose2d(), true, "black");
@@ -168,8 +170,12 @@ public class Specimen7AutoNew extends LinearOpMode
 
             TelemetryPacket packet = new TelemetryPacket();
             Canvas fieldOverlay = packet.fieldOverlay();
-
-            autoSequence();
+            try {
+                autoSequence();
+            }
+            catch (Exception e)
+            {
+            }
             hardware.update();
             Pose poseEstimate = hardware.drive.getPoseEstimate();
             xPosition = poseEstimate.getX();
@@ -195,6 +201,7 @@ public class Specimen7AutoNew extends LinearOpMode
             loopTime.updateLoopTime(telemetry);
             telemetry.update();
         }
+        cameraHardware.shutDown();
     }
     public void autoSequence()
     {
@@ -206,6 +213,7 @@ public class Specimen7AutoNew extends LinearOpMode
             case SUB_TO_HP:
                 hardware.drive.followTrajectorySplineHeading(trajectories.subToHpAndIntake);
                 subToHpOuttakeState();
+
                 break;
             case SUB_INTAKE:
                 subIntakeOuttakeState();
@@ -232,7 +240,8 @@ public class Specimen7AutoNew extends LinearOpMode
                 colourValue = intakeSubsystem.getColourValue();
 
                 intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
-                outtakeSubsystem.liftToInternalPID(0);
+//                outtakeSubsystem.liftToInternalPID(0);
+                outtakeSubsystem.liftToInternalPID(9);
                 intakeSubsystem.armSetPos(0.955);
                 intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                 if (delay(20)) extendIntakeSlides(pickupCycle);
@@ -241,7 +250,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 else outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
                 outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.STRAIGHT);
-                if (delay(1400) || (colourValue > 150 && delay(500)))
+                if (delay(1400) || (colourValue > 150 && delay(750)))
                 {
                     state = autoState.PRELOADS_DROP;
                     pickupState = PickupState.SAMPLE_THROW;
@@ -312,12 +321,12 @@ public class Specimen7AutoNew extends LinearOpMode
                         outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
                         if (delay(140))
                         {
-                            outtakeSubsystem.liftToInternalPID(0);
+                            outtakeSubsystem.liftToInternalPID(-3.5);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.INTAKE);
                             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
                         }
-                        if (trajectories.thirdSampleToIntake.isFinished()) {
+                        if (trajectories.thirdSampleToIntake.isFinished() || delay(1550)) {
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                             intakedSpec = true;
                             internalTimerReset();
@@ -336,7 +345,7 @@ public class Specimen7AutoNew extends LinearOpMode
 
                             if (delay(400))
                                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
-                            outtakeSubsystem.liftToInternalPID(0);
+                            outtakeSubsystem.liftToInternalPID(1);
 
                             if (intakeTrajectory.isFinished() && delay(100))
                             {
@@ -513,7 +522,7 @@ public class Specimen7AutoNew extends LinearOpMode
                     intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.INTAKE);
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
                     Pose driveTo = calculatePose(result);
-                    hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
+
                     hardware.drive.setTargetPose(driveTo);
                     cameraHardware.captureSnapshot("Spec auto");
                     resetTimer();
@@ -521,6 +530,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 break;
             case DROP:
+                if (delay(250)) hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
                 if (delay(100)) outtakeSubsystem.wristSetPos(0.75);
                 if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
@@ -541,7 +551,7 @@ public class Specimen7AutoNew extends LinearOpMode
 
                 outtakeSubsystem.turretKeepToAngleTicks(0, hardware.drive.getPoseEstimate().getHeading());
 
-                if ((colourValue >= 850) || delay(1700))
+                if ((colourValue >= 850 && delay(1200)) || delay(1700))
                 {
                     state = autoState.SUB_TO_HP;
                     outtakeState = OuttakeState.COLOUR_CHECK;
@@ -627,7 +637,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 break;
             case READY:
-                outtakeSubsystem.liftToInternalPID(0);
+                outtakeSubsystem.liftToInternalPID(-3);
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                 if (trajectories.subToHpAndIntake.isFinished() && delay(200))
@@ -639,14 +649,16 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 break;
             case INTAKE:
-                if (delay(250)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
+//                if (delay(350)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT); // FIXME: old delay 250ms
+                outtakeSubsystem.liftToInternalPID(-3);
                 if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
                 if (delay(450))
                 {
                     state = autoState.SUB_INTAKE; // we change the state here
                     outtakeState = OuttakeState.READY;
                     outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+//                    cameraHardware.start();
+                    // arm used to go horizontal here
                     resetTimer();
                     break;
                 }
@@ -662,14 +674,15 @@ public class Specimen7AutoNew extends LinearOpMode
                 if (delay(100)) hardware.drive.followTrajectorySplineHeading(trajectories.hpToSubIntake);
                 outtakeSubsystem.liftToInternalPID(outtakeSubsystem.liftHighBarPrealodAutoPos + 3);
                 LLResult result = null;
+                if (delay(350)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
+                else if (delay(50)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                 if (delay(200))
                 {
-                    intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
+                    if (delay(250)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HORIZONTAL);
                     outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_AUTO_PRELOADS);
-                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_AUTO_PRELOADS);
+                    outtakeSubsystem.wristSetPos(0.61);
                     outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.LEFT);
                     outtakeSubsystem.turretKeepToAngleTicks(0, hardware.drive.getPoseEstimate().getHeading());
-                    if (delay(350)) intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.RIGHT);
                     if (delay(400))
                     {
                         result = cameraHardware.getLatestResult();
@@ -678,14 +691,15 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
 
-                if (trajectories.hpToSubIntake.isFinished() || (intakeSubsystem.isDistance(7.75) && delay(900)) || delay(2000))
+                if (trajectories.hpToSubIntake.isFinished() || (intakeSubsystem.isDistance(7.75) && delay(1500)) || delay(2200))
                 {
                     outtakeState = OuttakeState.DROP;
                     outtakeSubsystem.liftMotorRawControl(-1);
                     intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.OPEN);
-                    Pose driveTo = calculatePose(result);
-                    hardware.drive.setTargetPose(driveTo);
-                    hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
+                    if (result!= null) {
+                        Pose driveTo = calculatePose(result);
+                        hardware.drive.setTargetPose(driveTo);
+                    }
                     resetTimer();
                     internalTimerReset(); // we need to use the internal timer as the trajectory is timed out
                     armDown = false;
@@ -693,6 +707,7 @@ public class Specimen7AutoNew extends LinearOpMode
                 }
                 break;
             case DROP:
+                if (delay(250)) hardware.drive.setRunMode(MecanumDrive.RunMode.P2P);
                 if (delay(100)) outtakeSubsystem.wristSetPos(0.75);
                 if (delay(300)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.OPEN);
                 intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
@@ -713,7 +728,7 @@ public class Specimen7AutoNew extends LinearOpMode
 
                 outtakeSubsystem.turretKeepToAngleTicks(0, hardware.drive.getPoseEstimate().getHeading());
 
-                if (colourValue > 900 || delay(1200))
+                if (colourValue > 900 || delay(1400))
                 {
                     state = autoState.PRELOADS_DROP;
                     pickupState = PickupState.COLOUR_CHECK;
@@ -736,14 +751,14 @@ public class Specimen7AutoNew extends LinearOpMode
                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.HP_DROP_AUTO);
 
                 intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.REALLY_SICK_THROW);
-                if (delay(20)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.AUTO_REALLY_SICK_THROW);
+                if (delay(120)) intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.AUTO_REALLY_SICK_THROW);
 
-                if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 2)
+                if (intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition) < 0.3)
                 {
                     intakeSubsystem.intakeSlideInternalPID(0); // this controls the intake slides and the clip
                 } else if (delay(170)) intakeSubsystem.intakeSlideMotorRawControl(-1);
-
-                if (intakeSubsystem.getSlidePositionIn() < 12) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
+                outtakeSubsystem.liftToInternalPID(9);
+                if (intakeSubsystem.getSlidePositionIn() < 13) intakeSubsystem.intakeSpin(IntakeSubsystem.IntakeSpinState.REVERSE);
                 if (intakeSubsystem.getSlidePositionIn() < 1 && delay(300))
                 {
                     state = pickupCycle == 3 ? autoState.INTAKE : autoState.PRELOADS_INTAKE;
@@ -908,13 +923,13 @@ public class Specimen7AutoNew extends LinearOpMode
         {
             case 0:
             case 1:
-                intakeSubsystem.intakeSlideInternalPID(29.5);
+                intakeSubsystem.intakeSlideInternalPID(30.1);
                 break;
             case 2:
-                intakeSubsystem.intakeSlideInternalPID(30);
+                intakeSubsystem.intakeSlideInternalPID(31.2);
                 break;
             case 3:
-                intakeSubsystem.intakeSlideInternalPID(29.5);
+                intakeSubsystem.intakeSlideInternalPID(32); // 31.5 was failing at comp
                 break;
         }
     }

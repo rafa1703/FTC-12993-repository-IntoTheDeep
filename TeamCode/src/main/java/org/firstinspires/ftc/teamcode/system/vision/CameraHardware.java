@@ -107,6 +107,10 @@ public class CameraHardware
     {
         limelight.close();
     }
+    public void shutDown()
+    {
+        limelight.stop();
+    }
     public void pause()
     {
         limelight.pause();

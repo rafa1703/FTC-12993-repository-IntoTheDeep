@@ -60,8 +60,7 @@ public class IntakeSubsystem
         INTAKE(1),
         REVERSE(-1),
         OFF(0),
-        HP_REVERSE(-0.13);
-
+        HP_REVERSE(-0.143);
         public final double power;
 
         IntakeSpinState(double power)
@@ -74,7 +73,7 @@ public class IntakeSubsystem
     {
         READY(0.53),
         TRANSFER_BACK(0.48),
-        TRANSFER_FRONT(0.58),
+        TRANSFER_FRONT(0.62), // 0.58
         HALF_TRANSFER(0.8),
         AURA_TRANSFER(0.52),
         TRANSFER_META(0.68),
@@ -84,7 +83,7 @@ public class IntakeSubsystem
         HALF_DOWN(0.9),
         AURA_DOWN(0.93),
         DOWN(1),
-        EXTENDO_DOWN(0.97), // this exists because the intake saggs on the slides
+        EXTENDO_DOWN(0.96), // this exists because the intake saggs on the slides
         BACK(0.98),
         IN(0.45),
         AROUND(0.5),
@@ -358,7 +357,7 @@ public class IntakeSubsystem
         if(hsvValues[0] < 60 )
         {
             colourOfSample = SampleColour.RED;
-        } else if(hsvValues[0] > 120)
+        } else if(hsvValues[0] > 110)
         {
             colourOfSample = SampleColour.BLUE;
         } else colourOfSample = SampleColour.YELLOW;

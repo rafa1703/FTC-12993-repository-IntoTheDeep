@@ -10,9 +10,6 @@ import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.sli
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleSubFar;
 import static org.firstinspires.ftc.teamcode.system.hardware.IntakeSubsystem.slideTeleSubMid;
 
-import com.acmerobotics.dashboard.FtcDashboard;
-import com.acmerobotics.dashboard.canvas.Canvas;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -50,9 +47,11 @@ public class  SentinelDrive extends LinearOpMode
     IntakeSubsystem.IntakeFilter prevIntakeFilterState;
     LoopTime loopTime = new LoopTime();
     boolean cachedIntakeSlidePos;
-    boolean comingFromSpecDeposit;
+    boolean comingFromSpecDeposit = false;
     boolean hpDepositSlidesReturned;
     boolean startIntaking;
+    boolean climbWindUp = false; // if the climb has started to wind up
+    boolean comingFromSpecIntake;
 
     enum OuttakeState {
         READY,
@@ -126,7 +125,7 @@ public class  SentinelDrive extends LinearOpMode
     boolean goToIntake = false;
     boolean goToSampleDeposit = false;
     boolean goToHPDeposit = false;
-    boolean goToHPExtendoDeposit;
+    boolean goToHPExtendoDeposit = true;
     boolean fineAdjustingLiftIntake = false;
     boolean intakeTurretUsingPresets = true;
     boolean fineAdjustingIntakeSlides;
@@ -140,7 +139,7 @@ public class  SentinelDrive extends LinearOpMode
     boolean intakingFromBars;
     boolean autoAlignSpecDeposit = false;
     boolean autoAlignSampleDeposit = false; // this starts off
-    boolean autoAlignHpDeposit = true;
+    boolean autoAlignHpDeposit = false;
     boolean autoAlignSpecIntake = false;
     boolean autoAlignSpecDepositBack = true; // auto align here does not work, too much slack on the outtake
     boolean fineAdjustingLiftSample;
@@ -152,7 +151,7 @@ public class  SentinelDrive extends LinearOpMode
     boolean turretAngleCached;
     boolean comingFromSampleDeposit;
     boolean armAlwaysUp;
-    boolean climbWindUp;
+    boolean climbActuated;
 
 
     IMU imu;
@@ -234,30 +233,33 @@ public class  SentinelDrive extends LinearOpMode
                 false
             );
             updateHeading(true); // FIXME: we shouldn't read every cycle + maybe use pinpoint
-            updatePose(true);
-            TelemetryPacket packet = new TelemetryPacket();
-            Canvas fieldOverlay = packet.fieldOverlay();
-            drawRobot(fieldOverlay, pose.toPose2d(), true);
-            FtcDashboard.getInstance().sendTelemetryPacket(packet);
+//            updatePose(true);
+//            TelemetryPacket packet = new TelemetryPacket();
+//            Canvas fieldOverlay = packet.fieldOverlay();
+//            drawRobot(fieldOverlay, pose.toPose2d(), true);
+//            FtcDashboard.getInstance().sendTelemetryPacket(packet);
             outtakeSequence();
 
 
             telemetry.addData("State", state);
             telemetry.addData("Side", hardware.side);
-            telemetry.addData("Heading", heading);
-            telemetry.addData("Pose", pose);
-            telemetry.addData("Slide pos in", intakeSubsystem.getSlidePositionIn());
-            telemetry.addData("Slide pos", intakeSubsystem.slidePosition);
-            telemetry.addData("Intake turret offset pos", intakeTurretToggle.OffsetTargetPosition);
-            telemetry.addData("Toggle auto allign spec dep", autoAlignSpecDeposit);
+            telemetry.addData("Climb wind up" , climbWindUp);
+            telemetry.addData("Climb actuated", climbActuated);
+            telemetry.addData("Climb timer",  climbWindUpTimer);
+//            telemetry.addData("Heading", heading);
+//            telemetry.addData("Pose", pose);
+//            telemetry.addData("Slide pos in", intakeSubsystem.getSlidePositionIn());
+//            telemetry.addData("Slide pos", intakeSubsystem.slidePosition);
+//            telemetry.addData("Intake turret offset pos", intakeTurretToggle.OffsetTargetPosition);
+//            telemetry.addData("Toggle auto allign spec dep", autoAlignSpecDeposit);
             telemetry.addLine();
             telemetry.addData("stupid tinzen boxtoob draw(AMPS): ", hardware.outtakeLiftM.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("intake slide (AMPS): ", hardware.intakeSlidesM.getCurrent(CurrentUnit.AMPS));
             telemetry.addData("turret motor: ", hardware.turretM.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("FL", hardware.FL.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("FR", hardware.FR.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("BL", hardware.BL.getCurrent(CurrentUnit.AMPS));
-            telemetry.addData("BR", hardware.BR.getCurrent(CurrentUnit.AMPS));
+//            telemetry.addData("FL", hardware.FL.getCurrent(CurrentUnit.AMPS));
+//            telemetry.addData("FR", hardware.FR.getCurrent(CurrentUnit.AMPS));
+//            telemetry.addData("BL", hardware.BL.getCurrent(CurrentUnit.AMPS));
+//            telemetry.addData("BR", hardware.BR.getCurrent(CurrentUnit.AMPS));
 //            telemetry.addData("Heading reduced", Angles.reduceDegrees(heading));
 //            telemetry.addData("slides position", intakeSubsystem.ticksToInchesSlidesMotor(intakeSubsystem.slidePosition));
 //            telemetry.addData("Outtake position", outtakeSubsystem.ticksToInchesSlidesMotor(outtakeSubsystem.liftPosition));
@@ -335,8 +337,8 @@ public class  SentinelDrive extends LinearOpMode
                     intakeSlideSubBtn.downToggle(gamepad1.left_bumper,1);
                     intakeSlideSubBtn.OffsetTargetPosition = 3;
                     intakeArmToggle.OffsetTargetPosition = 0;
-                    intakeTurretToggle.upToggle(gamepad2RightTrigger());
-                    intakeTurretToggle.downToggle(gamepad2LeftTrigger(),1);
+                    intakeTurretToggle.upToggle(gamepad1RightTrigger());
+                    intakeTurretToggle.downToggle(gamepad1LeftTrigger(),1);
                     intakeTurretToggle.OffsetTargetPosition = 2;
 
                     toggleRisingEdge.mode(gamepad1.left_bumper); // new control way
@@ -360,18 +362,13 @@ public class  SentinelDrive extends LinearOpMode
                 {
                     state = OuttakeState.SPECIMEN_INTAKE;
                     toggleRisingEdge.mode(gamepad1.right_bumper);
+                    comingFromSpecDeposit = false;
+                    comingFromSpecIntake = true;
+                    intaked = false;
                     resetTimer();
                     break;
                 }
-                if (gamepad1.touchpad)
-                {
-                    climbWindUpTimer = globalTimer;
-                    state = OuttakeState.HANG_START; // i need to improve this sequencing
-                    toggleRisingEdge.mode(gamepad1.right_bumper);
-                    driveBase.climbServoSetPower(0);
-                    resetTimer();
-                    break;
-                }
+                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK); // necessary because of the really high delays in return
 
                 if (gamepad1.b || gamepad2.b) // might have the slides go out for a bit to get stuff unstuck maybe the arm goes forward too?
                 {
@@ -848,10 +845,9 @@ public class  SentinelDrive extends LinearOpMode
                     break;
                 }
                 liftHeightLogic(gamepad2.x, gamepad2.a);
-                comingFromSpecDeposit = true;
                 if (!intaked)
                 {
-                    if (delay(400))
+                    if (delay(600))
                     {
                         toggleAutoAlign();
                         outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
@@ -885,11 +881,14 @@ public class  SentinelDrive extends LinearOpMode
                     }
                     else
                     {
-                        outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+                        if (delay(200))
+                            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
 
                         if (!comingFromSpecDeposit) {
-                            outtakeSubsystem.wristSetPos(0.9);
+                            outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.INTAKE);
+                            outtakeSubsystem.wristSetPos(1);
                             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
+//                            throw new RuntimeException("Why is the wrist not moving broski");
                         }
                     }
 
@@ -1179,7 +1178,7 @@ public class  SentinelDrive extends LinearOpMode
                         {
                             if (autoAlignSpecDeposit) // this should have definitely have been a function lol
                             {
-                                if (isBetweenAngle(heading, -40,40)) //heading <= 45 && heading >= -45),
+                                if (isBetweenAngle(heading, -40,30)) //heading <= 45 && heading >= -45),
                                 {
                                     outtakeSubsystem.turretKeepToAngleTicks(0, heading);
                                 } else outtakeSubsystem.turretRawControl(0);
@@ -1220,7 +1219,7 @@ public class  SentinelDrive extends LinearOpMode
                         }
                         else if (autoAlignSpecDeposit)
                         {
-                            if (isBetweenAngle(Angles.normalizeDegrees(heading), -40, 40)) //heading <= 45 && heading >= -45),
+                            if (isBetweenAngle(Angles.normalizeDegrees(heading), -40, 30)) //heading <= 45 && heading >= -45),
                             {
                                 outtakeSubsystem.turretKeepToAngleTicks(0, heading);
                             } else outtakeSubsystem.turretRawControl(0);
@@ -1304,7 +1303,7 @@ public class  SentinelDrive extends LinearOpMode
                         }
                         else
                         {
-                            intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit, 0.9);
+                            intakeSubsystem.intakeSlideInternalPID(slideExtensionLimit, 0.85);
                             if (secondToggleForTheDrop.mode(gamepad1.left_bumper))
                             {
                                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.EXTENDO_DOWN);
@@ -1341,6 +1340,7 @@ public class  SentinelDrive extends LinearOpMode
                         toggleRisingEdge.mode(gamepad1.right_bumper);
                         gamepad1.rumbleBlips(1);
                         startIntaking = false;
+                        comingFromSpecDeposit = true;
                         armWentDown = false;
                         resetTimer();
 //                    break;
@@ -1466,7 +1466,7 @@ public class  SentinelDrive extends LinearOpMode
                 }
                 break;
             case HANG_START:
-                if (gamepad1.right_bumper && delay(100))
+                if (gamepad1.right_bumper && delay(300))
                 {
                     state = OuttakeState.HANG_LEVEL2;
                     toggleRisingEdge.mode(gamepad1.right_bumper);
@@ -1474,18 +1474,16 @@ public class  SentinelDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
+//                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
                 outtakeSubsystem.liftMotorRawControl(1);
                 driveBase.PTOState(DriveBaseSubsystem.PTOState.IN);
                 outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                 outtakeSubsystem.armSetPos(0.55);
                 outtakeSubsystem.wristSetPos(0.2);
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                if (delay(4300)) driveBase.climbServoSetPower(0);
-                else driveBase.climbServoSetPower(1);
                 break;
             case HANG_LEVEL2:
-                if (delay(1000))
+                if (delay(1500))
                 {
                     state = OuttakeState.HANG_LEVEL3;
                     secondToggleForTheDrop.mode(gamepad1.right_bumper);
@@ -1493,7 +1491,7 @@ public class  SentinelDrive extends LinearOpMode
                     break;
                 }
 //                outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
-                if (delay(950)) driveBase.climbServoSetPower(-0.15); // this should hold
+                if (delay(1450)) driveBase.climbServoSetPower(-0.15); // this should hold
                 else driveBase.climbServoSetPower(-1);
                 if (delay(300))
                 {
@@ -1505,7 +1503,7 @@ public class  SentinelDrive extends LinearOpMode
                 }
                 break;
             case HANG_LEVEL3:
-                if ((outtakeSubsystem.getPositionIn() < 0 && delay(2500)) || delay(3000))
+                if ((outtakeSubsystem.getPositionIn() < -4 && delay(2500)) || delay(3900))
                 {
                     state = OuttakeState.HANG_END;
                     outtakeSubsystem.lockServoState(OuttakeSubsystem.OuttakeLockServoState.LOCKED);
@@ -1513,7 +1511,7 @@ public class  SentinelDrive extends LinearOpMode
                     resetTimer();
                     break;
                 }
-                double climbPow = 0.92;
+                double climbPow = 0.97;
                 intakeSubsystem.intakeSlideInternalPID(0);
                 outtakeSubsystem.liftMotorRawControl(-climbPow);
                 driveBase.ptoMotorsSetPower(climbPow);
@@ -1542,7 +1540,7 @@ public class  SentinelDrive extends LinearOpMode
                 else intakeSubsystem.intakeSlideInternalPID(0);
                 break;
             case RETURN:
-                if ((outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase() && delay(350))
+                if ((outtakeSubsystem.liftAtBase() && intakeSubsystem.isSlidesAtBase() && delay(500))
                         || delay(1350))
                 {
                     variablesResets();
@@ -1570,7 +1568,8 @@ public class  SentinelDrive extends LinearOpMode
                 else outtakeSubsystem.liftMotorRawControl(-1);
 
                 outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-                outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
+                if (!comingFromSpecIntake || delay(470))
+                    outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.TRANSFER_BACK);
 
                 if (intakeSubsystem.isSlidesAtBase()) // slides are never at base ate the start of edge case
                 {
@@ -1580,7 +1579,8 @@ public class  SentinelDrive extends LinearOpMode
                 if (delay(200))
                 {
                     outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.DOWN);
-                    outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
+                    if ((!comingFromSpecIntake && !comingFromSpecDeposit) || delay(450))
+                        outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.TRANSFER_BACK);
                     outtakeKeepTurretBack();
                     if (intakeEdgeCase)
                     {
@@ -1590,7 +1590,7 @@ public class  SentinelDrive extends LinearOpMode
                     }
                     else intakeSubsystem.intakeTurret(IntakeSubsystem.IntakeTurretServoState.STRAIGHT);
                 }
-                else if (comingFromSpecDeposit) outtakeSubsystem.wristSetPos(0.7);
+                else if (comingFromSpecDeposit || comingFromSpecIntake) outtakeSubsystem.wristSetPos(1);
                 break;
             case MANUAL_ENCODER_RESET:
                 if (delay(200) && gamepad2.right_bumper)
@@ -1645,6 +1645,26 @@ public class  SentinelDrive extends LinearOpMode
             state = OuttakeState.MANUAL_ENCODER_RESET;
             resetTimer();
         }
+        if ( // lol or else climb servo is set to 0
+                state != OuttakeState.HANG_LEVEL2 &&
+                state != OuttakeState.HANG_LEVEL3 &&
+                state != OuttakeState.HANG_END
+        )
+        {
+            if (toggleClimbWindUp.mode(gamepad1.touchpad)) { // once i press this is pressed forever lol
+                if (!climbWindUp) {
+                    climbWindUp = true;
+                    climbWindUpTimer = globalTimer;
+                    driveBase.climbServoSetPower(0); // lol bug
+                }
+                if (climbActuated) {
+                    state = OuttakeState.HANG_START;
+                    toggleRisingEdge.mode(gamepad1.right_bumper);
+                    resetTimer();
+                }
+            }
+            climbWindUpAsync();
+        }
         if (gamepad1.dpad_up)
         {
             hardware.reInitImu(); // this method already resets the yaw
@@ -1663,16 +1683,12 @@ public class  SentinelDrive extends LinearOpMode
 
     public void climbWindUpAsync()
     {
-
-        if (toggleClimbWindUp.mode(gamepad1.share))
-        {
-            climbWindUpTimer = globalTimer;
-            state = OuttakeState.HANG_START; // i need to improve this sequencing
-            toggleRisingEdge.mode(gamepad1.right_bumper);
-            driveBase.climbServoSetPower(0);
-            resetTimer();
+        if (climbWindUp) { // this checks if we pressed the wind up button
+            if (climbActuated) { // stops the servo after time elapsed
+                driveBase.climbServoSetPower(0);
+            } else if (globalTimer - climbWindUpTimer <= 4300) driveBase.climbServoSetPower(1);
+            else climbActuated = true;
         }
-
     }
     public void variablesResets()
     {
@@ -1701,6 +1717,7 @@ public class  SentinelDrive extends LinearOpMode
         comingFromSpecDeposit = false;
         cachedIntakeSlidePos = false;
         startIntaking = false;
+        comingFromSpecIntake = false;
 
         // toggles resets
 
@@ -1836,6 +1853,7 @@ public class  SentinelDrive extends LinearOpMode
         {
             goToHPExtendoDeposit = !goToHPExtendoDeposit;
             gamepad1.rumbleBlips(1);
+            gamepad2.rumbleBlips(1); // fufcking necessary
         }
     }
     public void armAlwaysUpToggle(boolean toggle)
