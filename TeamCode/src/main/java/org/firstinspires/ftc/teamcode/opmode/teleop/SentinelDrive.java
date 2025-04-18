@@ -125,7 +125,7 @@ public class  SentinelDrive extends LinearOpMode
     boolean goToIntake = false;
     boolean goToSampleDeposit = false;
     boolean goToHPDeposit = false;
-    boolean goToHPExtendoDeposit = true;
+    boolean goToHPExtendoDeposit = false; // should start as false if we are sample in the match
     boolean fineAdjustingLiftIntake = false;
     boolean intakeTurretUsingPresets = true;
     boolean fineAdjustingIntakeSlides;
@@ -243,9 +243,10 @@ public class  SentinelDrive extends LinearOpMode
 
             telemetry.addData("State", state);
             telemetry.addData("Side", hardware.side);
-            telemetry.addData("Climb wind up" , climbWindUp);
-            telemetry.addData("Climb actuated", climbActuated);
-            telemetry.addData("Climb timer",  climbWindUpTimer);
+//            telemetry.addData("Climb wind up" , climbWindUp);
+//            telemetry.addData("Climb actuated", climbActuated);
+//            telemetry.addData("Climb timer",  climbWindUpTimer);
+            telemetry.addData("Lift pos", outtakeSubsystem.getPositionIn());
 //            telemetry.addData("Heading", heading);
 //            telemetry.addData("Pose", pose);
 //            telemetry.addData("Slide pos in", intakeSubsystem.getSlidePositionIn());
@@ -1185,9 +1186,10 @@ public class  SentinelDrive extends LinearOpMode
                             }
                             else outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
 
-                            outtakeSubsystem.liftToInternalPID(17); // 14in
-                            outtakeSubsystem.wristSetPos(0.57);
-                            outtakeSubsystem.armSetPos(0.75);
+                            outtakeSubsystem.liftToInternalPID(11.2); // 14in
+//                            outtakeSubsystem.wristState(0.57);
+                            outtakeSubsystem.wristSetPos(0.75);
+                            outtakeSubsystem.armSetPos(0.55);
 //                            outtakeSubsystem.wristSetPos(0.19);
 
                             // THIS WORKS LETS TRY SOMETHING ELSE
@@ -1215,7 +1217,7 @@ public class  SentinelDrive extends LinearOpMode
                         else outtakeSubsystem.liftMotorRawControl(-1);
                         if (internalDelay(100)) {
                             // power draw..aty
-                            outtakeSubsystem.wristSetPos(0.7);
+                            outtakeSubsystem.wristSetPos(1 );
                         }
                         else if (autoAlignSpecDeposit)
                         {
@@ -1476,6 +1478,7 @@ public class  SentinelDrive extends LinearOpMode
                 }
 //                intakeSubsystem.intakeClip(IntakeSubsystem.IntakeClipServoState.HOLD);
                 outtakeSubsystem.liftMotorRawControl(1);
+//                outtakeSubsystem.liftToInternalPID(12);
                 driveBase.PTOState(DriveBaseSubsystem.PTOState.IN);
                 outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
                 outtakeSubsystem.armSetPos(0.55);
@@ -1503,7 +1506,7 @@ public class  SentinelDrive extends LinearOpMode
                 }
                 break;
             case HANG_LEVEL3:
-                if ((outtakeSubsystem.getPositionIn() < -4 && delay(2500)) || delay(3900))
+                if ((outtakeSubsystem.getPositionIn() < -2 && delay(2500)) || delay(5500))
                 {
                     state = OuttakeState.HANG_END;
                     outtakeSubsystem.lockServoState(OuttakeSubsystem.OuttakeLockServoState.LOCKED);
@@ -1529,7 +1532,7 @@ public class  SentinelDrive extends LinearOpMode
                 if (delay(500))
                 {
                     outtakeSubsystem.turretSpinToGains(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
-                    driveBase.drive(0, 0, turned ? 0 : 0.9);
+                    driveBase.drive(0, 0, turned ? 0 : 1);
                 }
                 if (turned)
                 {

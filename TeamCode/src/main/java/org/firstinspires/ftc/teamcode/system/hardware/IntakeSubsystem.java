@@ -73,7 +73,7 @@ public class IntakeSubsystem
     {
         READY(0.53),
         TRANSFER_BACK(0.48),
-        TRANSFER_FRONT(0.62), // 0.58
+        TRANSFER_FRONT(0.61), // 0.58
         HALF_TRANSFER(0.8),
         AURA_TRANSFER(0.52),
         TRANSFER_META(0.68),

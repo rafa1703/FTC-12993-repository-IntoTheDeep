@@ -7,6 +7,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -22,7 +23,7 @@ import org.firstinspires.ftc.teamcode.system.hardware.robot.GeneralHardware;
 import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
 
 import java.util.ArrayList;
-
+@Disabled
 @Autonomous(name = "0+9 Sorting", group = "Close")
 public class SampleAutoSorting extends LinearOpMode
 {

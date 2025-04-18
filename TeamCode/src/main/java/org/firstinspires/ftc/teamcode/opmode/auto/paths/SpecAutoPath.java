@@ -168,7 +168,7 @@ public class SpecAutoPath
                 )
                 .addFinalPose(60.5, -61.5, Math.toRadians(90))
                 .build();
-        Pose depositEndPose = new Pose(10.5, -34.2, Math.toRadians(-18));
+        Pose depositEndPose = new Pose(10.5, -31.8, Math.toRadians(-18));
         firstDepositWhileTurning = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(0.85,
                         new Point(60.5, -62.5),

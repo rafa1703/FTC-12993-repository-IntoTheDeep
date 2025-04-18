@@ -109,7 +109,7 @@ public class SampleAutoColour extends LinearOpMode
         while (!isStarted())
         {
             outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.CLOSE);
-            outtakeSubsystem.armSetPos(0.26);
+            outtakeSubsystem.armSetPos(0.1);
             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SAMPLE);
             outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
 

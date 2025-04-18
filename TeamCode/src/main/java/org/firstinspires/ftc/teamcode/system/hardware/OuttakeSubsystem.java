@@ -141,14 +141,14 @@ public class OuttakeSubsystem
         READY(0.1),
         SPIN(0.45),
         STRAIGHT(0.51), // -0.1
-        TRANSFER_FRONT(0.82),
+        TRANSFER_FRONT(0.87),
         TRANSFER_BACK(0.225), // new thing so the huge fucking claw doesn't hit the fat servo (as fat as our cad designer)
         TRANSFER_AURA(0.25),
         TRANSFER_META(0.1),
         SAMPLE(0.5),
         SPECIMEN_HIGH(0.9), // 0.7
         SPECIMEN_AUTO_PRELOADS(0.69),
-        SPECIMEN_HIGH_AUTO_SCORE(0.67), // 0.7
+        SPECIMEN_HIGH_AUTO_SCORE(0.62), // 0.67
         SPECIMEN_HIGH_BACK_STATIC(0.46),
         SPECIMEN_HIGH_BACK_KINETIC(0.66),
         SPECIMEN_LOW(0.78),
@@ -168,21 +168,21 @@ public class OuttakeSubsystem
     {
         READY(0),
         SPIN(0.55),
-        TRANSFER_FRONT(0.62),
+        TRANSFER_FRONT(0.6),
         TRANSFER_BACK(0.24), //-0.16
         TRANSFER_AURA(0.18),
-        TRANSFER_META(0.37),
+        TRANSFER_META(0.4),
         SAMPLE(0.5), // 435
         SAMPLE_DROP(0.57),
         SPECIMEN_HIGH(0.18), // 0.3
-        SPECIMEN_AUTO_PRELOADS(0.57), //0.53
+        SPECIMEN_AUTO_PRELOADS(0.57), //0.57
         SPECIMEN_HIGH_FLICK(0.4),
-        SPECIMEN_HIGH_AUTO(0.55), // 0.45 prev
+        SPECIMEN_HIGH_AUTO(0.7), // 0.45 prev
         SPECIMEN_HIGH_BACK_STATIC(0.8),
         SPECIMEN_HIGH_BACK_KINETIC(0.44),
         SPECIMEN_HIGH_BACK_FLICK(0.64),
         HP_DEPOSIT(0.43),
-        INTAKE(0.49); // 0.415 worked when the slack was less
+        INTAKE(0.47); // 0.415 worked when the slack was less
 
         public final double pos;
 

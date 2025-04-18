@@ -429,8 +429,8 @@ public class Specimen7AutoNew extends LinearOpMode
                                 outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK);
                             outtakeSubsystem.armState(OuttakeSubsystem.OuttakeArmServoState.SPECIMEN_HIGH_AUTO_SCORE);
                             outtakeSubsystem.wristState(OuttakeSubsystem.OuttakeWristServoState.SPECIMEN_HIGH_AUTO);
-                            outtakeSubsystem.liftToInternalPID( cycle != 2 ? outtakeSubsystem.liftHighBarBackAutoPos + 1 : // slack on outtake makes so the arm is under...
-                                    outtakeSubsystem.liftHighBarBackAutoPos + 1.5);
+                            outtakeSubsystem.liftToInternalPID( cycle != 2 ? outtakeSubsystem.liftHighBarBackAutoPos + 3.1 : // slack on outtake makes so the arm is under...
+                                    outtakeSubsystem.liftHighBarBackAutoPos + 3.2);
 
                             if (internalDelay(130)) {
                                 intakeSubsystem.intakeArm(IntakeSubsystem.IntakeArmServoState.HALF_DOWN);
@@ -463,9 +463,9 @@ public class Specimen7AutoNew extends LinearOpMode
                 else
                 {
                     outtakeSubsystem.liftMotorRawControl(-1);
-                    if (delay(100)) outtakeSubsystem.wristSetPos(0.75);
+                    if (delay(270)) outtakeSubsystem.wristSetPos(0.75);
 //                    if (delay(400)) intakeSubsystem.intakeSlideInternalPID(4);
-                    if (delay(250)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
+                    if (delay(430)) outtakeSubsystem.clawState(OuttakeSubsystem.OuttakeClawServoState.INTAKE);
                     if (delay(500))
                     {
                         state = autoState.INTAKE;
@@ -923,13 +923,13 @@ public class Specimen7AutoNew extends LinearOpMode
         {
             case 0:
             case 1:
-                intakeSubsystem.intakeSlideInternalPID(30.1);
+                intakeSubsystem.intakeSlideInternalPID(27.1); // - 3in
                 break;
             case 2:
-                intakeSubsystem.intakeSlideInternalPID(31.2);
+                intakeSubsystem.intakeSlideInternalPID(28.2);
                 break;
             case 3:
-                intakeSubsystem.intakeSlideInternalPID(32); // 31.5 was failing at comp
+                intakeSubsystem.intakeSlideInternalPID(28.5); // -3.5
                 break;
         }
     }
