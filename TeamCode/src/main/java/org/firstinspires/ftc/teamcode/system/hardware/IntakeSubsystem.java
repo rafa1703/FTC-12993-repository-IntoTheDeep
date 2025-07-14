@@ -42,7 +42,7 @@ public class IntakeSubsystem
     double intakeSlidesFineAdjustTimer;
 
     public static final double // in inches, 24 max slides
-            slideExtensionLimit = 33,
+            slideExtensionLimit = 32.5,
             slideTeleSubClose = 10,
             slideTeleSubMid = 18,
             slideTeleSubFar = 33,
@@ -54,6 +54,21 @@ public class IntakeSubsystem
             slideAutoClose = 14;
     private final double slideThreshold = 8;
     double distance;
+
+    public SampleColour getSampleColour() {
+        final float[] hsvValues = new float[3];
+
+        android.graphics.Color.colorToHSV(colourSensor.getNormalizedColors().toColor(), hsvValues);
+        SampleColour colourOfSample;
+        if(hsvValues[0] < 60 )
+        {
+            colourOfSample = SampleColour.RED;
+        } else if(hsvValues[0] > 110)
+        {
+            colourOfSample = SampleColour.BLUE;
+        } else colourOfSample = SampleColour.YELLOW;
+        return colourOfSample;
+    }
 
     public enum IntakeSpinState
     {
@@ -114,6 +129,7 @@ public class IntakeSubsystem
     public enum IntakeTurretServoState
     {
         TRANSFER_META(0.797),
+        TRANSFER(0.4),
         MAX_LEFT(0.53),
         LEFT(0.45),
         STRAIGHT(0.37),
@@ -293,7 +309,7 @@ public class IntakeSubsystem
 
     public void intakeSlideInternalPID(double inches)
     {
-        if (inches > 32.5) inches = 32.5;
+        if (inches > 32.5) inches = 32.5; // 32.5
         slideTarget = (int) inchesToTicksSlidesMotor(inches);
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -302,9 +318,8 @@ public class IntakeSubsystem
 
     public void intakeSlideInternalPID(double inches, boolean limit)
     {
+        if (inches > 32.5 && limit) inches = 32.5; // 32.5
         slideTarget = (int) inchesToTicksSlidesMotor(inches);
-        if (slideTarget > slideExtensionLimit)
-            slideTarget = (int) inchesToTicksSlidesMotor(slideExtensionLimit);
         intakeSlideMotor.setTargetPosition(slideTarget);
         intakeSlideMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         intakeSlideMotor.setPower(1);

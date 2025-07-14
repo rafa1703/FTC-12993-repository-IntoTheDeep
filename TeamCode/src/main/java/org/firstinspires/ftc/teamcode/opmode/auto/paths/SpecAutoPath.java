@@ -32,10 +32,10 @@ public class SpecAutoPath
         preloadTrajectory = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(1,
                         new Point(7.2, -62.5),
-                        new Point(5, -33.3)
+                        new Point(5, -31)
                 )
-                .addFinalSpeed(0.3)
-                .addFinalPose(5, -33.3, Math.toRadians(90))
+                .addFinalSpeed(0.7)
+                .addFinalPose(5, -31, Math.toRadians(90))
                 //.addTrajectoryTimeOut(300)
                 .build();
 
@@ -51,9 +51,9 @@ public class SpecAutoPath
         hpIntake = new TrajectoryBuilder() // spline heading
             .addBezierSegment(0.7,
                     new Point(36, -60),
-                    new Point(36, -62.5)
+                    new Point(36, -61.5)
             )
-            .addFinalPose(new Pose(36, -62.5, Math.toRadians(90)))
+            .addFinalPose(new Pose(36, -61.5, Math.toRadians(90)))
             .build();
         subToHpAndIntake = new TrajectoryBuilder() // spline heading
                 .addBezierSegment(0.8,
@@ -70,10 +70,11 @@ public class SpecAutoPath
                 .addBezierSegment(
                         new Point(32, -59),
                         new Point(7, -43),
-                        new Point(7, -33.3)
+                        new Point(7, -31)
                         //new Point(0, -26.8),
                 )
-                .addFinalPose(7, -33.3, Math.toRadians(90))
+                .addFinalSpeed(0.7)
+                .addFinalPose(7, -31, Math.toRadians(90))
                 .build();
 
         subToHpExtendo = new TrajectoryBuilder() // spline heading

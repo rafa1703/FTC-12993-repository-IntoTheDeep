@@ -15,8 +15,8 @@ public class ServoTest extends LinearOpMode
     OuttakeSubsystem outtakeSubsystem;
     IntakeSubsystem intakeSubsystem;
     GeneralHardware hardware;
-    public static double clawPos = 0.879, wristPos = 0.455, railPos = 0.17, armPos = 0.4;
-    public static double intakeLefArmPos = 0, intakeRightArmPos = 0, chutePos = 1, flapPos = 0, clipPos = 1;
+    public static double clawPos = 0.879, wristPos = 0.455, pivotPos = 0.17, armPos = 0.4;
+    public static double intakeTurret = 0, intakeArm = 0, intake = 1;
     @Override
     public void runOpMode() throws InterruptedException
     {
@@ -36,6 +36,15 @@ public class ServoTest extends LinearOpMode
         waitForStart();
         while (opModeIsActive())
         {
+            outtakeSubsystem.clawSetPos(clawPos);
+            outtakeSubsystem.wristSetPos(wristPos);
+            outtakeSubsystem.armSetPos(armPos);
+            outtakeSubsystem.pivotSetPos(pivotPos);
+
+            intakeSubsystem.intakeTurretSetPos(intakeTurret);
+            intakeSubsystem.armSetPos(intakeArm);
+            intakeSubsystem.intakeSpin(intake);
+
 //            if (gamepad1.a)
 //            {
 //                intakeSubsystem.disablePWM(IntakeSubsystem.Servos.FLAP);

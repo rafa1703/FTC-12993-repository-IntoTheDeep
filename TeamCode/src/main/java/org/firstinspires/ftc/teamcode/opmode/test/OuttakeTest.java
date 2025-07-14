@@ -22,8 +22,8 @@ public class OuttakeTest extends LinearOpMode
     //public static double intakeLefArmPos = 0, intakeRightArmPos = 0, turretPos = 0, flapPos = 0, clipPos = 0, intakeSpin = 0, intakeSlide = 0;
 //    ..public static OuttakeSubsystem.OuttakeTurretState turretState = OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK;
 //    public static OuttakeSubsystem.OuttakeClawServoState claw = OuttakeSubsystem.OuttakeClawServoState.INTAKE;
-    public static double armO = OuttakeSubsystem.OuttakeArmServoState.TRANSFER_FRONT.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT.pos;
-    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.TRANSFER_FRONT.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
+    public static double armO = OuttakeSubsystem.OuttakeArmServoState.SAMPLE.pos, armI = IntakeSubsystem.IntakeArmServoState.TRANSFER_FRONT.pos;
+    public static double wrist = OuttakeSubsystem.OuttakeWristServoState.SAMPLE.pos, pivot = OuttakeSubsystem.OuttakePivotServoState.DOWN.pos;
     public static double turretI = IntakeSubsystem.IntakeTurretServoState.HP_DEPOSIT.pos;
     public static double hpReversePow = -0.15;
     public static OuttakeSubsystem.OuttakeTurretState turret = OuttakeSubsystem.OuttakeTurretState.SPEC_DEPOSIT_BACK;
@@ -57,7 +57,7 @@ public class OuttakeTest extends LinearOpMode
 
             hardware.resetCacheHubs();
             outtakeSubsystem.outtakeReads(true);
-            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_FRONT);
+            outtakeSubsystem.turretSpinTo(OuttakeSubsystem.OuttakeTurretState.TRANSFER_BACK);
 
 //            outtakeSubsystem.pivotServoState(OuttakeSubsystem.OuttakePivotServoState.RIGHT);
             outtakeSubsystem.clawSetPos(claw);
@@ -118,7 +118,7 @@ public class OuttakeTest extends LinearOpMode
 //            telemetry.addData("Lift ", outtakeSubsystem.liftPosition);
 //            telemetry.addData("br", hardware.BR.getCurrentPosition());
             telemetry.update();
-            Thread.sleep(35);
+//            Thread.sleep(35);
         }
     }
 }
