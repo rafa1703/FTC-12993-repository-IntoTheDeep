@@ -25,7 +25,7 @@ import org.firstinspires.ftc.teamcode.system.vision.CameraHardware;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "0+9 low key is gonna work", group = "Close")
+@Autonomous(name = "0+9 \uD83D\uDC80", group = "Close")
 public class SampleAutoRealllyGoated extends LinearOpMode
 {
      double pureYdis;
