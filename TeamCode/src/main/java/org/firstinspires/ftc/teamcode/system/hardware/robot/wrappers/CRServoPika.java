@@ -19,6 +19,7 @@ public class CRServoPika
     }
     public void setPower(double pow)
     { // so this is just a wrapper for this tbh
+        if (servo == null) return; // silently ignore if null
         if (
                 (Math.abs(pow - prevPower) > EPSILON_DELTA) ||
                         (pow == 0.0 && prevPower != 0.0) ||
@@ -33,22 +34,27 @@ public class CRServoPika
 
     public double getPower()
     {
+        if (servo == null) return 0.0; // return safe default
         return servo.getPower();
     }
     public void setDirection(DcMotor.Direction direction)
     {
+        if (servo == null) return; // silently ignore if null
         servo.setDirection(direction);
     }
     public void setPwmDisable()
     {
+        if (servo == null) return; // silently ignore if null
         servo.setPwmDisable();
     }
     public void setPwmEnable()
     {
+        if (servo == null) return; // silently ignore if null
         servo.setPwmEnable();
     }
     public boolean isPwmEnabled()
     {
-       return servo.isPwmEnabled();
+        if (servo == null) return false; // return safe default
+        return servo.isPwmEnabled();
     }
 }

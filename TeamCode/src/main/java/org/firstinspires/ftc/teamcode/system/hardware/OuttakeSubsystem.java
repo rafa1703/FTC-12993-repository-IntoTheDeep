@@ -537,4 +537,17 @@ public class OuttakeSubsystem
     {
         return pos * maxAngleAxon;
     }
+
+    public void liftRetractToBase()
+    {
+        // Fast retraction using raw power until we hit base position
+        liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        if (liftPosition > 50) {
+            liftMotor.setPower(-0.8); // Fast retraction when far from base
+        } else if (liftPosition > 10) {
+            liftMotor.setPower(-0.4); // Slower when getting close
+        } else {
+            liftMotor.setPower(0); // Stop when at base
+        }
+    }
 }
