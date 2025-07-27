@@ -130,7 +130,7 @@ public class IntakeSubsystem
     {
         TRANSFER_META(0.797),
         TRANSFER(0.4),
-        MAX_LEFT(0.545),
+        MAX_LEFT(0.53),
         LEFT(0.45),
         STRAIGHT(0.37),
         RIGHT(0.27),
